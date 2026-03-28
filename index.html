@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Are Prediction Market Prices Probabilities? — Yicheng Yang</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true},{left: '$', right: '$', display: false}]});"></script>
+<style>
+:root {
+  --bg: #faf9f7;
+  --text: #1a1a1a;
+  --text-secondary: #555;
+  --accent: #c4170c;
+  --accent-light: #fef2f1;
+  --border: #e5e3df;
+  --card-bg: #fff;
+  --code-bg: #f5f4f0;
+  --blue: #2563eb;
+  --green: #16a34a;
+  --orange: #ea580c;
+  --purple: #7c3aed;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Source Serif 4', Georgia, serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.75;
+  font-size: 18px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Header */
+header {
+  padding: 80px 0 48px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+
+header .label {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: 42px;
+  line-height: 1.15;
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: 22px;
+  color: var(--text-secondary);
+  font-style: italic;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+
+.meta {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.meta a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+/* Article */
+article p {
+  margin-bottom: 24px;
+}
+
+article h2 {
+  font-size: 28px;
+  margin: 56px 0 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+article h3 {
+  font-size: 22px;
+  margin: 40px 0 16px;
+  font-weight: 600;
+}
+
+/* Key equation */
+.equation-box {
+  background: var(--card-bg);
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 28px 32px;
+  margin: 32px 0;
+  text-align: center;
+  font-size: 20px;
+  box-shadow: 0 2px 12px rgba(196,23,12,0.06);
+}
+
+.equation-box .label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 36px 0;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stat-card .number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+}
+
+.stat-card .desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* Interactive widget */
+.interactive-widget {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  margin: 40px 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+}
+
+.widget-title {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.slider-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.slider-container label {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.slider-container input[type="range"] {
+  flex: 1;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border);
+  border-radius: 3px;
+  outline: none;
+}
+
+.slider-container input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(196,23,12,0.3);
+}
+
+.slider-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 60px;
+  text-align: right;
+}
+
+canvas {
+  width: 100% !important;
+  max-height: 350px;
+}
+
+/* Callout */
+.callout {
+  background: var(--accent-light);
+  border-left: 4px solid var(--accent);
+  padding: 20px 24px;
+  margin: 32px 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.callout p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.callout strong {
+  color: var(--accent);
+}
+
+/* Platform table */
+.platform-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 32px 0;
+  font-size: 15px;
+}
+
+.platform-table th {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 2px solid var(--text);
+}
+
+.platform-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+}
+
+.platform-table td:first-child {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.positive { color: var(--accent); }
+.negative { color: var(--blue); }
+
+/* CTA */
+.cta-section {
+  background: var(--text);
+  color: #fff;
+  border-radius: 12px;
+  padding: 40px 36px;
+  margin: 56px 0;
+  text-align: center;
+}
+
+.cta-section h3 {
+  color: #fff;
+  margin-top: 0;
+  font-size: 24px;
+}
+
+.cta-section p {
+  color: #ccc;
+  font-size: 16px;
+}
+
+.cta-links {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.cta-links a {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.cta-links a.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.cta-links a.secondary {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #555;
+}
+
+.cta-links a:hover { opacity: 0.85; }
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 0;
+  margin-top: 56px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  h1 { font-size: 30px; }
+  .subtitle { font-size: 18px; }
+  .stats-row { grid-template-columns: 1fr; }
+  .interactive-widget { padding: 20px; }
+  .cta-links { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<header>
+  <div class="label">Research</div>
+  <h1>Are Prediction Market Prices Probabilities?</h1>
+  <p class="subtitle">A one-parameter decomposition reveals a systematic pricing wedge in 291,309 contracts across six platforms.</p>
+  <p class="meta">Yicheng Yang · University of Illinois Urbana-Champaign · March 2026<br>
+  <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=XXXXXXX">Full Paper (SSRN)</a> · <a href="https://github.com/YichengYang-Ethan/prediction-market-pricing">Replication Code (GitHub)</a></p>
+</header>
+
+<article>
+
+<p>Polymarket processed $3.5 billion during the 2024 U.S. election. Kalshi won a landmark CFTC ruling. Prediction markets are now a real asset class — but nobody has a pricing model for them.</p>
+
+<p>Equity options have Black-Scholes. Credit markets have Merton. Prediction markets have… nothing. Prices are formed on order books, but no theory connects them to a stochastic process, no implied volatility surface exists, and there is no formal way to separate <em>probability</em> from <em>risk premium</em> in an observed price.</p>
+
+<p>This matters because prediction market contracts are <strong>binary options in incomplete markets</strong>. You can't delta-hedge a prediction market contract — the "underlying" is the event itself. A geopolitical outcome, a Fed decision, a basketball game. There is no asset to trade as a hedge. So the observed price necessarily embeds both the probability of the event <em>and</em> a risk premium that no-arbitrage reasoning alone cannot separate.</p>
+
+<h2>The Decomposition</h2>
+
+<p>I propose a single equation that separates the two:</p>
+
+<div class="equation-box">
+  <div class="label">Wang Transform Decomposition</div>
+  <div>$p^{\text{mkt}} = \Phi\!\left(\Phi^{-1}(p^*) + \lambda\right)$</div>
+</div>
+
+<p>Here $p^*$ is the physical probability of the event, $p^{\text{mkt}}$ is the observed market price, $\Phi$ is the standard normal CDF, and $\lambda$ is the <strong>pricing wedge</strong> — how much the market overcharges relative to the true probability.</p>
+
+<p>This is the Wang (2000) transform, originally developed for catastrophe bond pricing. I apply it to prediction markets. The key insight: when $\lambda > 0$, longshots (low-probability events) are proportionally <em>more</em> overpriced than favorites — generating the favorite-longshot bias as a direct mathematical consequence.</p>
+
+<h2>Try It Yourself</h2>
+
+<div class="interactive-widget">
+  <div class="widget-title">Interactive: Wang Transform Distortion</div>
+  <div class="slider-container">
+    <label>$\lambda$ =</label>
+    <input type="range" id="lambdaSlider" min="0" max="0.5" step="0.01" value="0.18">
+    <span class="slider-value" id="lambdaValue">0.18</span>
+  </div>
+  <canvas id="wangChart"></canvas>
+  <p style="font-family: Inter, sans-serif; font-size: 13px; color: var(--text-secondary); margin-top: 16px; margin-bottom: 0;">
+    Drag the slider to see how the pricing wedge distorts probabilities. At $\lambda = 0.18$ (our estimate), a 10% event trades at ~13.5% — a 35% overpricing.
+  </p>
+</div>
+
+<h2>What the Data Shows</h2>
+
+<p>I calibrate $\lambda$ on 291,309 resolved contracts from six platforms spanning 2015–2026:</p>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <span class="number">291,309</span>
+    <span class="desc">resolved contracts</span>
+  </div>
+  <div class="stat-card">
+    <span class="number">6</span>
+    <span class="desc">platforms</span>
+  </div>
+  <div class="stat-card">
+    <span class="number">0.183</span>
+    <span class="desc">pooled $\hat{\lambda}$<br>(p < 10⁻¹⁵)</span>
+  </div>
+</div>
+
+<table class="platform-table">
+  <thead>
+    <tr><th>Platform</th><th>N</th><th>$\hat{\lambda}$</th><th>Type</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Polymarket</td><td>13,738</td><td class="positive">+0.166***</td><td>Real money</td></tr>
+    <tr><td>Kalshi</td><td>271,699</td><td class="positive">+0.187***</td><td>Real money (CFTC)</td></tr>
+    <tr><td>Metaculus</td><td>1,845</td><td class="positive">+0.287***</td><td>Reputation</td></tr>
+    <tr><td>Good Judgment</td><td>692</td><td class="positive">+0.570***</td><td>Reputation</td></tr>
+    <tr><td>INFER</td><td>90</td><td class="positive">+0.635***</td><td>Reputation</td></tr>
+    <tr><td>Manifold</td><td>1,681</td><td class="negative">−0.218***</td><td>Play money</td></tr>
+  </tbody>
+</table>
+
+<p>Every real-money platform shows a positive pricing wedge. Manifold — where participants trade with play-money tokens and bear no financial risk — shows the <em>opposite sign</em>: overconfidence pushes prices <em>below</em> physical probabilities.</p>
+
+<div class="callout">
+  <p><strong>The Manifold result is a natural placebo test.</strong> If $\lambda > 0$ were just cognitive bias (probability weighting), it should show up identically on play-money platforms. The sign reversal suggests the positive wedge on real-money platforms reflects compensation for bearing event risk — not just misperception.</p>
+</div>
+
+<h2>The Pricing Wedge Decays Over Time</h2>
+
+<p>Perhaps the most striking finding: the pricing wedge is not constant. It decays as information arrives over the contract's lifetime.</p>
+
+<div class="interactive-widget">
+  <div class="widget-title">Time-Varying Pricing Wedge</div>
+  <canvas id="timeChart"></canvas>
+  <p style="font-family: Inter, sans-serif; font-size: 13px; color: var(--text-secondary); margin-top: 16px; margin-bottom: 0;">
+    The wedge starts at $\hat{\lambda} = 0.17$ at market opening and decays to near zero by resolution. Half-life: 33% of contract lifetime. This is consistent with Bayesian learning: initial uncertainty about $p^*$ commands a premium that shrinks as the posterior concentrates.
+  </p>
+</div>
+
+<h2>What Drives the Cross-Section?</h2>
+
+<p>A one-stage hierarchical model reveals three systematic determinants of the pricing wedge:</p>
+
+<p><strong>Volume (−):</strong> Higher-liquidity markets exhibit smaller wedges. In the highest-volume tier (>$10K), $\hat{\lambda} \approx 0$ — competitive trading eliminates the wedge entirely.</p>
+
+<p><strong>Duration (+):</strong> Longer-duration contracts carry proportionally larger wedges, establishing a term structure of event risk.</p>
+
+<p><strong>Extremity (−):</strong> Contracts near 50% (maximum uncertainty) carry the largest wedges. As outcomes become more predictable, the wedge shrinks.</p>
+
+<h2>Why This Matters</h2>
+
+<p><strong>For traders:</strong> The Wang correction extracts risk-adjusted probabilities from market prices. A 10% market price implies a physical probability of ~8.4%, not 10%. The framework provides a principled fair-value signal.</p>
+
+<p><strong>For regulators:</strong> As the CFTC and SEC debate whether event contracts are financial instruments, understanding the risk premium structure of these markets is essential for investor protection and market design.</p>
+
+<p><strong>For researchers:</strong> The framework connects prediction markets to three established literatures — distortion risk measures (Wang, 2000), incomplete market pricing (Harrison and Pliska, 1983), and the interpretation of prediction market prices (Manski, 2006).</p>
+
+<div class="cta-section">
+  <h3>Want to go deeper?</h3>
+  <p>The full paper has the complete theory, all robustness checks, and cross-platform validation details.</p>
+  <div class="cta-links">
+    <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=XXXXXXX" class="primary">Read the Paper (SSRN)</a>
+    <a href="https://github.com/YichengYang-Ethan/prediction-market-pricing" class="secondary">Replication Code (GitHub)</a>
+  </div>
+</div>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang · CS / Economics / Statistics · University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu · <a href="https://github.com/YichengYang-Ethan" style="color: var(--text-secondary);">GitHub</a> · <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=XXXXXXX" style="color: var(--text-secondary);">SSRN</a></p>
+</footer>
+</div>
+
+<script>
+// Normal CDF approximation (Abramowitz & Stegun)
+function normalCDF(x) {
+  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
+  const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+  const sign = x < 0 ? -1 : 1;
+  x = Math.abs(x) / Math.sqrt(2);
+  const t = 1.0 / (1.0 + p * x);
+  const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+  return 0.5 * (1.0 + sign * y);
+}
+
+// Inverse normal CDF (rational approximation)
+function normalInvCDF(p) {
+  if (p <= 0) return -Infinity;
+  if (p >= 1) return Infinity;
+  if (p < 0.5) return -normalInvCDF(1 - p);
+  const a = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02,
+              1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00];
+  const b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02,
+              6.680131188771972e+01, -1.328068155288572e+01];
+  const c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00,
+              -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00];
+  const d = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00, 3.754408661907416e+00];
+  const pLow = 0.02425, pHigh = 1 - pLow;
+  let q, r;
+  if (p < pLow) {
+    q = Math.sqrt(-2 * Math.log(p));
+    return (((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  } else if (p <= pHigh) {
+    q = p - 0.5; r = q * q;
+    return (((((a[0]*r+a[1])*r+a[2])*r+a[3])*r+a[4])*r+a[5])*q / (((((b[0]*r+b[1])*r+b[2])*r+b[3])*r+b[4])*r+1);
+  } else {
+    q = Math.sqrt(-2 * Math.log(1 - p));
+    return -(((((c[0]*q+c[1])*q+c[2])*q+c[3])*q+c[4])*q+c[5]) / ((((d[0]*q+d[1])*q+d[2])*q+d[3])*q+1);
+  }
+}
+
+function wangTransform(pStar, lambda) {
+  return normalCDF(normalInvCDF(pStar) + lambda);
+}
+
+// Wang Transform Chart
+const wangCtx = document.getElementById('wangChart').getContext('2d');
+const probabilities = [];
+for (let i = 0.02; i <= 0.98; i += 0.01) probabilities.push(parseFloat(i.toFixed(2)));
+
+function getWangData(lambda) {
+  return probabilities.map(p => wangTransform(p, lambda));
+}
+
+const wangChart = new Chart(wangCtx, {
+  type: 'line',
+  data: {
+    labels: probabilities,
+    datasets: [
+      {
+        label: 'Perfect calibration (λ = 0)',
+        data: probabilities,
+        borderColor: '#ccc',
+        borderDash: [6, 4],
+        borderWidth: 1.5,
+        pointRadius: 0,
+        fill: false
+      },
+      {
+        label: 'Wang-distorted price',
+        data: getWangData(0.18),
+        borderColor: '#c4170c',
+        borderWidth: 2.5,
+        pointRadius: 0,
+        fill: {
+          target: 0,
+          above: 'rgba(196,23,12,0.08)'
+        }
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 1.8,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: { font: { family: 'Inter', size: 12 }, boxWidth: 20, padding: 16 }
+      },
+      tooltip: {
+        callbacks: {
+          title: (items) => `Physical probability: ${(items[0].parsed.x).toFixed(0)}%`,
+          label: (item) => {
+            if (item.datasetIndex === 0) return `Fair price: ${(item.parsed.y * 100).toFixed(1)}%`;
+            const overpricing = ((item.parsed.y / probabilities[item.dataIndex]) - 1) * 100;
+            return `Market price: ${(item.parsed.y * 100).toFixed(1)}% (${overpricing > 0 ? '+' : ''}${overpricing.toFixed(0)}% overpricing)`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        type: 'linear',
+        title: { display: true, text: 'Physical probability p*', font: { family: 'Inter', size: 13 } },
+        min: 0, max: 1,
+        ticks: { font: { family: 'JetBrains Mono', size: 11 }, callback: v => (v * 100) + '%' }
+      },
+      y: {
+        title: { display: true, text: 'Market price p^mkt', font: { family: 'Inter', size: 13 } },
+        min: 0, max: 1,
+        ticks: { font: { family: 'JetBrains Mono', size: 11 }, callback: v => (v * 100) + '%' }
+      }
+    }
+  }
+});
+
+// Slider interaction
+const slider = document.getElementById('lambdaSlider');
+const valueDisplay = document.getElementById('lambdaValue');
+
+slider.addEventListener('input', function() {
+  const lambda = parseFloat(this.value);
+  valueDisplay.textContent = lambda.toFixed(2);
+  wangChart.data.datasets[1].data = getWangData(lambda);
+  wangChart.data.datasets[1].label = `Wang-distorted price (λ = ${lambda.toFixed(2)})`;
+  wangChart.update('none');
+});
+
+// Time-Varying Chart
+const timeCtx = document.getElementById('timeChart').getContext('2d');
+const tauValues = [0.05, 0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80];
+const lambdaValues = [0.173, 0.158, 0.110, 0.082, 0.080, 0.050, 0.052, 0.040, 0.031];
+const ciUpper = [0.230, 0.212, 0.165, 0.139, 0.138, 0.110, 0.113, 0.103, 0.096];
+const ciLower = [0.123, 0.104, 0.055, 0.026, 0.021, -0.010, -0.008, -0.023, -0.035];
+
+// Generate smooth spline points
+const smoothTau = [];
+const smoothLambda = [];
+for (let t = 0.05; t <= 0.80; t += 0.01) {
+  smoothTau.push(parseFloat(t.toFixed(2)));
+  // Quadratic fit: f(tau) = beta0 + gamma1*tau + gamma2*tau^2
+  const beta0 = 0.170, gamma1 = -0.232, gamma2 = 0.151;
+  smoothLambda.push(beta0 + gamma1 * t + gamma2 * t * t);
+}
+
+new Chart(timeCtx, {
+  type: 'line',
+  data: {
+    labels: smoothTau,
+    datasets: [
+      {
+        label: 'Spline estimate',
+        data: smoothLambda,
+        borderColor: '#2563eb',
+        borderWidth: 2.5,
+        pointRadius: 0,
+        fill: false
+      },
+      {
+        label: 'Per-horizon MLEs',
+        data: tauValues.map((t, i) => ({ x: t, y: lambdaValues[i] })),
+        type: 'scatter',
+        backgroundColor: '#c4170c',
+        pointRadius: 5,
+        pointStyle: 'circle',
+        borderColor: '#c4170c',
+        borderWidth: 2
+      },
+      {
+        label: '95% CI (upper)',
+        data: tauValues.map((t, i) => ({ x: t, y: ciUpper[i] })),
+        type: 'scatter',
+        pointRadius: 0,
+        borderColor: 'transparent',
+        showLine: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    aspectRatio: 1.8,
+    plugins: {
+      legend: {
+        labels: {
+          font: { family: 'Inter', size: 12 },
+          filter: (item) => item.datasetIndex < 2
+        }
+      },
+      tooltip: {
+        filter: (item) => item.datasetIndex < 2,
+        callbacks: {
+          title: (items) => `${(items[0].parsed.x * 100).toFixed(0)}% of contract lifetime`,
+          label: (item) => `λ = ${item.parsed.y.toFixed(3)}`
+        }
+      }
+    },
+    scales: {
+      x: {
+        type: 'linear',
+        title: { display: true, text: 'Fraction of contract lifetime (τ)', font: { family: 'Inter', size: 13 } },
+        min: 0, max: 0.85,
+        ticks: { font: { family: 'JetBrains Mono', size: 11 }, callback: v => (v * 100) + '%' }
+      },
+      y: {
+        title: { display: true, text: 'Estimated λ(τ)', font: { family: 'Inter', size: 13 } },
+        min: -0.05, max: 0.25,
+        ticks: { font: { family: 'JetBrains Mono', size: 11 } }
+      }
+    },
+    annotation: {
+      annotations: {
+        zero: {
+          type: 'line',
+          yMin: 0, yMax: 0,
+          borderColor: '#ccc',
+          borderDash: [4, 4],
+          borderWidth: 1
+        }
+      }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
