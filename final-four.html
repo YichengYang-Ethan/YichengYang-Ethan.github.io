@@ -265,11 +265,11 @@ footer a { color: var(--text-secondary); }
 
 <article>
 
-<p>Last night I was at UIUC watching Illinois play UConn in the Final Four with a few thousand other students. While we watched the game, a script on my laptop was quietly polling the Kalshi and Polymarket APIs every 15&ndash;30 seconds in the background.</p>
+<p>Illinois made the Final Four for the first time since 2005. If you were anywhere near campus last night, you know what that means &mdash; watch parties everywhere, the bars on Green Street packed before tipoff, the whole town locked in. I was in there with a few thousand other students, losing my mind like everyone else when we briefly took the lead in the first half.</p>
 
-<p>The goal: test whether the pricing wedge I estimated in <a href="/">my main paper</a> &mdash; across 291,309 contracts &mdash; actually exists in real time, tick by tick, during a single game's two-hour lifecycle.</p>
+<p>But in the background, a script on my laptop was quietly polling the Kalshi and Polymarket APIs every 15&ndash;30 seconds. The goal: test whether the pricing wedge I estimated in <a href="/research">my main paper</a> &mdash; across 291,309 contracts &mdash; actually exists in real time, tick by tick, during a single game's two-hour lifecycle.</p>
 
-<p>Short answer: it does. And the magnitude matches.</p>
+<p>Short answer: it does. And the magnitude matches. (The game itself, unfortunately, did not go our way.)</p>
 
 <h2>The Data</h2>
 
@@ -292,7 +292,7 @@ footer a { color: var(--text-secondary); }
 
 <h2>The Price Trajectory</h2>
 
-<p>Both platforms opened Illinois at roughly 55%, consistent with sportsbook consensus. Illinois held a narrow 22&ndash;21 lead midway through the first half, but never led again after the 5:02 mark. UConn's second-half surge &mdash; building a lead of up to 14 points &mdash; drove Illinois below 5% by 7:16 PM.</p>
+<p>Both platforms opened Illinois at roughly 55%, consistent with sportsbook consensus. We held a narrow 22&ndash;21 lead midway through the first half &mdash; that was the moment the room was loudest. But Illinois never led again after the 5:02 mark. UConn's second-half surge, building a lead of up to 14, was painful to watch in person but fascinating to watch on the price chart. By 7:16 PM, both platforms had Illinois below 5%.</p>
 
 <figure class="figure">
   <img src="images/fig1_game1_price_dynamics.png" alt="Illinois win probability on Kalshi and Polymarket">
@@ -339,7 +339,7 @@ footer a { color: var(--text-secondary); }
 
 <p>The methodological lesson matters too. Anyone applying the Wang Transform to live sports data needs to filter extreme probabilities. The probit transform inflates &lambda; by a factor of four or more in the tails. Report the competitive-range estimate, not the full-sample number.</p>
 
-<p>Monday night, UConn plays for the national championship. The collector is running.</p>
+<p>It stings that Illinois didn't pull it off &mdash; this team deserved a better ending. But Monday night, the championship game tips off, and the collector is already running. Maybe next year we'll be the ones on the right side of the price chart.</p>
 
 <div class="cta-section">
   <h3>Read the full framework</h3>
