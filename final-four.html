@@ -301,7 +301,7 @@ footer a { color: var(--text-secondary); }
   <figcaption><strong>Figure 1.</strong> Illinois win probability on Kalshi (red) and Polymarket (blue). Both platforms track the game closely, but diverge by up to 25 percentage points during fast-moving periods &mdash; Polymarket consistently priced Illinois higher.</figcaption>
 </figure>
 
-<p>That cross-platform spread is itself interesting. Kalshi's $0.01 minimum tick constrains price resolution at the extremes, and the two user bases clearly process game information at different speeds. Sustained spreads of 10&ndash;15 percentage points during active play suggest cross-platform arbitrage in live sports markets remains limited, even for a game this high-profile.</p>
+<p>That cross-platform spread is itself interesting. Kalshi's &#36;0.01 minimum tick constrains price resolution at the extremes, and the two user bases clearly process game information at different speeds. Sustained spreads of 10&ndash;15 percentage points during active play suggest cross-platform arbitrage in live sports markets remains limited, even for a game this high-profile.</p>
 
 <figure class="figure">
   <img src="images/fig2_cross_platform_spread.png" alt="Kalshi minus Polymarket price spread">
@@ -316,7 +316,7 @@ footer a { color: var(--text-secondary); }
 
 <p>That number is wrong. Here's why.</p>
 
-<p>Once UConn led by 14 points, the score model assigned Illinois a 2&ndash;3% chance of winning, while the market still priced them at 5&ndash;8% (Kalshi can't price below $0.01). The math I use to compute $\lambda$ &mdash; the probit transform $\Phi^{-1}$ &mdash; has a slope that goes to infinity near 0 and 1. So a modest 3-percentage-point gap in the tail gets amplified into a massive $\lambda$. The &ldquo;finding&rdquo; was an artifact.</p>
+<p>Once UConn led by 14 points, the score model assigned Illinois a 2&ndash;3% chance of winning, while the market still priced them at 5&ndash;8% (Kalshi can't price below &#36;0.01). The math I use to compute $\lambda$ &mdash; the probit transform $\Phi^{-1}$ &mdash; has a slope that goes to infinity near 0 and 1. So a modest 3-percentage-point gap in the tail gets amplified into a massive $\lambda$. The &ldquo;finding&rdquo; was an artifact.</p>
 
 <figure class="figure">
   <img src="images/fig_lambda_by_bin.png" alt="Lambda by probability bin showing tail artifact">
