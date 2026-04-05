@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Projects — Yicheng Yang</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/projects" class="active">Projects</a>
+    <a href="/blog">Blog</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">Projects</div>
+  <h1>Things I've Built</h1>
+  <p class="meta">Open-source tools for prediction markets, portfolio analytics, and quantitative research.</p>
+</header>
+
+<article>
+
+<!-- oracle3 — hero card -->
+<a href="https://github.com/YichengYang-Ethan/oracle3" class="card" style="text-decoration:none; color:inherit; display:block; margin-bottom:32px;">
+  <div class="card-label">Featured &middot; 131 &starf;</div>
+  <div class="card-title" style="font-size:24px;">oracle3</div>
+  <div class="card-desc">Autonomous prediction market trading agent deploying Wang Transform pricing, constraint-based arbitrage, and LLM strategies across Kalshi, Polymarket, and Solana. 8 arbitrage + 2 model-driven strategies. 633 tests. Apache 2.0.</div>
+  <div class="card-meta"><span style="color:var(--accent)">GitHub &rarr;</span> &middot; <a href="https://yichengyang-ethan.github.io/oracle3/">Docs</a> &middot; Python 3.10+</div>
+</a>
+
+<!-- Other projects -->
+<div class="project-grid">
+
+  <a href="https://github.com/YichengYang-Ethan/clawdfolio" class="project-card">
+    <div class="project-name">clawdfolio <span class="tag">PyPI</span></div>
+    <div class="project-desc">Multi-broker portfolio analytics. Fama&ndash;French factor exposure, GARCH forecasting, covered call strategy (83% win rate, +3.0% alpha over 11 years). Supports Longport and Moomoo.</div>
+    <div class="project-meta">11 &starf; &middot; pip install clawdfolio &middot; MIT</div>
+  </a>
+
+  <a href="https://github.com/YichengYang-Ethan/Market-Bubble-Index-Dashboard" class="project-card">
+    <div class="project-name">Market Bubble Index <span class="tag">Live</span></div>
+    <div class="project-desc">7-indicator composite index for market bubble risk. Hybrid 3-layer drawdown model (Lasso + Bayesian Beta-Binomial + EVT/GPD). AUC 0.802. Two strategies beat Buy &amp; Hold in 10-year backtest.</div>
+    <div class="project-meta">4 &starf; &middot; <span style="color:var(--accent)">Live dashboard</span> &middot; Python</div>
+  </a>
+
+  <a href="https://github.com/YichengYang-Ethan/vol-regime-toolkit" class="project-card">
+    <div class="project-name">vol-regime-toolkit</div>
+    <div class="project-desc">Volatility regime analysis for systematic options selling. IV percentile tracking, realized vol (close-to-close + Parkinson), GARCH(1,1) forecasting, correlation regime monitor.</div>
+    <div class="project-meta">4 &starf; &middot; Python &middot; MIT</div>
+  </a>
+
+  <a href="https://github.com/YichengYang-Ethan/prediction-market-pricing" class="project-card">
+    <div class="project-name">prediction-market-pricing</div>
+    <div class="project-desc">Replication code for the main paper. Wang MLE, stacked panel, cross-platform validation, external benchmark. Full pipeline with data dictionary.</div>
+    <div class="project-meta">1 &starf; &middot; Python &middot; MIT</div>
+  </a>
+
+  <a href="https://github.com/YichengYang-Ethan/vibeathon" class="project-card">
+    <div class="project-name">vibeathon <span class="tag">HackIllinois</span></div>
+    <div class="project-desc">50 LLM agents (historical/contemporary figures with 17-dimension personalities) autonomously form teams, brainstorm, and produce hackathon proposals. 263 simulation rounds.</div>
+    <div class="project-meta">1 &starf; &middot; <span style="color:var(--accent)">Replay</span> &middot; <span style="color:var(--accent)">Arena</span></div>
+  </a>
+
+  <a href="https://github.com/YichengYang-Ethan/investment-dashboard" class="project-card">
+    <div class="project-name">investment-dashboard <span class="tag">React</span></div>
+    <div class="project-desc">Interactive portfolio dashboard with P&amp;L charts, holdings analysis, risk radar, and CSV upload from real broker data. React + TypeScript + Recharts.</div>
+    <div class="project-meta">1 &starf; &middot; <span style="color:var(--accent)">Live demo</span> &middot; TypeScript</div>
+  </a>
+
+  <a href="https://github.com/YichengYang-Ethan/crypto-return-prediction-kaggle" class="project-card">
+    <div class="project-name">crypto-return-prediction</div>
+    <div class="project-desc">24-hour crypto return prediction with LightGBM ensemble across 355 assets. HKU Web3 Quant competition.</div>
+    <div class="project-meta">3 &starf; &middot; Jupyter &middot; Python</div>
+  </a>
+
+  <a href="https://github.com/YichengYang-Ethan/ESG-Driven-Stock-Value-Prediction" class="project-card">
+    <div class="project-name">ESG Stock Prediction</div>
+    <div class="project-desc">Stock value prediction using ESG factors. Random Forest with walk-forward backtesting.</div>
+    <div class="project-meta">2 &starf; &middot; Jupyter &middot; Python</div>
+  </a>
+
+</div>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
