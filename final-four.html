@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-2F41NJTYWW');
+</script>
+<title>Final Four Pricing Wedge — Yicheng Yang</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true},{left: '$', right: '$', display: false}]});"></script>
+<style>
+:root {
+  --bg: #faf9f7;
+  --text: #1a1a1a;
+  --text-secondary: #555;
+  --accent: #c4170c;
+  --accent-light: #fef2f1;
+  --border: #e5e3df;
+  --card-bg: #fff;
+  --code-bg: #f5f4f0;
+  --blue: #2563eb;
+  --green: #16a34a;
+  --orange: #ea580c;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Source Serif 4', Georgia, serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.75;
+  font-size: 18px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Back link */
+.back-link {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  display: inline-block;
+  padding: 24px 0 0;
+  transition: color 0.2s;
+}
+.back-link:hover { color: var(--accent); }
+
+/* Header */
+header {
+  padding: 40px 0 48px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 48px;
+}
+
+header .label {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: 38px;
+  line-height: 1.2;
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: -0.5px;
+}
+
+.meta {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* Article */
+article p {
+  margin-bottom: 24px;
+}
+
+article h2 {
+  font-size: 26px;
+  margin: 48px 0 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+/* Figures */
+.figure {
+  margin: 36px 0;
+}
+
+.figure img {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.figure figcaption {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+/* Callout */
+.callout {
+  background: var(--accent-light);
+  border-left: 4px solid var(--accent);
+  padding: 20px 24px;
+  margin: 32px 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.callout p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.callout strong {
+  color: var(--accent);
+}
+
+/* Stats row */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 32px 0;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+}
+
+.stat-card .number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--accent);
+  display: block;
+}
+
+.stat-card .desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* CTA */
+.cta-section {
+  background: var(--text);
+  color: #fff;
+  border-radius: 12px;
+  padding: 40px 36px;
+  margin: 56px 0;
+  text-align: center;
+}
+
+.cta-section h3 {
+  color: #fff;
+  margin: 0 0 8px;
+  font-size: 24px;
+}
+
+.cta-section p {
+  color: #ccc;
+  font-size: 16px;
+}
+
+.cta-links {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.cta-links a {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.cta-links a.primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.cta-links a.secondary {
+  background: transparent;
+  color: #fff;
+  border: 1px solid #555;
+}
+
+.cta-links a:hover { opacity: 0.85; }
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 0;
+  margin-top: 56px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+footer a { color: var(--text-secondary); }
+
+/* Responsive */
+@media (max-width: 640px) {
+  h1 { font-size: 28px; }
+  .stats-row { grid-template-columns: 1fr; }
+  .cta-links { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<a href="/" class="back-link">&larr; Back to main paper</a>
+
+<header>
+  <div class="label">Case Study</div>
+  <h1>I Tracked Prediction Market Prices Every 15 Seconds During the Final Four &mdash; Here's What I Found</h1>
+  <p class="meta">Yicheng Yang &middot; April 5, 2026 &middot; 5 min read</p>
+</header>
+
+<article>
+
+<p>Last night, while 72,111 fans watched Illinois play UConn in the Final Four, I was watching something else &mdash; the prediction markets.</p>
+
+<p>I built a dual-platform data collector that polled the Kalshi REST API and Polymarket's CLOB every 15&ndash;30 seconds. The goal: test whether the pricing wedge I estimated in <a href="/">my main paper</a> &mdash; across 291,309 contracts &mdash; actually exists in real time, tick by tick, during a single game's two-hour lifecycle.</p>
+
+<p>Short answer: it does. And the magnitude matches.</p>
+
+<h2>The Data</h2>
+
+<p>My collector ran from 3:51 PM to 7:38 PM CT on April 4, covering the full Illinois&ndash;UConn semifinal. It captured 657 Kalshi and 857 Polymarket observations on the game-winner contract, plus ESPN's play-by-play (439 plays, 74 scoring events) for a score-based benchmark.</p>
+
+<div class="stats-row">
+  <div class="stat-card">
+    <span class="number">657</span>
+    <span class="desc">Kalshi observations</span>
+  </div>
+  <div class="stat-card">
+    <span class="number">857</span>
+    <span class="desc">Polymarket observations</span>
+  </div>
+  <div class="stat-card">
+    <span class="number">71&ndash;62</span>
+    <span class="desc">UConn wins</span>
+  </div>
+</div>
+
+<h2>The Price Trajectory</h2>
+
+<p>Both platforms opened Illinois at roughly 55%, consistent with sportsbook consensus. Illinois held a narrow 22&ndash;21 lead midway through the first half, but never led again after the 5:02 mark. UConn's second-half surge &mdash; building a lead of up to 14 points &mdash; drove Illinois below 5% by 7:16 PM.</p>
+
+<figure class="figure">
+  <img src="images/fig1_game1_price_dynamics.png" alt="Illinois win probability on Kalshi and Polymarket">
+  <figcaption><strong>Figure 1.</strong> Illinois win probability on Kalshi (red) and Polymarket (blue). Both platforms track the game closely, but diverge by up to 25 percentage points during fast-moving periods &mdash; Polymarket consistently priced Illinois higher.</figcaption>
+</figure>
+
+<p>That cross-platform spread is itself interesting. Kalshi's $0.01 minimum tick constrains price resolution at the extremes, and the two user bases clearly process game information at different speeds. Sustained spreads of 10&ndash;15 percentage points during active play suggest cross-platform arbitrage in live sports markets remains limited, even for a game this high-profile.</p>
+
+<figure class="figure">
+  <img src="images/fig2_cross_platform_spread.png" alt="Kalshi minus Polymarket price spread">
+  <figcaption><strong>Figure 2.</strong> Kalshi minus Polymarket price difference over time. Shaded areas exceed 3 percentage points. Polymarket consistently prices Illinois higher, especially as UConn pulls away.</figcaption>
+</figure>
+
+<h2>The Pricing Wedge Test</h2>
+
+<p>My main paper estimates that prediction markets systematically overprice contracts by about $\lambda = 0.183$ &mdash; roughly speaking, an event with a 10% true probability trades around 13.5%. But that estimate comes from averaging across hundreds of thousands of contracts. Does this overpricing exist in real time, during a single game?</p>
+
+<p>To test this, I built a simple score-based win probability model (it correlates at $r = 0.982$ with ESPN's proprietary model) and computed the Wang $\lambda$ at every market tick. The naive answer looked dramatic: $\lambda = +0.57$, three times the cross-sectional estimate.</p>
+
+<p>That number is wrong. Here's why.</p>
+
+<p>Once UConn led by 14 points, the score model assigned Illinois a 2&ndash;3% chance of winning, while the market still priced them at 5&ndash;8% (Kalshi can't price below $0.01). The math I use to compute $\lambda$ &mdash; the probit transform $\Phi^{-1}$ &mdash; has a slope that goes to infinity near 0 and 1. So a modest 3-percentage-point gap in the tail gets amplified into a massive $\lambda$. The &ldquo;finding&rdquo; was an artifact.</p>
+
+<figure class="figure">
+  <img src="images/fig_lambda_by_bin.png" alt="Lambda by probability bin showing tail artifact">
+  <figcaption><strong>Figure 3.</strong> Mean pricing wedge by model probability bin. The monotonic decline from tail bins (gray, ~0.8) to the competitive midpoint (colored, ~0.07) is the signature of probit tail sensitivity &mdash; not a genuine pricing wedge gradient. Any intra-game Wang Transform study that doesn't filter extreme probabilities will get this wrong.</figcaption>
+</figure>
+
+<p>Filter to the competitive range &mdash; the period when the game was genuinely uncertain ($p^* \in [0.35, 0.55]$, roughly the first 30 game-minutes) &mdash; and the real number emerges: $\lambda \approx +0.13$ on both platforms. That's within one standard error of the cross-sectional estimate of 0.183 from the main paper.</p>
+
+<div class="callout">
+  <p><strong>The pricing wedge is not a cross-sectional artifact.</strong> It is embedded in real-time market prices at the tick level. At competitive probabilities, the intra-game $\lambda$ of +0.13 matches the estimate from 291,309 contracts.</p>
+</div>
+
+<h2>Kalshi vs Polymarket</h2>
+
+<p>Against ESPN's own in-game model (a sharper benchmark than my score model), Kalshi showed essentially zero pricing error &mdash; $\lambda = +0.01$, not statistically significant ($p = 0.06$). Polymarket left a small but significant residual: $\lambda = +0.08$ ($p < 0.001$).</p>
+
+<p>The interpretation is straightforward. Kalshi's regulated market, populated by U.S. participants, priced this game as accurately as ESPN's proprietary model. Polymarket's crypto-native user base &mdash; different demographics, different information sources &mdash; left money on the table. For this game, at least, the regulated platform was the sharper market.</p>
+
+<h2>What This Means</h2>
+
+<p>This is a single game. I can't draw sweeping conclusions from $N = 1$. But the fact that the real-time pricing wedge matches the cross-sectional estimate from 291,309 contracts is reassuring: the framework isn't just a statistical artifact of averaging. The pricing wedge is baked into every tick.</p>
+
+<p>The methodological lesson matters too. Anyone applying the Wang Transform to live sports data needs to filter extreme probabilities. The probit transform inflates $\lambda$ by a factor of four or more in the tails. Report the competitive-range estimate, not the full-sample number.</p>
+
+<p>Monday night, UConn plays for the national championship. The collector is running.</p>
+
+<div class="cta-section">
+  <h3>Read the full framework</h3>
+  <p>Cross-platform validation, time-decay analysis, and the complete pricing theory &mdash; across 291,309 contracts on six platforms.</p>
+  <div class="cta-links">
+    <a href="/" class="primary">Main Paper Page</a>
+    <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338" class="secondary">SSRN</a>
+  </div>
+</div>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
