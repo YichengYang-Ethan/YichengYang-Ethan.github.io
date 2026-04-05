@@ -13,9 +13,7 @@
 <title>Final Four Pricing Wedge — Yicheng Yang</title>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true},{left: '$', right: '$', display: false}]});"></script>
+<!-- No KaTeX — using HTML entities for the few Greek letters needed -->
 <style>
 :root {
   --bg: #faf9f7;
@@ -310,36 +308,36 @@ footer a { color: var(--text-secondary); }
 
 <h2>The Pricing Wedge Test</h2>
 
-<p>My main paper estimates that prediction markets systematically overprice contracts by about $\lambda = 0.183$ &mdash; roughly speaking, an event with a 10% true probability trades around 13.5%. But that estimate comes from averaging across hundreds of thousands of contracts. Does this overpricing exist in real time, during a single game?</p>
+<p>My main paper estimates that prediction markets systematically overprice contracts by about &lambda; = 0.183 &mdash; roughly speaking, an event with a 10% true probability trades around 13.5%. But that estimate comes from averaging across hundreds of thousands of contracts. Does this overpricing exist in real time, during a single game?</p>
 
-<p>To test this, I built a simple score-based win probability model (it correlates at $r = 0.982$ with ESPN's proprietary model) and computed the Wang $\lambda$ at every market tick. The naive answer looked dramatic: $\lambda = +0.57$, three times the cross-sectional estimate.</p>
+<p>To test this, I built a simple score-based win probability model (it correlates at <em>r</em> = 0.982 with ESPN's proprietary model) and computed the Wang &lambda; at every market tick. The naive answer looked dramatic: &lambda; = +0.57, three times the cross-sectional estimate.</p>
 
 <p>That number is wrong. Here's why.</p>
 
-<p>Once UConn led by 14 points, the score model assigned Illinois a 2&ndash;3% chance of winning, while the market still priced them at 5&ndash;8% (Kalshi can't price below &#36;0.01). The math I use to compute $\lambda$ &mdash; the probit transform $\Phi^{-1}$ &mdash; has a slope that goes to infinity near 0 and 1. So a modest 3-percentage-point gap in the tail gets amplified into a massive $\lambda$. The &ldquo;finding&rdquo; was an artifact.</p>
+<p>Once UConn led by 14 points, the score model assigned Illinois a 2&ndash;3% chance of winning, while the market still priced them at 5&ndash;8% (Kalshi can't price below $0.01). The math I use to compute &lambda; &mdash; the probit transform &Phi;<sup>&minus;1</sup> &mdash; has a slope that goes to infinity near 0 and 1. So a modest 3-percentage-point gap in the tail gets amplified into a massive &lambda;. The &ldquo;finding&rdquo; was an artifact.</p>
 
 <figure class="figure">
   <img src="images/fig_lambda_by_bin.png" alt="Lambda by probability bin showing tail artifact">
   <figcaption><strong>Figure 3.</strong> Mean pricing wedge by model probability bin. The monotonic decline from tail bins (gray, ~0.8) to the competitive midpoint (colored, ~0.07) is the signature of probit tail sensitivity &mdash; not a genuine pricing wedge gradient. Any intra-game Wang Transform study that doesn't filter extreme probabilities will get this wrong.</figcaption>
 </figure>
 
-<p>Filter to the competitive range &mdash; the period when the game was genuinely uncertain ($p^* \in [0.35, 0.55]$, roughly the first 30 game-minutes) &mdash; and the real number emerges: $\lambda \approx +0.13$ on both platforms. That's within one standard error of the cross-sectional estimate of 0.183 from the main paper.</p>
+<p>Filter to the competitive range &mdash; the period when the game was genuinely uncertain (<em>p</em>* &isin; [0.35, 0.55], roughly the first 30 game-minutes) &mdash; and the real number emerges: &lambda; &asymp; +0.13 on both platforms. That's within one standard error of the cross-sectional estimate of 0.183 from the main paper.</p>
 
 <div class="callout">
-  <p><strong>The pricing wedge is not a cross-sectional artifact.</strong> It is embedded in real-time market prices at the tick level. At competitive probabilities, the intra-game $\lambda$ of +0.13 matches the estimate from 291,309 contracts.</p>
+  <p><strong>The pricing wedge is not a cross-sectional artifact.</strong> It is embedded in real-time market prices at the tick level. At competitive probabilities, the intra-game &lambda; of +0.13 matches the estimate from 291,309 contracts.</p>
 </div>
 
 <h2>Kalshi vs Polymarket</h2>
 
-<p>Against ESPN's own in-game model (a sharper benchmark than my score model), Kalshi showed essentially zero pricing error &mdash; $\lambda = +0.01$, not statistically significant ($p = 0.06$). Polymarket left a small but significant residual: $\lambda = +0.08$ ($p < 0.001$).</p>
+<p>Against ESPN's own in-game model (a sharper benchmark than my score model), Kalshi showed essentially zero pricing error &mdash; &lambda; = +0.01, not statistically significant (<em>p</em> = 0.06). Polymarket left a small but significant residual: &lambda; = +0.08 (<em>p</em> &lt; 0.001).</p>
 
 <p>The interpretation is straightforward. Kalshi's regulated market, populated by U.S. participants, priced this game as accurately as ESPN's proprietary model. Polymarket's crypto-native user base &mdash; different demographics, different information sources &mdash; left money on the table. For this game, at least, the regulated platform was the sharper market.</p>
 
 <h2>What This Means</h2>
 
-<p>This is a single game. I can't draw sweeping conclusions from $N = 1$. But the fact that the real-time pricing wedge matches the cross-sectional estimate from 291,309 contracts is reassuring: the framework isn't just a statistical artifact of averaging. The pricing wedge is baked into every tick.</p>
+<p>This is a single game. I can't draw sweeping conclusions from <em>N</em> = 1. But the fact that the real-time pricing wedge matches the cross-sectional estimate from 291,309 contracts is reassuring: the framework isn't just a statistical artifact of averaging. The pricing wedge is baked into every tick.</p>
 
-<p>The methodological lesson matters too. Anyone applying the Wang Transform to live sports data needs to filter extreme probabilities. The probit transform inflates $\lambda$ by a factor of four or more in the tails. Report the competitive-range estimate, not the full-sample number.</p>
+<p>The methodological lesson matters too. Anyone applying the Wang Transform to live sports data needs to filter extreme probabilities. The probit transform inflates &lambda; by a factor of four or more in the tails. Report the competitive-range estimate, not the full-sample number.</p>
 
 <p>Monday night, UConn plays for the national championship. The collector is running.</p>
 
