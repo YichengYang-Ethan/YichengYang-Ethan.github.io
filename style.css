@@ -227,6 +227,15 @@ article h3 {
   color: var(--text-secondary);
 }
 
+.project-card .project-meta a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.project-card .project-meta a:hover {
+  text-decoration: underline;
+}
+
 /* ── Section heading ── */
 .section-label {
   font-family: 'Inter', sans-serif;
