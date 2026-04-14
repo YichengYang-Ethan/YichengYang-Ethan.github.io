@@ -379,8 +379,9 @@ footer {
 <header>
   <div class="label">Research</div>
   <h1>Are Prediction Market Prices Probabilities?</h1>
-  <p class="subtitle">They lack a Black-Scholes. This paper proposes one — and validates it on 291,309 contracts across six platforms.</p>
-  <p class="meta">Yicheng Yang · University of Illinois Urbana-Champaign · March 2026<br>
+  <p class="subtitle">They lack a Black-Scholes. This paper proposes one — and validates it on 290,730 contracts across six platforms.</p>
+
+  <p class="meta">Yicheng Yang · University of Illinois Urbana-Champaign · April 2026<br>
   <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">Full Paper (SSRN)</a> · <a href="https://github.com/YichengYang-Ethan/prediction-market-pricing">Replication Code (GitHub)</a></p>
 </header>
 
@@ -422,11 +423,11 @@ footer {
 
 <h2>What the Data Shows</h2>
 
-<p>I calibrate $\lambda$ on 291,309 resolved contracts from six platforms spanning 2015–2026:</p>
+<p>I calibrate $\lambda$ on 290,730 resolved contracts from six platforms spanning 2015–2026:</p>
 
 <div class="stats-row">
   <div class="stat-card">
-    <span class="number">291,309</span>
+    <span class="number">290,730</span>
     <span class="desc">resolved contracts</span>
   </div>
   <div class="stat-card">
@@ -444,7 +445,7 @@ footer {
     <tr><th>Platform</th><th>N</th><th>$\hat{\lambda}$</th><th>Type</th></tr>
   </thead>
   <tbody>
-    <tr><td>Polymarket</td><td>13,738</td><td class="positive">+0.166***</td><td>Real money</td></tr>
+    <tr><td>Polymarket (pooled)</td><td>14,723</td><td class="positive">+0.164***</td><td>Real money</td></tr>
     <tr><td>Kalshi</td><td>271,699</td><td class="positive">+0.187***</td><td>Real money (CFTC)</td></tr>
     <tr><td>Metaculus</td><td>1,845</td><td class="positive">+0.287***</td><td>Reputation</td></tr>
     <tr><td>Good Judgment</td><td>692</td><td class="positive">+0.570***</td><td>Reputation</td></tr>
@@ -453,10 +454,10 @@ footer {
   </tbody>
 </table>
 
-<p>Every real-money platform shows a positive pricing wedge. Manifold — where participants trade with play-money tokens and bear no financial risk — shows the <em>opposite sign</em>: overconfidence pushes prices <em>below</em> physical probabilities.</p>
+<p>Every real-money platform shows a positive pricing wedge. Manifold — where participants trade with play-money tokens — shows the <em>opposite sign</em>: the estimated wedge flips direction rather than merely attenuating. The pairwise differences are large: Polymarket − Manifold ≈ 0.38, Kalshi − Manifold ≈ 0.40, with implied z-statistics above 11.</p>
 
 <div class="callout">
-  <p><strong>The Manifold result is a natural placebo test.</strong> If $\lambda > 0$ were just cognitive bias (probability weighting), it should show up identically on play-money platforms. The sign reversal suggests the positive wedge on real-money platforms reflects compensation for bearing event risk — not just misperception.</p>
+  <p><strong>The Manifold sign reversal is the paper's most striking cross-platform pattern.</strong> It's consistent with financial stakes affecting the direction of the wedge — but the cross-platform design cannot isolate financial stakes from other platform differences (automated market maker vs. CLOB, user composition, contract topic mix). A cleaner test would exploit within-platform variation in stakes, or matched-question designs across platforms with comparable mechanisms.</p>
 </div>
 
 <h2>The Pricing Wedge Decays Over Time</h2>
