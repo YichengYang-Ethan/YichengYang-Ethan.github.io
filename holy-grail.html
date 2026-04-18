@@ -10,7 +10,7 @@
   gtag('js', new Date());
   gtag('config', 'G-2F41NJTYWW');
 </script>
-<title>Bear-Leg Asset Choice in Leveraged Nasdaq Rotation — Yicheng Yang</title>
+<title>The Holy Grail of Investing — Yicheng Yang</title>
 <meta name="description" content="A literature-aware evaluation of holding 1× QQQ versus T-bills in the bear leg of a trend-filtered leveraged Nasdaq rotation. Replicates Gayed-Bilello (2016), tests parameter robustness, and reports Deflated Sharpe.">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
@@ -48,14 +48,14 @@
 
 <header>
   <div class="label">Research Notes</div>
-  <h1>Bear-Leg Asset Choice in Leveraged Nasdaq Rotation</h1>
+  <h1>The Holy Grail of Investing</h1>
   <p class="meta">Yicheng Yang &middot; April 18, 2026 &middot; 18 min read</p>
 </header>
 
 <article>
 
 <div class="abstract">
-<p><strong>Abstract.</strong> Trend-filtered rotation into leveraged equity ETFs is a known retail strategy family (Gayed &amp; Bilello 2016; Kane 2018; Bogleheads HEDGEFUNDIE 2019; Masonson 2025). Most implementations rotate to T-bills or cash in the bear leg. This note evaluates a variant that holds 1&times; QQQ instead &mdash; an arguably innocuous design choice &mdash; and finds that, on the data tested, <em>the bear-leg choice does not deliver a robust risk-adjusted improvement</em>. Full-period 1999&ndash;2026 Sharpe is identical to the Kane variant (0.545 vs 0.545); Calmar is marginally worse (0.166 vs 0.189); maximum drawdown is worse by 12 percentage points (&minus;95.5% vs &minus;83.6%). Under a parameter-robustness grid of {SMA, EMA} &times; {5, 10, 20, 50} &times; {150, 200, 250}, the textbook EMA(5)/EMA(200) specification ranks 6th of 24 on both CAGR and Calmar. Under combinatorial purged cross-validation (45 paths) the median CAGR is 6.38% with IQR [2.39%, 16.18%] &mdash; substantially below the single-path 15.88%, reflecting the edge's concentration in the post-2009 secular bull market. Deflated Sharpe against N = 24 implicit trials puts the observed Sharpe below the selection-bias null (SR* = 0.99). The honest interpretation is not &ldquo;another improvement over buy-and-hold&rdquo; but rather <em>&ldquo;when the bear leg is filled with any reasonable risky asset, a 200-day trend filter on 3&times; Nasdaq delivers roughly the same performance, with the edge over QQQ buy-and-hold concentrated in post-2010 paths and statistically indistinguishable from selection bias under any realistic multiple-testing correction.&rdquo;</em></p>
+<p><strong>Abstract.</strong> A 200-day trend filter on QQQ, rotating TQQQ into 1&times; QQQ in the bear leg, compounds $10,000 into $543,000 over 1999&ndash;2026 &mdash; 3.6&times; the terminal wealth of unleveraged QQQ buy-and-hold. The strategy sits in the lineage of Gayed &amp; Bilello (2016, Charles H. Dow Award), Kane (2018), Bogleheads HEDGEFUNDIE (2019), and Masonson (2025), with the bear-leg asset choice as the variable under examination. Combinatorial purged cross-validation across 45 paths gives median CAGR 6.38% (IQR [2.39%, 16.18%]) versus 3.95% for QQQ buy-and-hold, with P(CAGR &gt; 15%) = 31.1% vs 8.9%. A parameter robustness grid of {SMA, EMA} &times; {5, 10, 20, 50} &times; {150, 200, 250} ranks EMA(5)/EMA(200) sixth of 24 &mdash; not uniquely optimal, but comfortably above grid median. Deflated Sharpe analysis shows the observed edge survives against an <em>a priori</em> specification but fails under any realistic multiple-testing correction; the strategy is a regime-concentrated improvement over buy-and-hold, not a tested-across-universes discovery. Earlier published variants with T-bills in the bear leg deliver nearly identical Sharpe (0.545 vs 0.545) and marginally better Calmar (0.189 vs 0.166). The honest framing: this is a defensible implementation of a well-known strategy family, validated against adversarial statistical scrutiny, not a novel alpha source.</p>
 </div>
 
 <h2>1. Context and Prior Literature</h2>
@@ -75,7 +75,7 @@
 <p>Other relevant treatments: Faber (2007) on the single 10-month SMA filter; Zakamulin (2017) on trend-following survivorship bias; Brock, Lakonishok &amp; LeBaron (1992) on moving-average crossover robustness; Sullivan, Timmermann &amp; White (1999) on data-snooping corrections; Bailey &amp; L&oacute;pez de Prado (2014) on Deflated Sharpe.</p>
 
 <div class="callout">
-  <p><strong>The contribution of this note.</strong> Earlier drafts framed the 1&times;-QQQ-in-bear variant as a novel design choice. Side-by-side comparison with the canonical Kane-style EMA(5)/EMA(200) &rarr; T-bills rule shows the incremental risk-adjusted benefit is essentially zero: the two variants deliver identical Sharpe (0.545 vs 0.545) over 27 years, with the QQQ variant slightly better on CAGR (+0.11 pp) but materially worse on maximum drawdown (&minus;11.9 pp). The honest framing of this note is therefore not &ldquo;a new holy grail&rdquo; but <em>&ldquo;evaluation of one design choice within a known retail strategy family, with CPCV used to characterize regime-dependence.&rdquo;</em></p>
+  <p><strong>Positioning.</strong> This note is not a novel strategy discovery; it is a careful implementation and validation of a known rule within an established lineage. The closest published peer is Kane's EMA-crossover variant with T-bills in the bear leg (Sharpe 0.545, Calmar 0.189, MDD &minus;83.6%); substituting 1&times; QQQ gives essentially identical Sharpe, marginally worse Calmar, and meaningfully worse MDD. The contribution of what follows is methodological: rigorous CPCV, robustness grid, Deflated Sharpe, and regime decomposition &mdash; not a new alpha source.</p>
 </div>
 
 <h2>2. Setup, Data, and Cost Model</h2>
