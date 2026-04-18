@@ -11,7 +11,7 @@
   gtag('config', 'G-2F41NJTYWW');
 </script>
 <title>The Holy Grail of Investing — Yicheng Yang</title>
-<meta name="description" content="A systematic evaluation of leveraged ETF rotation strategies on QQQ/TQQQ, with walk-forward parameter selection, synthetic out-of-sample testing back to 1999, and bootstrap inference.">
+<meta name="description" content="A causally-clean evaluation of leveraged ETF rotation strategies on QQQ/TQQQ using forward walk-forward and combinatorial purged cross-validation, with synthetic 1999-2026 history.">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 <style>
@@ -99,13 +99,13 @@
 <header>
   <div class="label">Research Notes</div>
   <h1>The Holy Grail of Investing</h1>
-  <p class="meta">Yicheng Yang &middot; April 18, 2026 &middot; 12 min read</p>
+  <p class="meta">Yicheng Yang &middot; April 18, 2026 &middot; 14 min read</p>
 </header>
 
 <article>
 
 <div class="abstract">
-<p><strong>Abstract.</strong> This note evaluates a family of trend-following strategies on the leveraged ETF TQQQ, using QQQ as the signal-generating instrument. Sixteen variants are tested across both in-sample (2010-2026, 16y) and out-of-sample (1999-2010, 11y) windows, with the pre-2010 TQQQ series reconstructed from QQQ returns and modeled financing/expense costs. Results show that (i) the most-cited &ldquo;47% annualized&rdquo; figure for static EMA crossover is a misreading of in-position CAGR rather than calendar CAGR; (ii) walk-forward EMA rotation between QQQ and TQQQ achieves Calmar 0.31 and is the only tested variant that survives the 1999-2010 regime with non-catastrophic loss; and (iii) every fixed-parameter strategy that outperforms in-sample suffers severe drawdowns out-of-sample, with pyramid drawdown-buying variants compounding to near-zero capital across the dot-com unwind.</p>
+<p><strong>Abstract.</strong> This note evaluates a family of trend-following strategies on the leveraged ETF TQQQ, using QQQ as the signal-generating instrument. All strategies are tested via causal forward walk-forward starting in 1999 (with synthetic pre-2010 TQQQ) and validated by combinatorial purged cross-validation (CPCV) following L&oacute;pez de Prado (2018). Three findings: (i) the widely-cited &ldquo;47% annualized&rdquo; figure for static EMA crossover is in-position CAGR, not calendar CAGR &mdash; the calendar value is 26.45%; (ii) under causally-clean forward walk-forward, the pure TQQQ pyramid with half-base MA anchoring achieves Calmar 0.310 (single-path point estimate), modestly above QQQ/TQQQ rotation at 0.282 and substantially above buy-and-hold; (iii) CPCV reveals that the apparent ranking among the four strategies is fragile &mdash; median CPCV Calmar across 45 paths for the rotation is 0.079 with interquartile range [&minus;0.026, 0.259], implying that the single-path forward result is one realization of a noisy process, not a stable edge.</p>
 </div>
 
 <h2>1. Setup and Cost Model</h2>
@@ -137,198 +137,209 @@
   </div>
 </div>
 
-<p>The discrepancy is mechanical. A 47.08% compound rate over 16 years would produce a terminal multiple of 1.4708<sup>16</sup> &asymp; 480&times;, or roughly $4.8M from $10K. The actual terminal multiple is 42.0&times;. Solving for the period over which 47.08% compounds to 42.0&times; yields 9.72 years &mdash; matching the in-position duration of the strategy if cash periods are excluded. The cited figure is therefore an in-position CAGR, computed only over the days the strategy holds TQQQ. This is an inflated metric: under the same convention, a strategy that holds TQQQ for one day and cash for the rest of the year, returning 50% on its single trading day, would report 50% &ldquo;annualized.&rdquo;</p>
+<p>The discrepancy is mechanical. A 47.08% compound rate over 16 years would produce a terminal multiple of 1.4708<sup>16</sup> &asymp; 480&times;, or roughly $4.8M from $10K. The actual terminal multiple is 42.0&times;. Solving for the period over which 47.08% compounds to 42.0&times; yields 9.72 years &mdash; matching the in-position duration of the strategy if cash periods are excluded. The cited figure is therefore an in-position CAGR, computed only over the days the strategy holds TQQQ. Under the same convention, a strategy that holds TQQQ for one day per year and returns 50% on that day would report 50% &ldquo;annualized.&rdquo;</p>
 
 <div class="callout">
   <p><strong>Pitfall 1.</strong> When evaluating any reported CAGR, verify that the denominator is calendar time. In-position CAGR &mdash; the geometric mean computed only over days the strategy holds a position &mdash; can be inflated arbitrarily by long cash periods and is not directly comparable to buy-and-hold returns.</p>
 </div>
 
-<h2>3. Strategy Taxonomy</h2>
+<h2>3. Methodology: Why Forward Walk-Forward Matters</h2>
 
-<p>I evaluate four families of strategies, all driven by EMA crossover signals computed on QQQ:</p>
+<p>A common backtest pattern in quantitative-finance writing is to select strategy parameters on a recent in-sample window (e.g., 2010-2026) and then evaluate the chosen strategy on an earlier &ldquo;out-of-sample&rdquo; window (e.g., 1999-2010). This pattern is anti-causal: the parameter selection uses information unavailable at the historical decision date. A 1999 investor cannot consult 2010-2026 returns when calibrating a strategy.</p>
 
-<ul style="margin-bottom: 24px; padding-left: 24px;">
-  <li><strong>Static crossover.</strong> Fixed (fast, slow) parameters; full position on bull signal, cash on bear signal.</li>
-  <li><strong>Walk-forward crossover.</strong> Parameters refit every two years using the prior five years of data, optimizing Calmar over a grid of fast &isin; {3, 5, 8, 10, 13} and slow &isin; {50, 100, 150, 200, 250}.</li>
-  <li><strong>QQQ/TQQQ rotation.</strong> As above, but on bear signal the position rotates to QQQ rather than cash, eliminating opportunity cost during slow uptrends.</li>
-  <li><strong>Pyramid drawdown-buying.</strong> A cash reserve held during bear regimes, deployed to TQQQ in tranches of 25/50/75/100% as the index falls 10/20/30/40% below its moving average or its rolling peak.</li>
-</ul>
-
-<p>Negative-result variants &mdash; SQQQ inverse leverage, machine-learning signal aggregators (logistic regression and random forest), VIX-thresholded regime filters &mdash; are reported in Figure 3 for completeness but are not discussed at length. SQQQ in particular is structurally incompatible with long-horizon holding: 3&times; daily inverse exposure on a long-term upward-trending index converges to zero by construction (the synthetic 1999-2026 series falls below 10<sup>&minus;5</sup> of starting value).</p>
-
-<h2>4. In-Sample Results (2010-2026)</h2>
-
-<p>Restricting to the period for which actual TQQQ data exists, the four families produce the results below. Strategy details are given in the captions; full parameter histories for the walk-forward variants are reproducible from the open code.</p>
-
-<figure class="figure">
-  <img src="images/fig1_equity_curves.png" alt="Equity curves comparing four strategies on log scale">
-  <figcaption><strong>Figure 1.</strong> Compounded value of $10,000 across four representative strategies, log-scaled. The walk-forward QQQ/TQQQ rotation (red) tracks TQQQ buy-and-hold (orange) closely on terminal value but with materially smaller drawdowns; the static MA5/200 with cash (purple) underperforms both on terminal value while sitting in cash through extended bull periods; QQQ buy-and-hold (blue) underperforms all leveraged variants on terminal value but recovers on Sharpe.</figcaption>
-</figure>
-
-<table class="strategy-table">
-  <thead>
-    <tr><th>Strategy</th><th class="num">CAGR</th><th class="num">MDD</th><th class="num">Sharpe</th><th class="num">Sortino</th><th class="num">Calmar</th><th class="num">$10K Final</th></tr>
-  </thead>
-  <tbody>
-    <tr class="highlight">
-      <td>WF QQQ/TQQQ rotation</td>
-      <td class="num">22.99%</td>
-      <td class="num">&minus;74.7%</td>
-      <td class="num">0.678</td>
-      <td class="num">0.887</td>
-      <td class="num">0.308</td>
-      <td class="num">$954,238</td>
-    </tr>
-    <tr>
-      <td>TQQQ buy &amp; hold</td>
-      <td class="num">22.96%</td>
-      <td class="num">&minus;94.8%</td>
-      <td class="num">0.646</td>
-      <td class="num">0.843</td>
-      <td class="num">0.242</td>
-      <td class="num">$949,548</td>
-    </tr>
-    <tr>
-      <td>Static MA5/200 (TQQQ/cash)</td>
-      <td class="num">21.87%</td>
-      <td class="num">&minus;65.7%</td>
-      <td class="num">0.661</td>
-      <td class="num">0.811</td>
-      <td class="num">0.333</td>
-      <td class="num">$779,693</td>
-    </tr>
-    <tr>
-      <td>QQQ buy &amp; hold</td>
-      <td class="num">14.43%</td>
-      <td class="num">&minus;53.4%</td>
-      <td class="num">0.737</td>
-      <td class="num">0.962</td>
-      <td class="num">0.270</td>
-      <td class="num">$194,879</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>Two observations stand out. First, on the in-sample window the walk-forward rotation recovers TQQQ buy-and-hold's CAGR almost exactly (within 0.03 percentage points) while reducing maximum drawdown by twenty percentage points. The Calmar improvement (0.308 vs 0.242) is robust to a 20-day block bootstrap (1000 resamples; 95% CI on Calmar [0.21, 0.43]). Second, the unleveraged QQQ buy-and-hold delivers the highest Sharpe ratio of any tested strategy. Leverage-based strategies dominate on terminal wealth but lose on standard risk-adjusted measures because Sharpe penalizes upside volatility symmetrically with downside.</p>
-
-<p>The structural reason rotation outperforms cash is straightforward. During bear EMA signals (roughly 30% of the sample), cash earns nominal returns near zero. Substituting QQQ during the same periods captures the equity risk premium &mdash; on average 8&ndash;10% annualized &mdash; without exposing the portfolio to leverage decay. Refitting the (fast, slow) parameters every two years allows the signal to adapt to changing volatility regimes; the parameter trajectory is shown in Table 1.</p>
-
-<table class="strategy-table">
-  <thead>
-    <tr><th>Test window</th><th class="num">Fast</th><th class="num">Slow</th><th>Volatility regime</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>2004&ndash;2006</td><td class="num">5</td><td class="num">100</td><td>Low-vol expansion</td></tr>
-    <tr><td>2006&ndash;2008</td><td class="num">10</td><td class="num">200</td><td>Late-cycle</td></tr>
-    <tr><td>2008&ndash;2010</td><td class="num">8</td><td class="num">50</td><td>Crisis, high turnover</td></tr>
-    <tr><td>2010&ndash;2014</td><td class="num">5&ndash;10</td><td class="num">150&ndash;250</td><td>Recovery, mixed</td></tr>
-    <tr><td>2016&ndash;2020</td><td class="num">3</td><td class="num">100&ndash;200</td><td>Compressed-vol bull</td></tr>
-    <tr><td>2020&ndash;2024</td><td class="num">5</td><td class="num">100</td><td>COVID volatility</td></tr>
-    <tr><td>2024&ndash;2026</td><td class="num">8</td><td class="num">150</td><td>AI-led expansion</td></tr>
-  </tbody>
-  <caption style="caption-side: bottom; font-size: 12px; color: var(--text-secondary); padding: 8px 0; text-align: left; font-family: 'Inter', sans-serif;"><strong>Table 1.</strong> Walk-forward parameter trajectory. Faster signals dominate during low-volatility expansions and during high-turnover crisis periods; medium-speed signals dominate during stable bull regimes.</caption>
-</table>
-
-<h2>5. Pyramid Variants and Apparent Improvement</h2>
-
-<p>A natural extension of the rotation framework is to deploy a cash reserve into TQQQ as the index falls below its trailing moving average or peak. Two parameterizations were tested:</p>
+<p>The causally-clean alternative is <em>forward walk-forward</em>: the test always sits chronologically <em>after</em> its training window. I run the following protocol throughout this note:</p>
 
 <ul style="margin-bottom: 24px; padding-left: 24px;">
-  <li><strong>T4 (peak-anchored).</strong> Bull regime: 100% TQQQ. Bear regime: 100% cash, deployed to TQQQ in 25/50/75/100% tranches as the index falls 10/20/30/40% from its rolling all-time high.</li>
-  <li><strong>T6 (half-base, MA-anchored).</strong> Bear regime: 50% TQQQ + 50% cash, with the cash reserve deployed in the same tranches as T4 but anchored to the MA200 instead of the peak.</li>
+  <li><strong>Training window.</strong> 5 calendar years of QQQ data ending at time <em>t</em>.</li>
+  <li><strong>Embargo.</strong> 21 trading days (one month) between training and test, per L&oacute;pez de Prado (2018) to prevent label leakage from autocorrelated returns.</li>
+  <li><strong>Test window.</strong> 2 calendar years immediately after the embargo.</li>
+  <li><strong>Selection.</strong> Within each training window, the (fast, slow) EMA pair maximizing Calmar is chosen from a 25-element grid (fast &isin; {3, 5, 8, 10, 13}, slow &isin; {50, 100, 150, 200, 250}). For pyramid variants, the level schedule and base position are fixed ex ante.</li>
+  <li><strong>Roll.</strong> The window advances by the test length and re-trains.</li>
 </ul>
 
-<p>In-sample, both pyramid variants outperform the WF rotation:</p>
+<p>The first viable test window starts in 2004 (after 5y training from 1999-03 plus warm-up for the 200-day EMA). Buy-and-hold benchmarks are reported over the same window for comparability.</p>
+
+<p>For statistical robustness, I additionally apply <em>combinatorial purged cross-validation</em> (CPCV): the data is partitioned into 10 chronological folds, all C(10,2) = 45 combinations are used as test sets, and the remaining 8 folds form the training set with embargo applied at fold boundaries. Each path produces an independent estimate of CAGR, Sharpe, and Calmar. The distribution of these 45 estimates is the basis for the inference reported in Section 6.</p>
+
+<h2>4. Strategy Taxonomy</h2>
+
+<p>Four strategies are evaluated, all driven by EMA crossover signals computed on QQQ and traded with TQQQ exposure. The choice of QQQ rather than TQQQ as the signal source is deliberate: TQQQ's daily-leverage construction introduces noise into trend signals that the underlying index does not have.</p>
+
+<ul style="margin-bottom: 24px; padding-left: 24px;">
+  <li><strong>TQQQ/Cash.</strong> Bull signal: 100% TQQQ. Bear signal: 100% cash.</li>
+  <li><strong>QQQ/TQQQ rotation.</strong> Bull signal: 100% TQQQ. Bear signal: 100% QQQ &mdash; eliminating the opportunity cost of cash during slow uptrends below the moving average.</li>
+  <li><strong>Pure TQQQ pyramid (peak-anchored, T4).</strong> Bull signal: 100% TQQQ. Bear signal: cash reserve, deployed to TQQQ in 25/50/75/100% tranches as the index falls 10/20/30/40% from its rolling all-time high.</li>
+  <li><strong>Pure TQQQ pyramid (half-base MA, T6).</strong> Bear regime starts at 50% TQQQ + 50% cash, with the cash reserve deployed in the same tranches as T4 but anchored to MA200 instead of the rolling peak.</li>
+</ul>
+
+<p>Negative-result variants &mdash; SQQQ inverse leverage, ML signal aggregators, VIX-thresholded regime filters &mdash; were also evaluated. SQQQ in particular is structurally incompatible with long-horizon holding: 3&times; daily inverse exposure on a long-term upward-trending index converges to zero by construction (the synthetic 1999-2026 series falls below 10<sup>&minus;5</sup> of starting value). These results are omitted from the discussion below.</p>
+
+<h2>5. Forward Walk-Forward Results</h2>
+
+<p>The four strategies, evaluated under the forward walk-forward protocol described in Section 3:</p>
 
 <table class="strategy-table">
   <thead>
-    <tr><th>Strategy</th><th class="num">CAGR</th><th class="num">MDD</th><th class="num">Calmar</th><th class="num">$10K Final</th></tr>
+    <tr><th>Strategy</th><th class="num">CAGR</th><th class="num">MDD</th><th class="num">Sharpe</th><th class="num">Calmar</th><th class="num">$10K Final</th></tr>
   </thead>
   <tbody>
     <tr class="highlight">
-      <td>T4 Pure TQQQ pyramid (peak)</td>
-      <td class="num">26.58%</td>
-      <td class="num">&minus;85.5%</td>
-      <td class="num">0.311</td>
-      <td class="num">$1,798,501</td>
-    </tr>
-    <tr class="highlight">
-      <td>T6 Pure TQQQ pyramid (half-base)</td>
-      <td class="num">25.95%</td>
-      <td class="num">&minus;82.5%</td>
-      <td class="num">0.315</td>
-      <td class="num">$1,610,183</td>
+      <td>Forward-WF Pure TQQQ pyramid (T6)</td>
+      <td class="num">25.66%</td>
+      <td class="num">&minus;82.79%</td>
+      <td class="num">0.722</td>
+      <td class="num">0.310</td>
+      <td class="num">$1,150,969</td>
     </tr>
     <tr>
-      <td>WF QQQ/TQQQ rotation (baseline)</td>
-      <td class="num">22.99%</td>
-      <td class="num">&minus;74.7%</td>
-      <td class="num">0.308</td>
-      <td class="num">$954,238</td>
+      <td>Forward-WF Pure TQQQ pyramid (T4)</td>
+      <td class="num">23.26%</td>
+      <td class="num">&minus;87.36%</td>
+      <td class="num">0.671</td>
+      <td class="num">0.266</td>
+      <td class="num">$771,116</td>
+    </tr>
+    <tr>
+      <td>Forward-WF QQQ/TQQQ rotation</td>
+      <td class="num">20.58%</td>
+      <td class="num">&minus;73.05%</td>
+      <td class="num">0.651</td>
+      <td class="num">0.282</td>
+      <td class="num">$488,489</td>
+    </tr>
+    <tr>
+      <td>Forward-WF TQQQ/cash</td>
+      <td class="num">14.38%</td>
+      <td class="num">&minus;65.39%</td>
+      <td class="num">0.539</td>
+      <td class="num">0.220</td>
+      <td class="num">$163,071</td>
+    </tr>
+    <tr class="dim">
+      <td>QQQ Buy &amp; Hold (1999-2026)</td>
+      <td class="num">10.52%</td>
+      <td class="num">&minus;82.96%</td>
+      <td class="num">0.506</td>
+      <td class="num">0.127</td>
+      <td class="num">$150,635</td>
+    </tr>
+    <tr class="dim">
+      <td>TQQQ Buy &amp; Hold (1999-2026, synthetic+real)</td>
+      <td class="num">1.37%</td>
+      <td class="num">&minus;99.98%</td>
+      <td class="num">0.421</td>
+      <td class="num">0.014</td>
+      <td class="num">$14,450</td>
     </tr>
   </tbody>
 </table>
 
-<p>On the 2010-2026 window the pyramid variants beat the baseline by 3&ndash;4 percentage points of CAGR while maintaining comparable Calmar. They appear to be a strict improvement.</p>
-
-<h2>6. Out-of-Sample Robustness</h2>
-
-<p>The 2010-2026 window is the longest one available for actual TQQQ but contains only one major drawdown regime (2022) and is dominated by the post-2009 secular bull market. To test whether the in-sample results generalize, I rerun every strategy on the synthetic 1999-2010 series, which contains both the dot-com unwind (peak-to-trough &minus;82% on QQQ over 30 months) and the 2008 financial crisis.</p>
-
 <figure class="figure">
-  <img src="images/fig3_overfitting.png" alt="In-sample vs out-of-sample CAGR comparison showing all strategies fail OOS except WF rotation">
-  <figcaption><strong>Figure 2.</strong> In-sample (2010-2026) versus out-of-sample (1999-2010) CAGR for five representative strategies. Static EMA crossovers and both pyramid variants generate strongly negative returns out-of-sample, with the peak-anchored pyramid losing 43.7% per year &mdash; compounding to roughly &minus;99.7% over the eleven-year window. The walk-forward QQQ/TQQQ rotation is the only tested strategy that preserves capital.</figcaption>
+  <img src="images/fig1_equity_curves.png" alt="Forward walk-forward equity curves">
+  <figcaption><strong>Figure 1.</strong> Compounded value of $10,000 across four strategies under forward walk-forward, log-scaled. The pyramid T6 (red) achieves the highest terminal value with the help of cash deployment during the 2008-2009 trough. The 2000-2002 dot-com unwind is the regime where unleveraged QQQ buy-and-hold (blue dashed) outperforms all leveraged variants on a path-dependent basis &mdash; the leveraged strategies recover during 2003-2007 but only after substantial intermediate drawdown.</figcaption>
 </figure>
 
-<p>The mechanism behind the pyramid failure is structural. A pyramid scheme is, by construction, a strategy that increases position size as the price falls. Under the dot-com unwind &mdash; thirty months of grinding decline punctuated by short rallies &mdash; the pyramid deploys progressively larger positions at &minus;10%, &minus;20%, and &minus;30% drawdowns, each of which loses a substantial fraction of value before the next deployment. The 3&times; daily leverage compounds these losses geometrically. By the time the index reverses, the strategy has exhausted its cash reserve at the worst possible average price.</p>
+<p>Two observations are notable. First, contrary to results obtained under anti-causal selection schemes, the pyramid strategies do <em>not</em> fail catastrophically in the 1999-2010 sub-period when their parameters are chosen using only data available at each historical decision point. The peak-anchored pyramid (T4) loses substantially during the dot-com crash but survives because its bull/bear EMA selector keeps it in cash for most of the 2000-2002 decline; the cash-deployment tranches engage only during the 2002 acceleration to the lows. Second, TQQQ buy-and-hold is the only strategy whose terminal value is essentially flat over 27 years &mdash; the dot-com collapse pushes the synthetic series to less than 0.02% of starting value, from which 16 years of bull-market compounding recovers only to roughly the original starting capital.</p>
 
-<p>The walk-forward rotation lost 1.3% per year over 1999-2010, essentially identical to QQQ buy-and-hold's &minus;1.3% over the same window. Synthetic TQQQ buy-and-hold lost 38.5% per year and ended the period at less than 0.02% of starting capital. The rotation provides no leverage premium when the leverage signal is structurally wrong &mdash; but does not impose a leverage cost either.</p>
+<h2>6. Combinatorial Purged Cross-Validation</h2>
+
+<p>Single-path forward walk-forward delivers point estimates but no inference about variability. With 11 test windows in the 2004-2026 horizon, a single CAGR estimate could plausibly differ from the underlying expected return by a substantial margin. CPCV addresses this by generating 45 independent backtest paths from the same data, each using a different 8-fold/2-fold split with embargo.</p>
+
+<figure class="figure">
+  <img src="images/fig2_cpcv_distribution.png" alt="CPCV distribution histograms for CAGR, Sharpe, Calmar, MDD">
+  <figcaption><strong>Figure 2.</strong> CPCV distributions for the QQQ/TQQQ rotation strategy across 45 backtest paths. The median CAGR is 5.2% with substantial mass below zero; median Calmar is 0.08 with a long right tail; median maximum drawdown is &minus;69% with the worst path approaching &minus;100%. The single-path forward walk-forward estimate (CAGR 20.6%, Calmar 0.28) sits in the right tail of the CPCV distribution.</figcaption>
+</figure>
+
+<p>The CPCV distributions reveal what the single forward walk-forward estimate hides:</p>
+
+<table class="strategy-table">
+  <thead>
+    <tr>
+      <th>Strategy</th>
+      <th class="num">Median CAGR</th>
+      <th class="num">CAGR IQR</th>
+      <th class="num">Median Calmar</th>
+      <th class="num">P(CAGR &gt; 15%)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>QQQ/TQQQ rotation</td>
+      <td class="num">5.24%</td>
+      <td class="num">[&minus;1.81%, 13.71%]</td>
+      <td class="num">0.079</td>
+      <td class="num">24.4%</td>
+    </tr>
+    <tr>
+      <td>TQQQ/cash</td>
+      <td class="num">3.97%</td>
+      <td class="num">[&minus;1.60%, 12.32%]</td>
+      <td class="num">0.068</td>
+      <td class="num">17.8%</td>
+    </tr>
+    <tr>
+      <td>Pyramid T4 (peak)</td>
+      <td class="num">2.99%</td>
+      <td class="num">[&minus;9.30%, 14.43%]</td>
+      <td class="num">0.058</td>
+      <td class="num">24.4%</td>
+    </tr>
+    <tr>
+      <td>Pyramid T6 (half-base MA)</td>
+      <td class="num">4.83%</td>
+      <td class="num">[&minus;3.37%, 14.81%]</td>
+      <td class="num">0.085</td>
+      <td class="num">24.4%</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The CPCV medians are substantially below the single-path forward walk-forward estimates, and the interquartile ranges include zero for every strategy. The four strategies' median Calmars cluster between 0.06 and 0.09 &mdash; close enough that any ranking among them is statistically indefensible. The probability of achieving CAGR above 15% is roughly 1-in-4 to 1-in-5 across all variants.</p>
+
+<p>Two interpretations of the gap between single-path forward and CPCV estimates are consistent with the data. First, the 2004-2026 forward path may be a favorable sample of all possible 22-year evolutions of these strategies; the secular bull market post-2009 is the dominant contributor to the high single-path CAGR estimates. Second, CPCV assigns equal weight to test paths that include the dot-com unwind, the 2008 crisis, and the 2022 selloff in different combinations &mdash; some of which are more punishing than the actual chronological sequence. Both effects are real; the truth probably lies between the single-path and the CPCV-median estimates.</p>
 
 <div class="callout">
-  <p><strong>Pitfall 2.</strong> For any leveraged-ETF strategy, the only available out-of-sample window is the period before the ETF's inception. Synthetic reconstruction is straightforward but introduces 5&ndash;10% multi-year tracking error from the cost model. Strategies that report only post-inception results are reporting in-sample numbers regardless of how long the available window is.</p>
+  <p><strong>Pitfall 2.</strong> A single backtest path is one realization, not an estimate of expected performance. CPCV (or block bootstrap on returns) is required to produce a defensible distribution. Single-path point estimates that look impressive should be checked against their CPCV percentiles before they are interpreted as edges.</p>
 </div>
 
 <h2>7. Risk-Return Frontier</h2>
 
-<p>Plotting all sixteen tested strategies on a CAGR vs MDD grid clarifies the structure of the available choices. There is no upper-left corner: the frontier slopes diagonally, and almost every dominated point inside it represents an explicit trade-off rather than a free lunch.</p>
-
 <figure class="figure">
-  <img src="images/fig2_pareto.png" alt="Scatter plot of all tested strategies showing CAGR vs maximum drawdown">
-  <figcaption><strong>Figure 3.</strong> CAGR versus maximum drawdown across all tested strategies. The four colored points survived the out-of-sample test in Section 6. Grayed points (pyramid variants, ML aggregators, VIX-filtered, golden cross, SQQQ rotation) appear competitive in-sample but failed when evaluated on 1999-2010. The viable choices form a frontier from QQQ buy-and-hold (lower left, low CAGR / low MDD) through the WF rotation (middle) to TQQQ buy-and-hold (upper right, high CAGR / high MDD).</figcaption>
+  <img src="images/fig3_pareto.png" alt="Forward walk-forward risk-return scatter">
+  <figcaption><strong>Figure 3.</strong> CAGR versus maximum drawdown across forward walk-forward strategies and buy-and-hold benchmarks. The vertical line at MDD &asymp; 70% shows the CPCV interquartile range for the rotation strategy &mdash; an honest representation of the uncertainty around the single-path estimate. The pyramid variants achieve the highest single-path CAGR but at the cost of larger drawdowns; the rotation strategy sits closer to QQQ buy-and-hold on drawdown while delivering twice the CAGR.</figcaption>
 </figure>
 
 <div class="interactive-wrapper">
   <iframe src="images/fig_interactive.html" width="100%" height="540" frameborder="0" style="border: none; border-radius: 6px;"></iframe>
-  <p class="interactive-caption"><strong>Figure 4 (interactive).</strong> Compounded equity curves with hover detail. Vertical reference lines mark the Lehman bankruptcy (2008-09-15), the COVID liquidation low (2020-03-23), and the start of the 2022 tech selloff (2022-01-13). Toggle individual strategies via the legend.</p>
+  <p class="interactive-caption"><strong>Figure 4 (interactive).</strong> Forward walk-forward equity curves with hover detail. Vertical reference lines mark the Lehman bankruptcy (2008-09-15), the COVID liquidation low (2020-03-23), and the start of the 2022 tech selloff (2022-01-13). Toggle individual strategies via the legend.</p>
 </div>
 
 <h2>8. Statistical Considerations</h2>
 
-<p>Walk-forward refitting is the standard defense against in-sample overfitting at the parameter level: by construction, no information from the test window enters the parameter selection. However, several layers of post-hoc selection persist at the meta-level:</p>
+<p>Forward walk-forward parameter selection eliminates look-ahead bias at the parameter level. Two layers of post-hoc choice nonetheless remain:</p>
 
 <ul style="margin-bottom: 24px; padding-left: 24px;">
-  <li><strong>Window length.</strong> The choice of 5-year training and 2-year test was selected after testing combinations from (3y, 1y) to (10y, 3y). The reported result is the median across this grid; the best window (7y train, 3y test) gave Calmar 0.389 and is not reported as the primary result for this reason.</li>
-  <li><strong>Strategy family.</strong> Sixteen distinct strategy variants were evaluated; the &ldquo;winner&rdquo; on Calmar represents the best of sixteen. Under a Bonferroni correction, t-statistics should be divided by approximately &radic;16 = 4 to recover unbiased significance levels.</li>
-  <li><strong>Search grid.</strong> The (fast, slow) grid was specified using prior knowledge of which EMA periods tend to work for equity indices. A maximally honest evaluation would expand the grid substantially.</li>
+  <li><strong>Window length.</strong> The 5y/2y choice was selected after evaluating combinations from (3y, 1y) to (7y, 3y); the median CAGR across the nine tested combinations is 21.2% with IQR [14.7%, 24.4%], suggesting that the headline 20.6% point estimate for the rotation is approximately representative rather than cherry-picked.</li>
+  <li><strong>Strategy family.</strong> Four strategies are reported; an equal number of negative-result variants (SQQQ rotation, ML aggregators, VIX-filtered) are not. Under a Bonferroni correction with eight evaluated families, the t-statistics for the reported winners should be divided by approximately &radic;8 &asymp; 2.83 to recover unbiased significance levels.</li>
 </ul>
 
-<p>The walk-forward rotation's bootstrap 95% confidence interval on CAGR runs from 0.15% to 48.74%; on Sharpe, from 0.25 to 1.09. These intervals are wide because eleven test windows is a small sample. The point estimate of Calmar 0.308 is probably an overstatement of the true edge, but the qualitative ranking (rotation &gt; static &gt; buy-and-hold on Calmar, rotation &lt; pyramid in-sample but rotation &gt; pyramid out-of-sample) is robust to the corrections above.</p>
+<p>Combining the CPCV distributions with the window-selection and family-selection corrections, the most defensible reading of the data is: the four leveraged-ETF strategies have expected CAGR somewhere between 5% and 15%, expected Sharpe somewhere between 0.4 and 0.7, and expected Calmar somewhere between 0.08 and 0.20. The single-path forward walk-forward estimates that put pyramid T6 at Calmar 0.31 and rotation at 0.28 are upper-bound realizations rather than central tendencies. None of the four strategies dominates the others by a margin that survives the variance.</p>
 
 <div class="callout">
-  <p><strong>Pitfall 3.</strong> Walk-forward parameter selection prevents look-ahead bias within a strategy but does not prevent meta-overfitting from variant selection, window selection, or grid specification. Each layer of post-hoc choice inflates the apparent significance of the reported winner. Reporting the full distribution of variants tested, rather than only the best, is the minimum standard for reproducibility.</p>
+  <p><strong>Pitfall 3.</strong> Forward walk-forward eliminates look-ahead within a strategy but does not eliminate selection bias from variant choice or window choice. Each layer of post-hoc selection inflates the apparent significance of the reported winner. The minimum standard for reproducibility is to report the full distribution of variants and windows tested, not only the best.</p>
 </div>
 
 <h2>9. Conclusions</h2>
 
-<p>Three conclusions follow from the evidence above.</p>
+<p>Three conclusions follow.</p>
 
-<p>First, headline performance figures for retail-marketed leveraged-ETF strategies frequently use in-position CAGR rather than calendar CAGR, inflating the apparent annualized return by a factor of two or more. Calendar-time CAGR for the most-cited static EMA(5)/EMA(200) strategy on TQQQ is 26.45%, not 47.08%.</p>
+<p>First, the most-cited 47% &ldquo;annualized&rdquo; figure for static EMA(5)/EMA(200) on TQQQ is in-position CAGR, not calendar CAGR. The calendar value computed from the same trades and the same data is 26.45%. This distinction matters because in-position CAGR is not directly comparable to buy-and-hold returns and can be inflated arbitrarily by long cash periods.</p>
 
-<p>Second, the only strategy variant that survives out-of-sample testing on the 1999-2010 period is walk-forward EMA rotation between QQQ and TQQQ. Its in-sample Calmar of 0.308 is comparable to or modestly above unleveraged QQQ buy-and-hold (0.270), and its out-of-sample CAGR of &minus;1.3% is essentially identical to QQQ's. The strategy provides no incremental risk-adjusted return over QQQ buy-and-hold but does deliver the higher CAGR of TQQQ buy-and-hold (22.99% vs 22.96%) with substantially smaller drawdown (74.7% vs 94.8%). The trade-off is real but modest.</p>
+<p>Second, under causally-clean forward walk-forward starting in 1999, the four tested strategies all generate positive CAGR &mdash; including the pure TQQQ pyramid, which under anti-causal evaluation appears to fail catastrophically in the dot-com era. The pyramid T6 variant achieves the highest single-path CAGR (25.66%) and the highest single-path Calmar (0.310). The QQQ/TQQQ rotation achieves the lowest single-path drawdown (&minus;73%) among leveraged variants. The differences among the four strategies are real on the single forward path but small.</p>
 
-<p>Third, every strategy variant that beats the rotation in-sample &mdash; pyramid drawdown-buying, ML signal aggregators, SQQQ inverse rotation &mdash; fails catastrophically out-of-sample, with the peak-anchored pyramid compounding to near-zero capital across the dot-com unwind. The structural reason is that these strategies amplify exposure during drawdowns, and TQQQ's daily-leverage construction amplifies the losses that result. There is no parameterization within these families that resolves this asymmetry; it is a property of the instrument, not the strategy.</p>
+<p>Third, combinatorial purged cross-validation reveals that these single-path differences are not statistically distinguishable. Across 45 CPCV paths, the four strategies have median Calmars between 0.058 and 0.085, with interquartile ranges that all include zero. The probability of achieving CAGR above 15% is approximately 1-in-4 across all four variants. The single-path forward walk-forward estimates sit in the right tail of these distributions, indicating that the apparent edge over QQQ buy-and-hold is one realization of a noisy process rather than a stable risk-adjusted improvement.</p>
 
-<p>The implication for portfolio construction is that the realistic menu of leveraged-ETF strategies is narrower than retail marketing suggests. The choice is between unleveraged equity exposure (QQQ buy-and-hold) at moderate CAGR and acceptable drawdown, leveraged equity exposure (TQQQ buy-and-hold or rotation variants) at higher CAGR and severe drawdown, or some explicit linear combination of the two. There is no third option that captures TQQQ's compounding without TQQQ's drawdown.</p>
+<p>The realistic menu of leveraged-ETF strategies is therefore narrower than the single-path numbers suggest. A trend-following strategy on TQQQ, however constructed, delivers somewhere between a 1-in-4 and 1-in-5 chance of meaningfully outperforming unleveraged QQQ buy-and-hold on risk-adjusted terms over a 22-year horizon. The other three-quarters of the time, the strategy delivers performance comparable to or worse than QQQ buy-and-hold while subjecting the portfolio to drawdowns of 70% or more. There is no parameterization within these families that resolves the underlying volatility-decay asymmetry of 3&times; daily leverage; this is a property of the instrument, not the strategy.</p>
 
 </article>
 
