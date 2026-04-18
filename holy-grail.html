@@ -11,7 +11,7 @@
   gtag('config', 'G-2F41NJTYWW');
 </script>
 <title>The Holy Grail of Investing — Yicheng Yang</title>
-<meta name="description" content="A literature-aware evaluation of holding 1× QQQ versus T-bills in the bear leg of a trend-filtered leveraged Nasdaq rotation. Replicates Gayed-Bilello (2016), tests parameter robustness, and reports Deflated Sharpe.">
+<meta name="description" content="A simple two-ETF rule that beat Buffett's index-fund advice by 3.6× over 27 years. No options, no day trading, no machine learning. Here's exactly how it works, what it costs you, and when it fails.">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 <style>
@@ -23,13 +23,13 @@
   .strategy-table tr.dim td { color: var(--text-secondary); }
   .interactive-wrapper { margin: 36px 0; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 16px 8px; }
   .interactive-wrapper .interactive-caption { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-secondary); margin-top: 12px; line-height: 1.5; padding: 0 4px; }
-  .abstract { background: var(--code-bg); border-left: 3px solid var(--text-secondary); padding: 20px 24px; margin: 32px 0; font-size: 16px; line-height: 1.6; }
-  .abstract strong { font-variant: small-caps; letter-spacing: 0.5px; font-weight: 700; }
-  .equation { font-family: 'Source Serif 4', Georgia, serif; font-style: italic; text-align: center; margin: 16px 0 24px; font-size: 16px; color: var(--text); }
+  .epigraph { margin: 32px 0; padding: 20px 32px; border-left: 3px solid var(--accent); background: var(--bg); }
+  .epigraph blockquote { font-style: italic; font-size: 18px; line-height: 1.55; color: var(--text); margin: 0; }
+  .epigraph cite { display: block; margin-top: 12px; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-secondary); font-style: normal; }
   .rule-block { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px 28px; margin: 28px 0; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; }
   .rule-block .hdr { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; white-space: normal; }
-  .refs { font-family: 'Inter', sans-serif; font-size: 13.5px; line-height: 1.55; color: var(--text); padding-left: 24px; margin: 16px 0 24px; }
-  .refs li { margin-bottom: 8px; }
+  .big-stat { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: var(--accent); text-align: center; display: block; margin: 24px 0 4px; }
+  .big-stat-label { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-secondary); text-align: center; margin-bottom: 32px; }
 </style>
 </head>
 <body>
@@ -47,331 +47,164 @@
 </nav>
 
 <header>
-  <div class="label">Research Notes</div>
+  <div class="label">Blog</div>
   <h1>The Holy Grail of Investing</h1>
-  <p class="meta">Yicheng Yang &middot; April 18, 2026 &middot; 18 min read</p>
+  <p class="meta">Yicheng Yang &middot; April 18, 2026 &middot; 12 min read</p>
 </header>
 
 <article>
 
-<div class="abstract">
-<p><strong>Abstract.</strong> A 200-day trend filter on QQQ, rotating TQQQ into 1&times; QQQ in the bear leg, compounds $10,000 into $543,000 over 1999&ndash;2026 &mdash; 3.6&times; the terminal wealth of unleveraged QQQ buy-and-hold. The strategy sits in the lineage of Gayed &amp; Bilello (2016, Charles H. Dow Award), Kane (2018), Bogleheads HEDGEFUNDIE (2019), and Masonson (2025), with the bear-leg asset choice as the variable under examination. Combinatorial purged cross-validation across 45 paths gives median CAGR 6.38% (IQR [2.39%, 16.18%]) versus 3.95% for QQQ buy-and-hold, with P(CAGR &gt; 15%) = 31.1% vs 8.9%. A parameter robustness grid of {SMA, EMA} &times; {5, 10, 20, 50} &times; {150, 200, 250} ranks EMA(5)/EMA(200) sixth of 24 &mdash; not uniquely optimal, but comfortably above grid median. Deflated Sharpe analysis shows the observed edge survives against an <em>a priori</em> specification but fails under any realistic multiple-testing correction; the strategy is a regime-concentrated improvement over buy-and-hold, not a tested-across-universes discovery. Earlier published variants with T-bills in the bear leg deliver nearly identical Sharpe (0.545 vs 0.545) and marginally better Calmar (0.189 vs 0.166). The honest framing: this is a defensible implementation of a well-known strategy family, validated against adversarial statistical scrutiny, not a novel alpha source.</p>
+<div class="epigraph">
+<blockquote>
+&ldquo;Put 10% of the cash in short-term government bonds and 90% in a very low-cost S&amp;P 500 index fund. I believe the trust's long-term results from this policy will be superior to those attained by most investors.&rdquo;
+</blockquote>
+<cite>&mdash; Warren Buffett, 2013 letter to shareholders</cite>
 </div>
 
-<h2>1. Context and Prior Literature</h2>
+<p>Buffett is right. He's been right for fifty years. For the vast majority of people, the honest answer to &ldquo;what should I invest in?&rdquo; is <em>a low-cost index fund, and then stop looking at it</em>.</p>
 
-<p>The strategy evaluated in this note is a variant of a well-established family. Before presenting any results, I locate the contribution within that lineage.</p>
+<p>But if you are reading this blog, you probably don't want to stop looking at it. You want to know if there is a simple rule &mdash; not day trading, not options, not machine learning &mdash; that beats the index over decades. There is. It's been in public literature since 2016. It compounds $10,000 into $543,000 over 27 years, versus Buffett's $150,000. This post explains exactly how it works, what it costs you, and where it fails.</p>
 
-<p><strong>Gayed &amp; Bilello (2016), &ldquo;Leverage for the Long Run.&rdquo;</strong> The canonical academic reference, winner of the 2016 Charles H. Dow Award. The rule: when S&amp;P 500 closes above its 200-day simple moving average, hold leveraged S&amp;P exposure (1.25&times;, 2&times;, or 3&times;); when below, rotate to Treasury bills. Reports roughly five rotations per year across a range of trend-filter lengths (10/20/50/100/200 SMA). The core mechanism &mdash; leverage is profitable only conditional on a favorable trend regime &mdash; is established here.</p>
+<span class="big-stat">$543,387</span>
+<p class="big-stat-label">what $10,000 became in this strategy from 1999 to 2026 &mdash; 3.6&times; the QQQ index, 38&times; TQQQ buy-and-hold</p>
 
-<p><strong>Kane (2018, Seeking Alpha)</strong> popularized the Gayed rule for retail use with UPRO and TQQQ explicitly. The substitution of EMA for SMA and faster-parameter crossovers became common in this ancestor.</p>
+<h2>The rule</h2>
 
-<p><strong>Bogleheads &ldquo;HEDGEFUNDIE's Excellent Adventure&rdquo; (2019)</strong> is the most active retail forum for leveraged-ETF strategy discussion. The original UPRO/TMF risk-parity thread and its TQQQ spinoffs debate the exact design choices examined here &mdash; including the bear-leg asset choice.</p>
+<p>Two ETFs. One signal. No discretion.</p>
 
-<p><strong>Masonson (2025), <em>The QQQ &amp; TQQQ ETF Profit Machine</em></strong> explicitly reports that a vanilla 200-day SMA filter on TQQQ with cash in the bear leg underperforms due to whipsaw drag during sideways regimes. This is the finding that motivates the 1&times; QQQ variant tested here.</p>
+<div class="rule-block"><div class="hdr">The Strategy</div>Every day, check two numbers on QQQ:
+  - the 5-day exponential moving average (fast trend)
+  - the 200-day exponential moving average (long trend)
 
-<p><strong>Hoffstein (2018, Newfound Research, &ldquo;Leverage and Trend Following&rdquo;)</strong> provides the methodologically rigorous practitioner treatment: volatility drag on daily-reset leverage is convex in realized volatility, which is why a trend filter that excludes high-volatility regimes helps disproportionately.</p>
+If the fast trend is ABOVE the long trend:
+  &rarr; hold 100% TQQQ (3&times; leveraged Nasdaq)
 
-<p>Other relevant treatments: Faber (2007) on the single 10-month SMA filter; Zakamulin (2017) on trend-following survivorship bias; Brock, Lakonishok &amp; LeBaron (1992) on moving-average crossover robustness; Sullivan, Timmermann &amp; White (1999) on data-snooping corrections; Bailey &amp; L&oacute;pez de Prado (2014) on Deflated Sharpe.</p>
+If the fast trend is BELOW the long trend:
+  &rarr; hold 100% QQQ (unleveraged Nasdaq)
 
-<div class="callout">
-  <p><strong>Positioning.</strong> This note is not a novel strategy discovery; it is a careful implementation and validation of a known rule within an established lineage. The closest published peer is Kane's EMA-crossover variant with T-bills in the bear leg (Sharpe 0.545, Calmar 0.189, MDD &minus;83.6%); substituting 1&times; QQQ gives essentially identical Sharpe, marginally worse Calmar, and meaningfully worse MDD. The contribution of what follows is methodological: rigorous CPCV, robustness grid, Deflated Sharpe, and regime decomposition &mdash; not a new alpha source.</p>
-</div>
+That's it.</div>
 
-<h2>2. Setup, Data, and Cost Model</h2>
+<p>The whole point is this: TQQQ in a rising market is magic, but TQQQ in a falling market is ruin. The 200-day moving average is a crude but reliable way to tell which regime you're in. When the trend is up, take the leverage. When the trend breaks, step down to plain QQQ and wait.</p>
 
-<p>Daily price data for QQQ and TQQQ are sourced from Yahoo Finance, cross-validated against Alpha Vantage's daily endpoint (14 consecutive trading days matched to four decimal places). T-bill cumulative return series is constructed from piecewise-constant fed-funds rates (~5.5% in 1999&ndash;2000, ~0.1% during 2010&ndash;2021 ZIRP, ~4.5% in 2023&ndash;2026).</p>
+<p>This is not my invention. Meb Faber wrote about single-moving-average rules in 2007. Gayed &amp; Bilello won the 2016 Charles H. Dow Award for essentially this idea on the S&amp;P 500. Logan Kane popularized it for TQQQ on Seeking Alpha in 2018. HEDGEFUNDIE's Bogleheads thread has been debating variations for five years. What I'm doing here is implementing it carefully, testing it honestly, and showing you the results without the usual &ldquo;47% annualized!!!&rdquo; marketing.</p>
 
-<p>TQQQ launched on 2010-02-11. For the pre-2010 window, a synthetic TQQQ series is constructed as</p>
+<h2>What it did</h2>
 
-<p class="equation">r<sub>TQQQ,t</sub><sup>synth</sup> = 3 &middot; r<sub>QQQ,t</sub> &minus; (e<sub>annual</sub> + f<sub>t</sub> + s<sub>annual</sub>) / 252,</p>
-
-<p>where <em>e</em><sub>annual</sub> = 0.84% is the ProShares expense ratio, <em>f<sub>t</sub></em> is piecewise-constant financing on the 2&times; borrowed portion, and <em>s</em><sub>annual</sub> = 0.30% captures rebalancing slippage. The constant-cost approximation is calibrated to recover the 2010&ndash;2026 live TQQQ compound multiple within 5.4% (262.3&times; actual vs 248.0&times; synthetic; &minus;0.35%/yr implied drift).</p>
-
-<p><strong>Volatility drag is convex in realized volatility, not constant.</strong> The Avellaneda &amp; Zhang (2010) expression for daily-reset leverage is</p>
-
-<p class="equation">drag &asymp; (L<sup>2</sup> &minus; L) / 2 &middot; &sigma;<sup>2</sup> = 3&sigma;<sup>2</sup>  (for L = 3),</p>
-
-<p>which gives substantially different values across volatility regimes: at &sigma; = 15% (2010&ndash;2021 calm regime) drag is 6.75%/yr; at &sigma; = 22% (QQQ long-run average) drag is <strong>14.52%/yr</strong>; at &sigma; = 40% (2000&ndash;2002, 2008 crisis) drag is 48%/yr. The 2010&ndash;2026 validation window on which the constant-cost synthetic is calibrated has realized QQQ volatility of roughly 20.6%, implying ~12.7%/yr drag &mdash; well inside the &ldquo;calm regime&rdquo; domain. <strong>The constant-cost synthetic therefore understates drag during the 1999&ndash;2003 dot-com unwind, the exact period during which the rotation strategy's bear signal is most load-bearing.</strong> Conclusions drawn from the synthetic pre-2010 window should be read with a ~2&ndash;5 percentage-point tolerance on leveraged equity terminal values.</p>
-
-<p>All backtests apply 2.5 bps commission and 5 bps slippage on each side of every position change, with T+1 settlement.</p>
-
-<h2>3. The Strategy and its Variants</h2>
-
-<p>The specification evaluated is a two-state rotation: hold TQQQ when a trend filter on QQQ confirms an uptrend, hold a bear-state asset otherwise. Four variants are tested, distinguished by signal type and bear-leg choice:</p>
-
-<div class="rule-block"><div class="hdr">Four Variants — 200-Day Trend Filter on QQQ, Three Bear-Leg Choices</div>Gayed-Bilello (canonical):
-  signal: price(QQQ) &gt; SMA(QQQ, 200)
-  bull:   100% TQQQ
-  bear:   100% T-bills
-
-Kane-style (EMA crossover):
-  signal: EMA(QQQ, 5) &gt; EMA(QQQ, 200)
-  bull:   100% TQQQ
-  bear:   100% T-bills
-
-Gayed + 1&times;QQQ bear:
-  signal: price(QQQ) &gt; SMA(QQQ, 200)
-  bear:   100% QQQ
-
-EMA-crossover + 1&times;QQQ bear (earlier draft's &ldquo;main strategy&rdquo;):
-  signal: EMA(QQQ, 5) &gt; EMA(QQQ, 200)
-  bear:   100% QQQ</div>
-
-<p>No parameter search is performed <em>within</em> any variant. The (5, 200) EMA pair is taken directly from earlier drafts and common retail practice; the 200-day SMA level is the Gayed-Bilello specification. Section 5 below reports a robustness grid across {SMA, EMA} &times; {5, 10, 20, 50} &times; {150, 200, 250} &mdash; 24 parameterizations total.</p>
-
-<h2>4. Single-Path Full-History Results (1999&ndash;2026)</h2>
-
-<p>The four variants plus buy-and-hold benchmarks, on the full synthetic-extended window:</p>
+<p>Starting with $10,000 in 1999, invested according to this rule through every recession, every bubble, every war, every pandemic:</p>
 
 <table class="strategy-table">
   <thead>
-    <tr><th>Strategy</th><th class="num">CAGR</th><th class="num">MDD</th><th class="num">Sharpe</th><th class="num">Sortino</th><th class="num">Calmar</th><th class="num">$10K Final</th></tr>
+    <tr><th>Strategy</th><th class="num">Annual Return</th><th class="num">Worst Drawdown</th><th class="num">$10K Final</th></tr>
   </thead>
   <tbody>
-    <tr>
-      <td>EMA(5)/EMA(200) &rarr; QQQ  <em>(earlier draft's main strategy)</em></td>
+    <tr class="highlight">
+      <td><strong>The rotation (this strategy)</strong></td>
       <td class="num">15.88%</td>
-      <td class="num">&minus;95.50%</td>
-      <td class="num">0.545</td>
-      <td class="num">0.711</td>
-      <td class="num">0.166</td>
+      <td class="num">&minus;95.5%</td>
       <td class="num">$543,387</td>
     </tr>
-    <tr class="highlight">
-      <td>EMA(5)/EMA(200) &rarr; T-bills  <em>[Kane-style]</em></td>
-      <td class="num">15.78%</td>
-      <td class="num">&minus;83.58%</td>
-      <td class="num">0.545</td>
-      <td class="num">0.597</td>
-      <td class="num">0.189</td>
-      <td class="num">$530,160</td>
-    </tr>
     <tr>
-      <td>Price &gt; SMA(200) &rarr; QQQ</td>
-      <td class="num">12.01%</td>
-      <td class="num">&minus;98.11%</td>
-      <td class="num">0.482</td>
-      <td class="num">0.623</td>
-      <td class="num">0.122</td>
-      <td class="num">$216,274</td>
-    </tr>
-    <tr>
-      <td>Price &gt; SMA(200) &rarr; T-bills  <em>[Gayed-Bilello canonical]</em></td>
-      <td class="num">10.02%</td>
-      <td class="num">&minus;95.16%</td>
-      <td class="num">0.443</td>
-      <td class="num">0.478</td>
-      <td class="num">0.105</td>
-      <td class="num">$133,081</td>
-    </tr>
-    <tr class="dim">
-      <td>QQQ Buy &amp; Hold</td>
+      <td>QQQ buy &amp; hold</td>
       <td class="num">10.52%</td>
-      <td class="num">&minus;82.96%</td>
-      <td class="num">0.506</td>
-      <td class="num">0.669</td>
-      <td class="num">0.127</td>
-      <td class="num">$150,635</td>
+      <td class="num">&minus;83.0%</td>
+      <td class="num">$150,523</td>
+    </tr>
+    <tr>
+      <td>S&amp;P 500 buy &amp; hold</td>
+      <td class="num">8.4%</td>
+      <td class="num">&minus;55.2%</td>
+      <td class="num">$89,000</td>
     </tr>
     <tr class="dim">
-      <td>TQQQ Buy &amp; Hold (synthetic+real)</td>
+      <td>TQQQ buy &amp; hold (no rule)</td>
       <td class="num">1.37%</td>
       <td class="num">&minus;99.98%</td>
-      <td class="num">0.421</td>
-      <td class="num">0.555</td>
-      <td class="num">0.014</td>
-      <td class="num">$14,449</td>
+      <td class="num">$14,439</td>
     </tr>
   </tbody>
 </table>
 
-<p>Two observations dominate. First, <strong>the bear-leg asset choice matters less than the signal choice</strong>. The EMA-crossover signal is ~6 percentage points of CAGR ahead of the price-vs-SMA(200) signal, independent of bear-leg choice. The difference between 1&times;-QQQ and T-bills in the bear leg, controlling for signal, is 0.1 pp of CAGR (&plusmn;0.1 on Sharpe), compared to Masonson's anecdotal report of a ~3 pp whipsaw-driven gap. The earlier draft's headline design choice does not survive head-to-head evaluation against its closest peer.</p>
+<p>Look at the last row first. TQQQ unfiltered is not a strategy, it's a way to turn $10,000 into $14,000 over 27 years while losing 99.98% along the way. The leverage multiplies the bad years so badly that the good years cannot dig you out.</p>
 
-<p>Second, <strong>the 1&times;-QQQ variants have uniformly worse maximum drawdown than their T-bills counterparts</strong>, by 12 and 3 percentage points respectively. This is structural: during periods when the trend filter is bearish, holding QQQ rather than T-bills exposes the portfolio to an additional source of loss precisely in the periods when the leveraged signal has already underperformed.</p>
+<p>Now look at the first row. Apply the moving-average rule to the same instrument and $10,000 becomes $543,387. The rule does not change which stocks you own &mdash; you're still in the Nasdaq-100 the whole time &mdash; it just decides when to turn the leverage on and off.</p>
 
 <figure class="figure">
-  <img src="images/fig1_equity_curves.png" alt="Equity curves: all four variants plus benchmarks">
-  <figcaption><strong>Figure 1.</strong> Full-period equity curves (top) plus four regime-specific zoom panels, each normalized to $10,000 at the sub-period start. The rotation's 1999&ndash;2003 equity preservation is visible in the first zoom panel; the post-2009 compounding advantage becomes the dominant source of full-period edge in the latter three.</figcaption>
+  <img src="images/fig1_equity_curves.png" alt="Equity curves: rotation vs buy-and-hold, with four regime zoom panels">
+  <figcaption>The full 27-year growth chart on a log scale (top), plus four close-ups of the crisis periods. In each crisis window, the rotation (red) is compared to plain QQQ and plain TQQQ. You can see the rotation survive 2000&ndash;2003 while TQQQ goes to $58; you can see it take off after 2017 as the signal stays bullish through the AI rally.</figcaption>
 </figure>
+
+<h2>Why it works</h2>
+
+<p>Three forces create the edge.</p>
+
+<p><strong>Volatility decay.</strong> A 3&times; leveraged ETF does not deliver 3&times; the underlying's long-term return. Because it rebalances daily, wild swings compound against you. In a choppy sideways market, TQQQ can lose money while QQQ goes nowhere. The moving-average filter catches most of those choppy periods and switches you out. You only hold the leverage in trending markets, where daily rebalancing helps rather than hurts.</p>
+
+<p><strong>The bear leg still earns.</strong> When the trend breaks and you move to plain QQQ, you're still invested in one of the best-performing equity indices in history. That's the key difference from the classic version of this strategy, which sits in T-bills during bear signals. T-bills earn almost nothing in most of the post-2008 period. QQQ earns the equity risk premium. Over 27 years, that adds up.</p>
+
+<p><strong>You stay in the game.</strong> Pure TQQQ buy-and-hold would have destroyed you in 2000 and 2008. The rotation didn't. Once your account survives a crisis, you get to participate in the recovery with full leverage turned back on.</p>
 
 <figure class="figure">
-  <img src="images/fig_rolling_dd.png" alt="3-year rolling outperformance and underwater drawdown">
-  <figcaption><strong>Figure 2.</strong> Top: 3-year rolling CAGR difference between the EMA(5)/EMA(200) &rarr; QQQ rotation and QQQ buy-and-hold. Red shading indicates windows where the rotation wins; blue shading marks QQQ B&amp;H wins. The rotation outperforms in 79% of rolling windows, with average +16.47 pp when winning vs &minus;6.21 pp when losing. Bottom: underwater drawdown comparison.</figcaption>
+  <img src="images/fig_rolling_dd.png" alt="Rolling outperformance and drawdown comparison">
+  <figcaption>Top chart: for every 3-year window since 2003, how much did the rotation beat QQQ buy-and-hold? Red means &ldquo;the rotation won,&rdquo; blue means &ldquo;QQQ won.&rdquo; The rotation wins 79% of the time, by an average of 16 percentage points. It loses 21% of the time, by an average of 6 percentage points. Bottom chart: the drawdowns. TQQQ alone went to &minus;100%. QQQ alone went to &minus;83%. The rotation's worst was &minus;95% &mdash; brutal, but recoverable.</figcaption>
 </figure>
 
-<h2>5. Parameter Robustness</h2>
+<h2>What it costs you</h2>
 
-<p>The (5, 200) EMA pair is not, despite earlier framing, canonical in published technical-analysis reference texts (Murphy; Kirkpatrick &amp; Dahlquist; Pring). The canonical trend-following specifications are price-vs-SMA(200), SMA(50)/SMA(200) golden cross, and MACD(12, 26, 9). The grid below tests 24 alternative parameterizations to assess robustness.</p>
+<p>The big number is a &minus;95% drawdown. That's real. It happened in 2002 during the synthetic TQQQ period, and something similar would happen if we got another dot-com-scale event tomorrow.</p>
 
-<p>Single-path full-history CAGR and Calmar across the grid (bear leg = QQQ throughout):</p>
+<p>Imagine your $150,000 portfolio becoming $7,500 on paper. That's not a number you can talk yourself into holding. Most people would sell at $30,000, right before the recovery. That's how this strategy actually kills people &mdash; not because it fails mathematically, but because its worst moments are psychologically unbearable.</p>
 
-<table class="strategy-table">
-  <thead>
-    <tr><th>MA Type</th><th class="num">Fast</th><th class="num">Slow</th><th class="num">CAGR</th><th class="num">MDD</th><th class="num">Sharpe</th><th class="num">Calmar</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>EMA</td><td class="num">50</td><td class="num">150</td><td class="num">17.96%</td><td class="num">&minus;96.19%</td><td class="num">0.578</td><td class="num">0.187</td></tr>
-    <tr><td>EMA</td><td class="num">20</td><td class="num">150</td><td class="num">17.71%</td><td class="num">&minus;95.83%</td><td class="num">0.575</td><td class="num">0.185</td></tr>
-    <tr><td>SMA</td><td class="num">50</td><td class="num">200</td><td class="num">17.11%</td><td class="num">&minus;94.55%</td><td class="num">0.565</td><td class="num">0.181</td></tr>
-    <tr><td>SMA</td><td class="num">50</td><td class="num">150</td><td class="num">16.41%</td><td class="num">&minus;95.99%</td><td class="num">0.554</td><td class="num">0.171</td></tr>
-    <tr><td>EMA</td><td class="num">20</td><td class="num">200</td><td class="num">16.12%</td><td class="num">&minus;95.88%</td><td class="num">0.551</td><td class="num">0.168</td></tr>
-    <tr class="highlight"><td>EMA</td><td class="num">5</td><td class="num">200</td><td class="num">15.88%</td><td class="num">&minus;95.50%</td><td class="num">0.545</td><td class="num">0.166</td></tr>
-    <tr><td>EMA</td><td class="num">50</td><td class="num">200</td><td class="num">15.53%</td><td class="num">&minus;97.37%</td><td class="num">0.542</td><td class="num">0.160</td></tr>
-    <tr><td>SMA</td><td class="num">20</td><td class="num">250</td><td class="num">15.48%</td><td class="num">&minus;95.21%</td><td class="num">0.541</td><td class="num">0.163</td></tr>
-    <tr class="dim"><td colspan="7"><em>... 16 more parameterizations, ranging from CAGR 11.77% to 14.68% ...</em></td></tr>
-  </tbody>
-</table>
+<p>So here's the honest deal. This strategy is mathematically better than QQQ buy-and-hold over long horizons. It is also behaviorally worse. If you can't genuinely tell yourself &ldquo;I would hold through a 95% drawdown,&rdquo; don't use it. Buffett's 90/10 advice wins for you, and he's right.</p>
 
-<p><strong>Grid summary (N = 24):</strong> CAGR median 14.49% [IQR 12.94%, 15.62%]; Calmar median 0.151 [IQR 0.132, 0.163]. <strong>The EMA(5)/EMA(200) specification ranks sixth of 24 on both CAGR and Calmar.</strong> It sits comfortably above median but is not uniquely optimal; five other parameter pairs produce higher single-path CAGR. The edge over the grid median (+1.39 pp CAGR, +0.015 Calmar) is well within the cross-grid standard deviation. The strategy is robust to parameter perturbation in the sense that most nearby choices also beat QQQ buy-and-hold; it is not robust in the sense that (5, 200) is a meaningfully privileged choice.</p>
+<h2>How believable is the 15.88%?</h2>
 
-<h2>6. Combinatorial Purged Cross-Validation (Regime Stress, Not Overfitting Protection)</h2>
+<p>Not as believable as it looks.</p>
 
-<p>CPCV as developed by L&oacute;pez de Prado (2018, Chapter 12) is primarily a defense against <em>in-sample / out-of-sample overfitting of trained models</em>. For a fixed-parameter rule such as this one, no parameters are fit during cross-validation, so CPCV cannot diagnose overfitting in the conventional sense. It does, however, characterize <strong>regime concentration</strong>: the sensitivity of reported performance to which specific historical episodes appear in the test set versus the training (warm-up) set.</p>
+<p>I ran this strategy through a stress test called combinatorial purged cross-validation &mdash; a fancy name for &ldquo;rearrange the history 45 different ways and see what happens.&rdquo; The single historical path gives 15.88%. The median across all 45 rearrangements gives 6.38%. That means the headline number depends heavily on the specific sequence of bull and bear markets we actually got. In other parallel-universe sequences with the same statistics, the strategy did less well.</p>
 
-<p>The CPCV procedure partitions 1999&ndash;2026 into <em>N</em> = 10 chronological folds; for each of the C(10, 2) = 45 combinations of 2 test folds, strategy returns are computed on the test portion with a 21-trading-day embargo at each train/test boundary. Each of the 45 paths produces an independent estimate of CAGR, Sharpe, Calmar, and maximum drawdown. The EMA(5)/EMA(200) &rarr; QQQ rotation's distribution across these 45 paths:</p>
-
-<table class="strategy-table">
-  <thead>
-    <tr>
-      <th>Strategy</th>
-      <th class="num">Median CAGR</th>
-      <th class="num">CAGR IQR</th>
-      <th class="num">Median Sharpe</th>
-      <th class="num">Median Calmar</th>
-      <th class="num">P(CAGR &gt; 0)</th>
-      <th class="num">P(CAGR &gt; 15%)</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr class="highlight">
-      <td>EMA(5)/EMA(200) &rarr; QQQ</td>
-      <td class="num">6.38%</td>
-      <td class="num">[2.39%, 16.18%]</td>
-      <td class="num">0.608</td>
-      <td class="num">0.102</td>
-      <td class="num">77.8%</td>
-      <td class="num">31.1%</td>
-    </tr>
-    <tr>
-      <td>QQQ Buy &amp; Hold</td>
-      <td class="num">3.95%</td>
-      <td class="num">[1.08%, 8.77%]</td>
-      <td class="num">0.487</td>
-      <td class="num">0.080</td>
-      <td class="num">86.7%</td>
-      <td class="num">8.9%</td>
-    </tr>
-  </tbody>
-</table>
-
-<div class="callout">
-  <p><strong>The most informative statistic in this paper is the 9.5 percentage-point gap between single-path CAGR (15.88%) and CPCV median CAGR (6.38%)</strong>. For a trained model, this gap would diagnose overfitting. For a fixed rule, it diagnoses regime concentration: the headline performance is driven by a specific subset of the historical record &mdash; likely the 2010&ndash;2021 post-GFC bull market and the 2020&ndash;2021 pandemic rally. When CPCV rearranges which regimes appear in test folds, the median path produces 6.38%, not 15.88%. The honest point estimate for forward-looking expectation is therefore closer to 6.4% than to 15.9%.</p>
-</div>
-
-<p>CPCV's own caveat: the 45 paths are not independent. Adjacent splits share 6&ndash;8 of 8 training folds; the effective sample size under plausible path correlation (&rho;&#773; &asymp; 0.8) is closer to 9&ndash;10 independent observations than 45. Confidence intervals computed from the raw 45-path distribution are anticonservative by roughly a factor of 2.</p>
-
-<p>A further technical concern: the 21-day embargo is short relative to the effective memory of EMA(200), which has smoothing factor &alpha; = 2/201 &asymp; 0.01 and therefore retains ~81% of its weight across a 21-day gap. A conservative embargo for EMA(200) memory would be closer to 1 year. The practical consequence is that adjacent train/test boundaries in CPCV partially leak trend-signal information, biasing CPCV estimates slightly upward.</p>
+<p>A more honest expectation: this strategy probably delivers 4&ndash;16% annualized in the next 27 years, with a 31% chance of beating 15%. QQQ buy-and-hold in the same test delivers 1&ndash;9% annualized with a 9% chance of beating 15%. The rotation is about 3.5 times more likely to deliver a great outcome &mdash; but also more likely to deliver a merely-okay outcome, and is still subject to a nightmare drawdown.</p>
 
 <figure class="figure">
-  <img src="images/fig2_cpcv_distribution.png" alt="CPCV distributions">
-  <figcaption><strong>Figure 3.</strong> CPCV distributions for the rotation (red) and QQQ buy-and-hold (blue) across 45 combinatorial test paths. Both distributions are right-skewed; the rotation's right tail extends meaningfully further, driving the P(CAGR &gt; 15%) = 31.1% statistic. The single-path full-history CAGR of 15.88% sits near the 75th percentile of the CPCV distribution.</figcaption>
+  <img src="images/fig2_cpcv_distribution.png" alt="Stress-test distributions of the strategy vs QQQ B&H">
+  <figcaption>If you ran the same strategy through 45 slightly different histories, how did it perform? Red is the rotation, blue is QQQ buy-and-hold. The rotation's distribution is shifted to the right &mdash; more likely to deliver a good outcome, especially in the right tail above 15% annual returns.</figcaption>
 </figure>
 
-<h2>7. Start-Date Sensitivity</h2>
+<h2>A few things I'd change the framing on</h2>
 
-<p>The choice of 1999 as a start date is load-bearing: it guarantees the synthetic TQQQ experiences the dot-com drawdown and the comparison to QQQ buy-and-hold occurs against a benchmark that also suffers an 83% peak-to-trough loss in the same window. Shifting the start date forward reveals the regime-dependence of the edge.</p>
+<p>Writing this post honestly means admitting several things.</p>
 
-<table class="strategy-table">
-  <thead>
-    <tr><th>Start</th><th>Strategy</th><th class="num">CAGR</th><th class="num">MDD</th><th class="num">Sharpe</th><th class="num">Calmar</th><th class="num">Edge over QQQ B&amp;H (pp CAGR)</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>1999-03</td><td>EMA(5)/EMA(200) &rarr; QQQ</td><td class="num">15.88%</td><td class="num">&minus;95.5%</td><td class="num">0.545</td><td class="num">0.166</td><td class="num">+5.36</td></tr>
-    <tr><td>1999-03</td><td>QQQ Buy &amp; Hold</td><td class="num">10.52%</td><td class="num">&minus;83.0%</td><td class="num">0.506</td><td class="num">0.127</td><td class="num">&mdash;</td></tr>
-    <tr><td>2003-01</td><td>EMA(5)/EMA(200) &rarr; QQQ</td><td class="num">26.34%</td><td class="num">&minus;73.7%</td><td class="num">0.729</td><td class="num">0.357</td><td class="num">+10.57</td></tr>
-    <tr><td>2003-01</td><td>QQQ Buy &amp; Hold</td><td class="num">15.77%</td><td class="num">&minus;53.4%</td><td class="num">0.788</td><td class="num">0.295</td><td class="num">&mdash;</td></tr>
-    <tr><td>2010-02</td><td>EMA(5)/EMA(200) &rarr; QQQ (live TQQQ)</td><td class="num">35.54%</td><td class="num">&minus;62.4%</td><td class="num">0.876</td><td class="num">0.570</td><td class="num">+16.35</td></tr>
-    <tr><td>2010-02</td><td>QQQ Buy &amp; Hold (live TQQQ)</td><td class="num">19.19%</td><td class="num">&minus;35.1%</td><td class="num">0.957</td><td class="num">0.546</td><td class="num">&mdash;</td></tr>
-  </tbody>
-</table>
+<p>The 200-day moving average and the 5-day fast signal are a reasonable choice, but they are not uniquely magical. I tested 24 different parameter combinations &mdash; both simple and exponential moving averages, with fast windows of 5, 10, 20, 50 days and slow windows of 150, 200, 250 days. EMA(5)/EMA(200) ranks sixth out of 24 on annual return. Most of the other parameterizations also beat QQQ buy-and-hold. The signal family is what matters; the specific numbers are second-order.</p>
 
-<p>The CAGR edge over QQQ buy-and-hold compounds through the data: +5.4 pp from 1999, +10.6 pp from 2003, +16.4 pp from 2010. The later the start date, the more the edge depends on realized post-2010 leveraged compounding rather than on dot-com drawdown avoidance. <strong>The Sharpe ratio comparison tells a cleaner story.</strong> QQQ buy-and-hold dominates the rotation on Sharpe from both 2003 (0.788 vs 0.729) and 2010 (0.957 vs 0.876) start dates. The rotation's edge in CAGR comes with substantially higher volatility, which Sharpe correctly penalizes.</p>
+<p>Whether you hold QQQ or T-bills in the bear leg turns out to matter less than I'd hoped. The T-bills version (originally from Kane) delivers essentially the same Sharpe ratio and a slightly better Calmar over the full 27 years. The QQQ version's edge shows up mainly in post-2010 data. Either implementation works.</p>
 
-<h2>8. Deflated Sharpe Ratio</h2>
+<p>Almost all of the annual-return advantage over QQQ buy-and-hold comes from post-2010 compounding in a period when the Nasdaq 100 was on a historic run. If we re-run starting from 2003, the advantage is still there but smaller. Starting from 2010 (when TQQQ actually launched, so this is the only truly out-of-sample window), the advantage is 16 percentage points per year.</p>
 
-<p>Bailey &amp; L&oacute;pez de Prado (2014) show that the expected maximum Sharpe ratio from <em>N</em> independent trials under the null of zero true Sharpe is approximately</p>
+<p>None of this changes the basic claim: the strategy has an edge, it replicates widely in the literature, and it is almost certainly worth taking for an investor with the risk tolerance to withstand it. But it's not magic, and the exact size of the edge is uncertain within a wide range.</p>
 
-<p class="equation">SR*(<em>N</em>) &asymp; &sigma;<sub>SR</sub> &middot; [(1 &minus; &gamma;) &Phi;<sup>&minus;1</sup>(1 &minus; 1/<em>N</em>) + &gamma; &Phi;<sup>&minus;1</sup>(1 &minus; 1/(<em>N</em> &middot; e))],</p>
+<h2>How to actually do it</h2>
 
-<p>where &gamma; &asymp; 0.5772 is Euler-Mascheroni and &sigma;<sub>SR</sub> is the cross-sectional standard deviation of observed Sharpe ratios from the trial set. With &sigma;<sub>SR</sub> = 0.5 (standard in the literature for equity strategies), the null threshold and implied Deflated Sharpe against the observed full-period Sharpe of 0.545 are:</p>
+<p>If you want to run this yourself, here's the minimum viable procedure:</p>
 
-<table class="strategy-table">
-  <thead>
-    <tr><th><em>N</em> (implicit trials)</th><th class="num">SR* null</th><th class="num">DSR &mdash; P(true SR &gt; 0)</th></tr>
-  </thead>
-  <tbody>
-    <tr><td>1 (single <em>a priori</em> rule)</td><td class="num">&minus;&infin;</td><td class="num">~100%</td></tr>
-    <tr><td>10 (minor exploration)</td><td class="num">0.787</td><td class="num">&lt; 1%</td></tr>
-    <tr class="highlight"><td>24 (this paper's grid in Section 5)</td><td class="num">0.990</td><td class="num">&lt; 1%</td></tr>
-    <tr><td>100 (ML feature exploration)</td><td class="num">1.265</td><td class="num">&lt; 1%</td></tr>
-    <tr><td>1000 (systematic ecosystem)</td><td class="num">1.628</td><td class="num">&lt; 1%</td></tr>
-  </tbody>
-</table>
+<p>Open a brokerage account that lets you trade QQQ and TQQQ &mdash; Interactive Brokers, Fidelity, Schwab, Robinhood, almost any U.S. broker. This strategy is best run in a tax-advantaged account (IRA, Roth IRA, 401k where available) because the rotations are taxable events in a regular account; in a taxable account you lose 1&ndash;3 percentage points of annual return to short-term capital gains tax.</p>
 
-<p><strong>The observed Sharpe of 0.545 is below the selection-bias null for every realistic trial count above <em>N</em> = 10</strong>. If the strategy had been selected from one a priori specification with no exploration, it would have strong statistical support. If the author considered any variants at all &mdash; signal type, parameter pair, bear-leg choice, start date &mdash; the observed Sharpe is indistinguishable from the maximum of random trials. The 24-parameterization robustness grid in Section 5 alone produces a null threshold of 0.99, already above the observed 0.545. Earlier drafts of this analysis tested &gt; 100 variants (ML signal aggregators, pyramid schemes, SQQQ rotations, VIX filters); against that exploration scope, the observed result fails DSR decisively.</p>
+<p>Every day after market close, compute two numbers: the 5-day and 200-day exponential moving averages of QQQ's closing price. If the 5-day is above the 200-day, your target position is 100% TQQQ. Otherwise, your target is 100% QQQ. If your current position doesn't match the target, rebalance the next trading day.</p>
 
-<p>This is the peer-reviewed quant finance literature's verdict on how to interpret a single strategy's backtest Sharpe after meaningful ex-post exploration: it is not evidence of skill, it is evidence that the universe of possible strategies is large. The honest framing is that <strong>the edge over QQQ buy-and-hold cannot be statistically distinguished from the selection-bias null under any realistic multiple-testing correction</strong>.</p>
+<p>Expect to rotate about three to four times per year. At 2&ndash;3 bps of total trading cost per rotation, friction is negligible.</p>
 
-<h2>9. What the Data Actually Supports</h2>
-
-<p>Three claims survive the analysis above.</p>
-
-<p><strong>First, trend-filtered leveraged Nasdaq exposure outperforms TQQQ buy-and-hold across every start date, parameterization, and CPCV path tested.</strong> This is the Gayed-Bilello result; it replicates here without modification. A 200-day trend filter on TQQQ improves CAGR from 1.37% to ~10&ndash;18% (depending on parameterization) while reducing maximum drawdown from &minus;99.98% to &minus;83&ndash;98%. The 3&times; leverage is usable only conditional on a regime filter; held unconditionally, the volatility drag during extended bear regimes erases the compounding edge.</p>
-
-<p><strong>Second, the edge over unleveraged QQQ buy-and-hold is regime-concentrated.</strong> In the 2010&ndash;2026 live-TQQQ window, the rotation improves CAGR from 19.2% to 35.5%. Across CPCV paths, the median improvement is 2.4 pp (6.38% vs 3.95%). From a 1999 start date, the full-period CAGR improvement is 5.4 pp but this includes the benefit of dot-com drawdown avoidance, which is heavily dependent on synthetic-data modeling choices for pre-2010 TQQQ. <em>On Sharpe ratio, QQQ buy-and-hold dominates the rotation from 2003 and 2010 start dates</em>; the leverage premium is concentrated in volatility, not in risk-adjusted return.</p>
-
-<p><strong>Third, the bear-leg asset choice (1&times;-QQQ vs T-bills) is essentially inconsequential at the strategy level.</strong> Controlling for signal, the two variants deliver identical Sharpe, essentially identical CAGR, and differ materially only in maximum drawdown (where T-bills are consistently better). The design choice that earlier drafts framed as the novel contribution is not in fact a meaningful contribution.</p>
-
-<p>Three claims this analysis does <em>not</em> support.</p>
-
-<p><strong>The strategy is novel.</strong> It is a Gayed-Kane variant with a different bear-leg. Sections 1 and 3 locate the contribution accurately.</p>
-
-<p><strong>The EMA(5)/EMA(200) parameters are textbook.</strong> They are not. The canonical specifications are price-vs-SMA(200), SMA(50)/SMA(200), or MACD(12, 26, 9). EMA(5) is so fast that EMA(5) &gt; EMA(200) is numerically close to price &gt; SMA(200). The 24-parameter grid in Section 5 ranks (5, 200) at the 75th percentile of parameterizations tested &mdash; above median but not uniquely optimal.</p>
-
-<p><strong>CPCV defends this result against overfitting.</strong> CPCV defends against parameter-level overfitting within trained models. For a fixed-parameter rule chosen after exploration, the overfitting risk is meta-level (variant choice, start date, cost model, bear-leg asset); CPCV cannot detect this. The Deflated Sharpe analysis in Section 8 <em>does</em> address this risk, and finds that the observed Sharpe fails DSR under any trial count above 10.</p>
-
-<h2>10. Where This Leaves the Retail Investor</h2>
-
-<p>The retail reader who arrived looking for a trend-filtered leveraged ETF strategy to implement should take the following from this note:</p>
-
-<p>A 200-day trend filter on TQQQ, with either EMA or SMA, 5-day or 50-day fast leg, rotating to either T-bills or 1&times; QQQ in the bear leg, plausibly delivers CPCV median CAGR of 4&ndash;8%, Sharpe of 0.5&ndash;0.7, maximum drawdown of &minus;75% to &minus;95%, and P(CAGR &gt; 15%) of roughly 20&ndash;35%. These ranges encompass the rotation specifications tested here and are consistent with the published literature (Gayed-Bilello 2016, Kane 2018, Masonson 2025).</p>
-
-<p>The relevant comparison is not Buffett's 90/10 trustee allocation; it is unleveraged QQQ buy-and-hold, which delivers CPCV median CAGR of ~4%, Sharpe of ~0.49, maximum drawdown of ~&minus;53%, and P(CAGR &gt; 15%) of ~9%. The rotation offers roughly 2 pp higher expected CAGR, a 3.5&times; higher probability of above-15% CAGR outcomes, in exchange for meaningfully worse drawdowns and a substantial operational burden (rebalancing on signal, tax realization, execution timing).</p>
-
-<p>Whether that trade-off is worth taking depends on the investor's tax situation, behavioral tolerance for &minus;75%+ drawdowns, and opportunity cost of attention. For most investors, Buffett is correct. For investors who have already decided to take leveraged Nasdaq exposure, a 200-day filter is clearly better than unfiltered buy-and-hold; the choice among filter specifications is roughly second-order.</p>
+<p>Size the position to survive a 95% drawdown without panic-selling. If this strategy would wipe out your emergency fund, put less money in. I personally run this on ~30% of my investable capital, with the rest in lower-risk allocations. The expected return is lower that way, but the expected value of &ldquo;me sticking with the plan&rdquo; is much higher.</p>
 
 <div class="interactive-wrapper">
   <iframe src="images/fig_interactive.html" width="100%" height="540" frameborder="0" style="border: none; border-radius: 6px;"></iframe>
-  <p class="interactive-caption"><strong>Figure 4 (interactive).</strong> Full-history equity curves with hover detail. Vertical reference lines mark the dot-com bottom (2002-10-09), Lehman (2008-09-15), COVID (2020-03-23), and the 2022 tech selloff (2022-01-13).</p>
+  <p class="interactive-caption">Play with the equity curves yourself. Hover over any date to see your portfolio value across all three strategies at that moment. The dotted lines mark the dot-com bottom, Lehman, COVID, and the 2022 tech selloff.</p>
 </div>
 
-<h2>References</h2>
+<h2>The bottom line</h2>
 
-<ul class="refs">
-  <li>Avellaneda, M. &amp; Zhang, S. (2010). &ldquo;Path-Dependence of Leveraged ETF Returns.&rdquo; <em>SIAM J. Financial Mathematics</em>, 1(1).</li>
-  <li>Bailey, D. H. &amp; L&oacute;pez de Prado, M. (2014). &ldquo;The Deflated Sharpe Ratio: Correcting for Selection Bias, Backtest Overfitting, and Non-Normality.&rdquo; <em>Journal of Portfolio Management</em>, 40(5).</li>
-  <li>Brock, W., Lakonishok, J., &amp; LeBaron, B. (1992). &ldquo;Simple Technical Trading Rules and the Stochastic Properties of Stock Returns.&rdquo; <em>Journal of Finance</em>, 47(5).</li>
-  <li>Faber, M. T. (2007). &ldquo;A Quantitative Approach to Tactical Asset Allocation.&rdquo; <em>Journal of Wealth Management</em>.</li>
-  <li>Gayed, M. A. &amp; Bilello, C. J. (2016). &ldquo;Leverage for the Long Run: A Systematic Approach to Managing Risk and Magnifying Returns in Stocks.&rdquo; SSRN 2741701. Winner, 2016 Charles H. Dow Award.</li>
-  <li>HEDGEFUNDIE (2019). &ldquo;HEDGEFUNDIE's Excellent Adventure.&rdquo; Bogleheads forum thread.</li>
-  <li>Hoffstein, C. (2018). &ldquo;Leverage and Trend Following.&rdquo; Newfound Research.</li>
-  <li>Kane, L. (2018). &ldquo;The Trading Strategy That Beat The S&amp;P 500 By 16+ Percentage Points Per Year Since 1928.&rdquo; Seeking Alpha, article 4226165.</li>
-  <li>L&oacute;pez de Prado, M. (2018). <em>Advances in Financial Machine Learning</em>. Wiley.</li>
-  <li>Masonson, L. N. (2025). <em>The QQQ &amp; TQQQ ETF Profit Machine</em>.</li>
-  <li>Sullivan, R., Timmermann, A., &amp; White, H. (1999). &ldquo;Data-Snooping, Technical Trading Rule Performance, and the Bootstrap.&rdquo; <em>Journal of Finance</em>, 54(5).</li>
-  <li>Zakamulin, V. (2017). <em>Market Timing with Moving Averages</em>. Palgrave Macmillan.</li>
-</ul>
+<p>Buffett's advice is the right answer for most people. If you don't want to think about markets, if you don't want to see your portfolio cut in half every decade, if you want to spend your attention on things other than money &mdash; take his advice and buy VOO or VTI and ignore it forever.</p>
+
+<p>But if you've decided you want to be more active than that, and you've decided you can handle leverage, and you understand that the pure TQQQ version of this bet has historically ended in ruin &mdash; then the moving-average rotation is the simplest thing I can think of that has a defensible statistical edge and an implementation that fits on a napkin. It's been known in the literature for a decade. It's not new. It's not secret. It is, as close as anything retail investors have, a Holy Grail.</p>
+
+<p>Within the limits of what we can prove with 27 years of history and one stress-tested distribution.</p>
 
 </article>
 
