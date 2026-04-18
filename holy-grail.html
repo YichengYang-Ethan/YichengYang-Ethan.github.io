@@ -250,11 +250,20 @@ turnover: ~53 trades over 16 years of live TQQQ data
 <p>TQQQ buy-and-hold is included as a negative reference: holding 3&times; daily leverage through the full 27-year window produces a CAGR of 1.36% and terminal wealth below starting capital in inflation-adjusted terms. The dot-com unwind destroys enough capital that even the subsequent 16-year bull market does not compound back to meaningful returns. Leverage without signal is not an edge.</p>
 
 <figure class="figure">
-  <img src="images/fig1_equity_curves.png" alt="Equity curves: rotation vs buy-and-hold">
-  <figcaption><strong>Figure 1.</strong> Compounded $10,000 across the rotation strategy and both buy-and-hold benchmarks, log-scaled. The rotation (red) tracks QQQ buy-and-hold closely through the dot-com unwind &mdash; with the bear signal correctly moving out of TQQQ &mdash; and then pulls ahead during the post-2009 expansion. TQQQ buy-and-hold (dashed orange) collapses below $500 in 2002 and never meaningfully recovers.</figcaption>
+  <img src="images/fig1_equity_curves.png" alt="Equity curves with four regime zoom panels">
+  <figcaption><strong>Figure 1.</strong> Full-history equity curves (top) plus four regime-specific zoom panels, each normalized to $10,000 at the start of the window. The rotation's edge is visually compressed on the full-history log scale but becomes explicit in the sub-panels: in the dot-com unwind (2000-2003), the bear signal preserved $2,736 of capital while TQQQ buy-and-hold collapsed to $58; in the financial crisis (2007-2010), the rotation finished at $14,417 versus TQQQ's $455; in the AI bull with 2022 selloff (2022-2026), the rotation turned $10K into $18,488 versus QQQ's $14,019.</figcaption>
 </figure>
 
-<h3>4.2 CPCV distribution (45 paths)</h3>
+<h3>4.2 Rolling outperformance and drawdown comparison</h3>
+
+<p>The single-path equity curves understate the strategy's consistency. A more informative view is the 3-year rolling CAGR outperformance of the rotation versus QQQ buy-and-hold, and the cumulative drawdown traces of all three strategies side-by-side.</p>
+
+<figure class="figure">
+  <img src="images/fig_rolling_dd.png" alt="Rolling 3-year outperformance and drawdown underwater chart">
+  <figcaption><strong>Figure 2.</strong> Top: 3-year rolling CAGR difference (rotation minus QQQ buy-and-hold). Red shading indicates windows where the rotation wins; blue shading indicates QQQ buy-and-hold wins. The rotation outperforms in 79% of rolling 3-year windows, with average outperformance of +16.47 percentage points when winning versus average underperformance of &minus;6.21 percentage points when losing. Bottom: drawdown underwater chart. The rotation's &minus;96.9% maximum drawdown is a 2002 event specific to the synthetic pre-2010 TQQQ series; the realized post-2010 drawdowns are shallower and recover faster than either buy-and-hold benchmark.</figcaption>
+</figure>
+
+<h3>4.3 CPCV distribution (45 paths)</h3>
 
 <table class="strategy-table">
   <thead>
@@ -307,19 +316,19 @@ turnover: ~53 trades over 16 years of live TQQQ data
 
 <figure class="figure">
   <img src="images/fig2_cpcv_distribution.png" alt="CPCV distributions: rotation vs QQQ buy-and-hold">
-  <figcaption><strong>Figure 2.</strong> CPCV CAGR and Calmar distributions for the rotation strategy (red) and QQQ buy-and-hold (blue), each computed across 45 independent combinatorial test paths. The rotation distribution is shifted to the right on both axes: higher median, wider right tail, comparable or better lower quartile. Vertical lines mark medians.</figcaption>
+  <figcaption><strong>Figure 3.</strong> CPCV CAGR and Calmar distributions for the rotation strategy (red) and QQQ buy-and-hold (blue), each computed across 45 independent combinatorial test paths. The rotation distribution is shifted to the right on both axes. The right panel highlights the right-tail probability: 31% of rotation paths deliver CAGR above 15% versus only 9% for QQQ buy-and-hold.</figcaption>
 </figure>
 
-<h3>4.3 Risk-return frontier</h3>
+<h3>4.4 Risk-return frontier</h3>
 
 <figure class="figure">
   <img src="images/fig3_pareto.png" alt="Risk-return scatter: rotation vs alternatives">
-  <figcaption><strong>Figure 3.</strong> CAGR versus maximum drawdown for the rotation and both buy-and-hold benchmarks under CPCV. The vertical bar through the rotation point shows the CPCV interquartile range on CAGR; the analogous bar for QQQ buy-and-hold is substantially shorter, reflecting lower variability but also lower central tendency.</figcaption>
+  <figcaption><strong>Figure 4.</strong> CAGR versus maximum drawdown across all 45 CPCV paths for each strategy. Faint dots show individual paths; large dots mark the median. The rotation cluster sits above and to the left of the TQQQ buy-and-hold cluster (same drawdown range, higher returns) and above the QQQ buy-and-hold cluster (higher returns, modestly higher drawdown).</figcaption>
 </figure>
 
 <div class="interactive-wrapper">
   <iframe src="images/fig_interactive.html" width="100%" height="540" frameborder="0" style="border: none; border-radius: 6px;"></iframe>
-  <p class="interactive-caption"><strong>Figure 4 (interactive).</strong> Single-path equity curves with hover detail. Vertical reference lines mark the Lehman bankruptcy (2008-09-15), the COVID liquidation low (2020-03-23), and the start of the 2022 tech selloff (2022-01-13). Toggle individual series via the legend.</p>
+  <p class="interactive-caption"><strong>Figure 5 (interactive).</strong> Single-path equity curves with hover detail. Vertical reference lines mark the dot-com bottom (2002-10-09), the Lehman bankruptcy (2008-09-15), the COVID liquidation low (2020-03-23), and the start of the 2022 tech selloff (2022-01-13). Toggle individual series via the legend.</p>
 </div>
 
 <h2>5. Why Fixed Parameters Beat Adaptive Tuning</h2>
