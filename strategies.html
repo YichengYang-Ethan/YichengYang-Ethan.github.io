@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Strategies — Yicheng Yang</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/strategies" class="active">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">Strategies</div>
+  <h1>Live Strategy Research</h1>
+  <p class="meta">Thesis, signal construction, risk sizing, and ongoing research log for each strategy I'm developing. A working notebook rather than a finished report.</p>
+</header>
+
+<article>
+
+<!-- FLB -->
+<div class="card" style="margin-bottom:28px;">
+  <div class="card-label">Paper trading &middot; Kalshi</div>
+  <div class="card-title" style="font-size:22px;">Favorite&ndash;Longshot Bias (FLB)</div>
+  <div class="card-desc"><strong>Thesis.</strong> Binary event contracts on Kalshi embed a positive pricing wedge &lambda; that overprices longshots relative to favorites. Selling the longshot leg of well-calibrated contracts harvests this risk premium. Calibrated from 271K+ resolved contracts; pooled &lambda;&#770; = 0.187.<br><br>
+  <strong>Universe.</strong> Sports (NBA, NFL, tennis), political events, and macro binaries with sufficient liquidity and a blacklist-driven topic filter.<br><br>
+  <strong>Status.</strong> Paper trading at Square Kettle. Timestamp-fix revealed true win rate ~54% (not 68% as earlier claimed). Go-live pushed 4+ weeks while blacklist widens from 14 &rarr; 18 topics and ultrareview fixes land.</div>
+  <div class="card-meta">Since Oct 2025 &middot; Kalshi &middot; Monte Carlo fill simulation</div>
+</div>
+
+<!-- Holy Grail -->
+<div class="card" style="margin-bottom:28px;">
+  <div class="card-label">Research &middot; In development</div>
+  <div class="card-title" style="font-size:22px;">Holy Grail</div>
+  <div class="card-desc"><strong>Thesis.</strong> Upgrading a macro / market-regime signal into a tradeable systematic strategy. Source signals from the 7-indicator bubble composite (Lasso + Bayesian Beta-Binomial + EVT/GPD ensemble, AUC 0.802 on drawdown detection) and translate the regime probability into position sizing rather than just a dashboard color.<br><br>
+  <strong>Universe.</strong> US equity ETFs (SPY, QQQ) &plusmn; VIX-linked hedges, sized by regime score.<br><br>
+  <strong>Status.</strong> Currently a dashboard; upgrading to a signal-&gt;sizing pipeline with walk-forward validation. Next milestone: end-to-end backtest with regime-conditional Kelly sizing.</div>
+  <div class="card-meta">Basis: <a href="https://github.com/YichengYang-Ethan/Market-Bubble-Index-Dashboard">Market Bubble Index Dashboard</a></div>
+</div>
+
+<!-- 0DTE -->
+<div class="card" style="margin-bottom:28px;">
+  <div class="card-label">Research &middot; Infra ready</div>
+  <div class="card-title" style="font-size:22px;">0DTE Options</div>
+  <div class="card-desc"><strong>Thesis.</strong> Systematic SPY 0DTE strategy trading the intraday vol-risk-premium and skew dynamics. Academic literature shows persistent short-vol edge with risk-defined structures on 0DTE expiries; the question is execution cost and fill realism, not statistical existence.<br><br>
+  <strong>Universe.</strong> SPY 0DTE options &mdash; defined-risk verticals and iron flies, gated by realized-vs-implied spread and intraday skew.<br><br>
+  <strong>Status.</strong> Infrastructure ready: IB Gateway (paper) wired, Theta Data for historical chains and OI, Greeks computed via BSM. Next: data-layer migration to new Theta API, then first end-to-end backtest on 3&ndash;5 years of minute bars.</div>
+  <div class="card-meta">IBKR paper &middot; Theta Data &middot; Python</div>
+</div>
+
+<!-- Related writing -->
+<div class="section-label" style="margin-top:48px;">Related writing</div>
+<ul class="post-list">
+  <li><a href="/holy-grail"><span>The Holy Grail of Investing</span><span class="post-date">Apr 2026</span></a></li>
+  <li><a href="/final-four"><span>What Prediction Markets Got Right (and Wrong) During the Final Four</span><span class="post-date">Apr 2026</span></a></li>
+</ul>
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary); margin-top:40px;">
+Each strategy page will grow into a living document: research log, parameter sweeps, out-of-sample results, and post-mortems on what breaks. Updates follow on <a href="https://github.com/YichengYang-Ethan">GitHub</a>.
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
