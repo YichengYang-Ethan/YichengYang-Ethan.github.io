@@ -43,12 +43,12 @@
 
 <!-- Holy Grail -->
 <div class="card" style="margin-bottom:28px;">
-  <div class="card-label">Research &middot; In development</div>
-  <div class="card-title" style="font-size:22px;">Holy Grail</div>
-  <div class="card-desc"><strong>Thesis.</strong> Upgrading a macro / market-regime signal into a tradeable systematic strategy. Source signals from the 7-indicator bubble composite (Lasso + Bayesian Beta-Binomial + EVT/GPD ensemble, AUC 0.802 on drawdown detection) and translate the regime probability into position sizing rather than just a dashboard color.<br><br>
-  <strong>Universe.</strong> US equity ETFs (SPY, QQQ) &plusmn; VIX-linked hedges, sized by regime score.<br><br>
-  <strong>Status.</strong> Currently a dashboard; upgrading to a signal-&gt;sizing pipeline with walk-forward validation. Next milestone: end-to-end backtest with regime-conditional Kelly sizing.</div>
-  <div class="card-meta">Basis: <a href="https://github.com/YichengYang-Ethan/Market-Bubble-Index-Dashboard">Market Bubble Index Dashboard</a></div>
+  <div class="card-label">Backtested &middot; 27 years</div>
+  <div class="card-title" style="font-size:22px;">Holy Grail &mdash; QQQ/TQQQ Rotation</div>
+  <div class="card-desc"><strong>Thesis.</strong> A moving-average regime filter on QQQ decides when to hold 3&times; leveraged TQQQ versus unleveraged QQQ. When the 5-day EMA is above the 200-day EMA, hold TQQQ; otherwise hold QQQ. The filter avoids TQQQ's volatility-decay trap in choppy markets and keeps the bear leg invested in the equity risk premium.<br><br>
+  <strong>Universe.</strong> QQQ and TQQQ only. Rotates ~3&ndash;4 times per year. Runs in any US brokerage, preferably tax-advantaged.<br><br>
+  <strong>Status.</strong> Full 1999&ndash;2026 backtest: 15.88% CAGR vs 10.52% for QQQ B&amp;H and 1.37% for TQQQ B&amp;H. $10K &rarr; $543K. Stress-tested via combinatorial purged CV (45 paths, median 6.38%). Worst drawdown &minus;95%. Write-up with equity curves and honest caveats at <a href="/holy-grail">The Holy Grail of Investing</a>.</div>
+  <div class="card-meta"><a href="/holy-grail">Full write-up &rarr;</a> &middot; EMA(5)/EMA(200) filter &middot; no discretion</div>
 </div>
 
 <!-- 0DTE -->
