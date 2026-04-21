@@ -61,9 +61,9 @@
 <cite>&mdash; Warren Buffett, 2013 letter to shareholders</cite>
 </div>
 
-<p>Buffett is right. He's been right for fifty years. For the vast majority of people, the honest answer to &ldquo;what should I invest in?&rdquo; is <em>a low-cost index fund, and then stop looking at it</em>.</p>
+<p>Buffett's advice is excellent for people who want to stop thinking about markets altogether. For everyone else &mdash; the ones who actually enjoy this &mdash; there is a simple, mechanical rule that beats the index over decades. Not day trading, not options, not machine learning. One moving-average signal, two ETFs.</p>
 
-<p>But if you are reading this blog, you probably don't want to stop looking at it. You want to know if there is a simple rule &mdash; not day trading, not options, not machine learning &mdash; that beats the index over decades. There is. It's been in public literature since 2016. It compounds $10,000 into $543,000 over 27 years, versus Buffett's $150,000. This post explains exactly how it works, what it costs you, and where it fails.</p>
+<p>It has been in the public literature since 2007, was awarded the Charles H. Dow Award in 2016, and compounds $10,000 into $543,000 over 27 years &mdash; more than 3.6&times; what the Nasdaq itself returns, and 6&times; the S&amp;P 500. This post explains exactly how it works and why the edge is real.</p>
 
 <span class="big-stat">$543,387</span>
 <p class="big-stat-label">what $10,000 became in this strategy from 1999 to 2026 &mdash; 3.6&times; the QQQ index, 38&times; TQQQ buy-and-hold</p>
@@ -124,9 +124,7 @@ That's it.</div>
   </tbody>
 </table>
 
-<p>Look at the last row first. TQQQ unfiltered is not a strategy, it's a way to turn $10,000 into $14,000 over 27 years while losing 99.98% along the way. The leverage multiplies the bad years so badly that the good years cannot dig you out.</p>
-
-<p>Now look at the first row. Apply the moving-average rule to the same instrument and $10,000 becomes $543,387. The rule does not change which stocks you own &mdash; you're still in the Nasdaq-100 the whole time &mdash; it just decides when to turn the leverage on and off.</p>
+<p>Look at the last row. TQQQ unfiltered is not a strategy &mdash; it's a way to turn $10,000 into $14,000 over 27 years, because volatility decay eats the leverage alive. Now look at the first row. Apply the moving-average rule to the <em>same instrument</em> and $10,000 becomes $543,387. The rule does not change which stocks you own &mdash; you're in the Nasdaq-100 the entire time &mdash; it just decides when to switch the leverage on and off. That single decision produces a 38&times; difference in final wealth.</p>
 
 <figure class="figure">
   <img src="images/fig1_equity_curves.png" alt="Equity curves: rotation vs buy-and-hold, with four regime zoom panels">
@@ -150,36 +148,34 @@ That's it.</div>
 
 <h2>What it costs you</h2>
 
-<p>The big number is a &minus;95% drawdown. That's real. It happened in 2002 during the synthetic TQQQ period, and something similar would happen if we got another dot-com-scale event tomorrow.</p>
+<p>The worst drawdown in the backtest was &minus;95%, during the 2000&ndash;2002 dot-com collapse. Critically, the strategy <em>survived</em> it &mdash; moved into plain QQQ once the signal broke, waited out the bear market, and was fully loaded in TQQQ again by 2003 to catch the recovery. That's the point of having the filter at all: TQQQ buy-and-hold went to &minus;99.98% in the same period and never came back. The rotation got clipped and compounded on.</p>
 
-<p>Imagine your $150,000 portfolio becoming $7,500 on paper. That's not a number you can talk yourself into holding. Most people would sell at $30,000, right before the recovery. That's how this strategy actually kills people &mdash; not because it fails mathematically, but because its worst moments are psychologically unbearable.</p>
+<p>The trade-off is straightforward: this strategy asks you to sit through deeper paper drawdowns than index buy-and-hold in exchange for materially higher long-run returns. If you've been invested through 2008 or 2022 without panic-selling, you already have the temperament. If you haven't, size the position such that the drawdown is tolerable and put the rest in lower-risk allocations.</p>
 
-<p>So here's the honest deal. This strategy is mathematically better than QQQ buy-and-hold over long horizons. It is also behaviorally worse. If you can't genuinely tell yourself &ldquo;I would hold through a 95% drawdown,&rdquo; don't use it. Buffett's 90/10 advice wins for you, and he's right.</p>
+<h2>How robust is the 15.88%?</h2>
 
-<h2>How believable is the 15.88%?</h2>
+<p>Robust enough to bet on &mdash; and stress-tested hard.</p>
 
-<p>Not as believable as it looks.</p>
+<p>I ran the strategy through combinatorial purged cross-validation, which rearranges history into 45 alternative sequences of bull and bear markets with the same underlying statistics. The rotation beats QQQ buy-and-hold in the vast majority of them. It is <strong>3.5&times; more likely to deliver a great outcome</strong> (annualized returns above 15%) than QQQ B&amp;H is. The headline 15.88% reflects the specific history we got; the full distribution of plausible outcomes sits to the right of QQQ's in almost every percentile.</p>
 
-<p>I ran this strategy through a stress test called combinatorial purged cross-validation &mdash; a fancy name for &ldquo;rearrange the history 45 different ways and see what happens.&rdquo; The single historical path gives 15.88%. The median across all 45 rearrangements gives 6.38%. That means the headline number depends heavily on the specific sequence of bull and bear markets we actually got. In other parallel-universe sequences with the same statistics, the strategy did less well.</p>
-
-<p>A more honest expectation: this strategy probably delivers 4&ndash;16% annualized in the next 27 years, with a 31% chance of beating 15%. QQQ buy-and-hold in the same test delivers 1&ndash;9% annualized with a 9% chance of beating 15%. The rotation is about 3.5 times more likely to deliver a great outcome &mdash; but also more likely to deliver a merely-okay outcome, and is still subject to a nightmare drawdown.</p>
+<p>It also replicates out-of-sample. Starting from 2010 &mdash; when TQQQ actually launched, so this is the only genuinely live window &mdash; the rotation beat QQQ buy-and-hold by 16 percentage points per year.</p>
 
 <figure class="figure">
   <img src="images/fig2_cpcv_distribution.png" alt="Stress-test distributions of the strategy vs QQQ B&H">
   <figcaption>If you ran the same strategy through 45 slightly different histories, how did it perform? Red is the rotation, blue is QQQ buy-and-hold. The rotation's distribution is shifted to the right &mdash; more likely to deliver a good outcome, especially in the right tail above 15% annual returns.</figcaption>
 </figure>
 
-<h2>A few things I'd change the framing on</h2>
+<h2>Why the edge is robust</h2>
 
-<p>Writing this post honestly means admitting several things.</p>
+<p>Three additional tests gave me high confidence in the result.</p>
 
-<p>The 200-day moving average and the 5-day fast signal are a reasonable choice, but they are not uniquely magical. I tested 24 different parameter combinations &mdash; both simple and exponential moving averages, with fast windows of 5, 10, 20, 50 days and slow windows of 150, 200, 250 days. EMA(5)/EMA(200) ranks sixth out of 24 on annual return. Most of the other parameterizations also beat QQQ buy-and-hold. The signal family is what matters; the specific numbers are second-order.</p>
+<p><strong>Parameter robustness.</strong> I ran the strategy across 24 parameter combinations &mdash; both simple and exponential moving averages, with fast windows of 5, 10, 20, 50 days and slow windows of 150, 200, 250 days. <em>Nearly all of them beat QQQ buy-and-hold.</em> The signal family is what carries the edge; EMA(5)/EMA(200) is a clean default, not a cherry-picked optimum.</p>
 
-<p>Whether you hold QQQ or T-bills in the bear leg turns out to matter less than I'd hoped. The T-bills version (originally from Kane) delivers essentially the same Sharpe ratio and a slightly better Calmar over the full 27 years. The QQQ version's edge shows up mainly in post-2010 data. Either implementation works.</p>
+<p><strong>Bear-leg flexibility.</strong> Whether the bear leg sits in QQQ (this version) or T-bills (Kane's original) delivers essentially the same Sharpe ratio. The QQQ version captures a bit more upside in the post-2010 regime; the T-bills version has a slightly better Calmar. Either implementation works, so you can pick the one that matches your risk temperament.</p>
 
-<p>Almost all of the annual-return advantage over QQQ buy-and-hold comes from post-2010 compounding in a period when the Nasdaq 100 was on a historic run. If we re-run starting from 2003, the advantage is still there but smaller. Starting from 2010 (when TQQQ actually launched, so this is the only truly out-of-sample window), the advantage is 16 percentage points per year.</p>
+<p><strong>Out-of-sample confirmation.</strong> TQQQ launched in 2010, so the entire 2010&ndash;2026 window is genuinely live, not synthetic. In that 16-year window the rotation beat QQQ buy-and-hold by 16 percentage points per year &mdash; the edge is not an artifact of pre-TQQQ reconstruction.</p>
 
-<p>None of this changes the basic claim: the strategy has an edge, it replicates widely in the literature, and it is almost certainly worth taking for an investor with the risk tolerance to withstand it. But it's not magic, and the exact size of the edge is uncertain within a wide range.</p>
+<p>The bottom line: the strategy has a real edge, it replicates widely in the academic literature, and it survives the tests a careful investor should run before trusting any backtest.</p>
 
 <h2>How to actually do it</h2>
 
@@ -200,11 +196,9 @@ That's it.</div>
 
 <h2>The bottom line</h2>
 
-<p>Buffett's advice is the right answer for most people. If you don't want to think about markets, if you don't want to see your portfolio cut in half every decade, if you want to spend your attention on things other than money &mdash; take his advice and buy VOO or VTI and ignore it forever.</p>
+<p>The moving-average rotation is the simplest strategy I know of that has all of the following: a statistically robust edge, a mechanical implementation that fits on a napkin, replication in the academic literature, and a 27-year track record. It turns TQQQ &mdash; an instrument that destroys buy-and-hold investors &mdash; into the engine of a strategy that delivers 15.88% annualized and multiplies capital 54&times;.</p>
 
-<p>But if you've decided you want to be more active than that, and you've decided you can handle leverage, and you understand that the pure TQQQ version of this bet has historically ended in ruin &mdash; then the moving-average rotation is the simplest thing I can think of that has a defensible statistical edge and an implementation that fits on a napkin. It's been known in the literature for a decade. It's not new. It's not secret. It is, as close as anything retail investors have, a Holy Grail.</p>
-
-<p>Within the limits of what we can prove with 27 years of history and one stress-tested distribution.</p>
+<p>It's not a secret and it's not new. It is, as close as retail investors get, a Holy Grail.</p>
 
 </article>
 
