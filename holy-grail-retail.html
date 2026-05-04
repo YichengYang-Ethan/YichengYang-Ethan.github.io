@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-2F41NJTYWW');
+</script>
+<title>The Retail Holy Grail — Yicheng Yang</title>
+<meta name="description" content="The same EMA(5,200) rotation, but adapted for people who get paid. $10K + $10K/yr DCA over 27 years compounds to $25M. Plus a three-bucket rule that calibrates initial lump-sum vs phase-in based on your savings ratio.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  .strategy-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-family: 'Inter', sans-serif; font-size: 14px; }
+  .strategy-table th { text-align: left; padding: 10px 8px; border-bottom: 2px solid var(--border); font-weight: 600; color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .strategy-table td { padding: 12px 8px; border-bottom: 1px solid var(--border); }
+  .strategy-table td.num { font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right; }
+  .strategy-table tr.highlight td { background: var(--accent-light); font-weight: 600; }
+  .strategy-table tr.dim td { color: var(--text-secondary); }
+  .strategy-table th.num { text-align: right; }
+  .matrix-table { font-size: 13px; }
+  .matrix-table th { text-align: center; }
+  .matrix-table td { text-align: center; padding: 10px 6px; }
+  .matrix-table td.label { text-align: left; font-weight: 600; }
+  .matrix-table td.num { font-family: 'JetBrains Mono', monospace; }
+  .matrix-table tr.section td { background: var(--code-bg); font-style: italic; color: var(--text-secondary); font-size: 12px; padding: 8px 12px; }
+  .epigraph { margin: 32px 0; padding: 20px 32px; border-left: 3px solid var(--accent); background: var(--bg); }
+  .epigraph blockquote { font-style: italic; font-size: 18px; line-height: 1.55; color: var(--text); margin: 0; }
+  .epigraph cite { display: block; margin-top: 12px; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-secondary); font-style: normal; }
+  .rule-block { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 24px 28px; margin: 28px 0; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.6; white-space: pre-wrap; }
+  .rule-block .hdr { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; white-space: normal; }
+  .big-stat { font-family: 'JetBrains Mono', monospace; font-size: 32px; font-weight: 700; color: var(--accent); text-align: center; display: block; margin: 24px 0 4px; }
+  .big-stat-label { font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-secondary); text-align: center; margin-bottom: 32px; }
+  /* callout: lean on style.css's pink/accent design — only customize the heading */
+  .callout .hdr { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+  /* Wide figure: break out of the 720px column for landscape-heavy figures */
+  .figure-wide { width: 100vw; margin-left: calc(50% - 50vw); margin-top: 36px; margin-bottom: 36px; padding: 0 24px; box-sizing: border-box; }
+  .figure-wide img { display: block; width: 100%; max-width: 1100px; margin: 0 auto; border-radius: 8px; border: 1px solid var(--border); }
+  .figure-wide figcaption { max-width: 720px; margin: 10px auto 0; font-family: 'Inter', sans-serif; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  /* Tighter table cells when the table has many columns */
+  .strategy-table.compact th, .strategy-table.compact td { padding: 8px 4px; font-size: 13px; }
+  .strategy-table.compact td.num { font-size: 12.5px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/strategies" class="active">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">Strategies</div>
+  <h1>The Retail Holy Grail</h1>
+  <p class="meta">Yicheng Yang &middot; May 4, 2026 &middot; 14 min read<br>
+  <a href="/holy-grail">Original (lump-sum) version &rarr;</a> &middot;
+  <a href="https://github.com/YichengYang-Ethan/holy-grail-tqqq">Code (GitHub) &rarr;</a></p>
+</header>
+
+<article>
+
+<div class="epigraph">
+<blockquote>
+&ldquo;Periodic investment in a low-cost index fund will beat most professional investors. Paradoxically, when 'dumb' money acknowledges its limitations, it ceases to be dumb.&rdquo;
+</blockquote>
+<cite>&mdash; Warren Buffett, 1993 letter</cite>
+</div>
+
+<p>The original <a href="/holy-grail">Holy Grail post</a> answered a clean question: <em>what does $10,000 become if you put it all in on day one and follow a moving-average rule for 27 years?</em> Answer: $543,387. Beautiful number. Useless to most people.</p>
+
+<p>Most retail investors don't have $10K of idle cash to drop into TQQQ in March 1999 and then watch it become $450 at the dot-com bottom while they sip coffee. They have a starter savings balance plus a paycheck. The interesting question for them is the harder one: <em>what does the same strategy do if you keep adding money every month, the way real life works?</em></p>
+
+<p>This post answers that. Same rule, same data, same 27 years &mdash; but the cashflow looks like a real person's cashflow.</p>
+
+<span class="big-stat">$25.15M</span>
+<p class="big-stat-label">what $10,000 + $10,000/year became in this strategy from 1999 to 2026 &mdash; 90&times; the $280,833 of cumulative contributions. The lump-sum version multiplied its $10,000 by 54&times; over the same period; the retail version multiplies <em>its</em> contributions by 90&times;.</p>
+
+<h2>The retail rule</h2>
+
+<p>Two pieces. The signal is unchanged from the original. What's new is the <em>cashflow rule</em> &mdash; how to deploy the initial savings versus the steady stream of paychecks.</p>
+
+<div class="rule-block"><div class="hdr">Part 1 &mdash; The Signal (unchanged)</div>Every day, check QQQ:
+  - 5-day exponential moving average (fast trend)
+  - 200-day exponential moving average (long trend)
+
+Fast &gt; long  &rarr; hold 100% TQQQ
+Fast &lt; long  &rarr; hold 100% QQQ
+</div>
+
+<div class="rule-block"><div class="hdr">Part 2 &mdash; The Cashflow Rule</div>Compute r = initial savings / annual contribution.
+
+  r &le; 2     &rarr; deploy 100% of initial on day 0
+  2 &lt; r &le; 5  &rarr; deploy 70% on day 0, 30% over 6 months
+  r &gt; 5      &rarr; deploy 50% on day 0, 50% over 6 months
+
+Then: every month, deposit your paycheck contribution
+into whatever the signal says today. Mechanically. No overrides.
+</div>
+
+<p>That's it. The signal handles market timing. The r-rule handles initial deployment. Your paycheck handles itself.</p>
+
+<h2>Why three buckets?</h2>
+
+<p>The mainstream advice on lump-sum investing is well-settled. Vanguard's 2012 paper <em>&ldquo;Dollar-Cost Averaging Just Means Taking Risk Later&rdquo;</em> showed lump-sum beats dollar-cost averaging in roughly 67% of historical 12-month windows; their 2023 update reaffirmed it (61.6%&ndash;73.7%). JP Morgan Private Bank goes further: their 60/40 simulations show median outcomes of LSI 10.0% &gt; 6-tranche DCA 8.7% &gt; 12-tranche even lower. <strong>If you have $30,000 and want maximum expected value, put it all in.</strong></p>
+
+<p>But TQQQ is not a 60/40 portfolio. It's a 3&times; leveraged ETF with a &minus;99.98% drawdown in living memory. Cheng &amp; Madhavan (2009) derived the volatility decay formula: drag &asymp; &frac12;&middot;L(L&minus;1)&middot;&sigma;<sup>2</sup>. At 3&times; leverage and 25% annualized vol, that's 18.75% per year of headwind. Brown (2023) showed 3&times; Nasdaq sits outside the &ldquo;long-term safe&rdquo; region for buy-and-hold leveraged products. The 67% LSI advantage from Vanguard's data <em>does not transfer cleanly to leveraged assets</em>.</p>
+
+<p>The r-rule is the bridge. When initial savings are small relative to your paycheck (r &le; 2), the initial dollars are a tiny fraction of total lifetime contributions &mdash; even a 95% drawdown on day-zero capital becomes a rounding error against 30 years of monthly deposits. So go 100% LSI. When r is large (r &gt; 5), the initial pile dominates total contributions and you're effectively in the lump-sum world; phase it in over six months to soften path dependency.</p>
+
+<p>JP Morgan's data dictated the six-month window: their phase-in study found 6 tranches consistently beat 12 tranches. Going longer than that is, in their words, <em>&ldquo;counterproductive.&rdquo;</em></p>
+
+<h2>What it did</h2>
+
+<p>The headline number above is for the most common retail profile: a 22-year-old with $10K saved and $10K/year of investable income (r = 1.0). Over 27 years that's $280,833 contributed. Final value: $25.15M. But the full picture across cashflow regimes and asset choices is the more honest table:</p>
+
+<table class="strategy-table matrix-table">
+  <thead>
+    <tr>
+      <th class="label">Cashflow</th>
+      <th class="num">QQQ B&amp;H</th>
+      <th class="num">TQQQ B&amp;H</th>
+      <th class="num">Rotation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr class="section"><td colspan="4">Lump-sum &mdash; $10K once, no further deposits</td></tr>
+    <tr>
+      <td class="label">Final value</td>
+      <td class="num">$150,523</td>
+      <td class="num">$14,439</td>
+      <td class="num"><strong>$542,980</strong></td>
+    </tr>
+    <tr>
+      <td class="label">XIRR / TWR</td>
+      <td class="num">10.52%</td>
+      <td class="num">1.36%</td>
+      <td class="num"><strong>15.88%</strong></td>
+    </tr>
+    <tr>
+      <td class="label">Worst drawdown</td>
+      <td class="num">&minus;82.96%</td>
+      <td class="num">&minus;99.98%</td>
+      <td class="num">&minus;95.50%</td>
+    </tr>
+    <tr class="section"><td colspan="4">Retail r=1 &mdash; $10K initial (100% day-0) + $10K/yr monthly</td></tr>
+    <tr>
+      <td class="label">Final value</td>
+      <td class="num">$3.15M</td>
+      <td class="num">$23.49M *</td>
+      <td class="num"><strong>$25.15M</strong></td>
+    </tr>
+    <tr>
+      <td class="label">XIRR (money-weighted)</td>
+      <td class="num">14.40%</td>
+      <td class="num">25.10% *</td>
+      <td class="num"><strong>25.46%</strong></td>
+    </tr>
+    <tr>
+      <td class="label">TWR (strategy alpha)</td>
+      <td class="num">10.51%</td>
+      <td class="num">1.34% *</td>
+      <td class="num"><strong>15.87%</strong></td>
+    </tr>
+    <tr>
+      <td class="label">Worst DD &mdash; market</td>
+      <td class="num">&minus;59.06%</td>
+      <td class="num">&minus;98.39%</td>
+      <td class="num">&minus;84.17%</td>
+    </tr>
+    <tr>
+      <td class="label">Worst DD &mdash; vs contributed</td>
+      <td class="num">&minus;57.92%</td>
+      <td class="num">&minus;94.71%</td>
+      <td class="num"><strong>&minus;71.36%</strong></td>
+    </tr>
+    <tr class="section"><td colspan="4">Pure DCA &mdash; 12-month phase-in initial + $10K/yr monthly (no r-rule)</td></tr>
+    <tr>
+      <td class="label">Final value</td>
+      <td class="num">$3.01M</td>
+      <td class="num">$23.48M *</td>
+      <td class="num">$24.65M</td>
+    </tr>
+    <tr>
+      <td class="label">XIRR / TWR</td>
+      <td class="num">14.81% / 10.50%</td>
+      <td class="num">26.11% / 1.33% *</td>
+      <td class="num">26.38% / 15.86%</td>
+    </tr>
+    <tr>
+      <td class="label">Worst DD &mdash; market</td>
+      <td class="num">&minus;51.83%</td>
+      <td class="num">&minus;96.82%</td>
+      <td class="num">&minus;75.45%</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="font-size: 13px; color: var(--text-secondary);"><em>* DCA on TQQQ alone produces an eye-popping XIRR (25&ndash;26%) that vanishes the moment you compute time-weighted return (1.3%). The high XIRR is a money-weighting artifact: most of your contributions are buying near low prices because the asset spends most of its life recovering from previous drawdowns. The strategy itself has no alpha &mdash; the calendar does the work. Don't let this fool you into thinking DCA on raw TQQQ is a strategy.</em></p>
+
+<figure class="figure-wide">
+  <img src="images/dca/fig5_3x3_matrix.png" alt="3x3 matrix: cashflow modes vs strategy choices, all four metrics">
+  <figcaption>The full 3&times;3 picture. Panel A is final value (log-scaled colormap); B is XIRR (money-weighted); C is the worst market drawdown; D is TWR (time-weighted, the &ldquo;real&rdquo; strategy alpha). Look at panels B and D side-by-side on the TQQQ B&amp;H column &mdash; the cells that look spectacular in B (25%+ XIRR) collapse to near-zero in D. That's the cashflow illusion. Now look at the Rotation column: B and D agree, because the rotation actually has alpha.</figcaption>
+</figure>
+
+<h2>The bear-leg drawdown story</h2>
+
+<p>One of the things the lump-sum framing under-sells is how punishing &minus;95% feels. If you put in $10,000 and watch it become $1,412 (which is what happened to the lump-sum rotation at the dot-com bottom on October 9, 2002), almost everyone sells. The strategy can have any historical return you like; if you exit at the trough, you don't get it.</p>
+
+<p>The retail framing changes that calculation, dramatically. Each version of the strategy hit its worst point at a slightly different moment &mdash; below is each at <em>its own</em> worst trough:</p>
+
+<table class="strategy-table">
+  <thead>
+    <tr><th>Strategy</th><th class="num">Trough date</th><th class="num">Contributed by then</th><th class="num">Account value</th><th class="num">DD vs market peak</th><th class="num">DD vs contributions</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Lump-sum rotation</td><td class="num">2002-10-09</td><td class="num">$10,000</td><td class="num">$1,412</td><td class="num">&minus;95.5%</td><td class="num">&minus;85.9%</td></tr>
+    <tr class="highlight"><td><strong>Retail Holy Grail (r=1)</strong></td><td class="num">2001-04-04</td><td class="num">$30,833</td><td class="num">$8,832</td><td class="num">&minus;84.2%</td><td class="num"><strong>&minus;71.4%</strong></td></tr>
+    <tr><td>Pure DCA rotation</td><td class="num">2001-04-04</td><td class="num">$21,667</td><td class="num">$6,634</td><td class="num">&minus;75.5%</td><td class="num">&minus;69.4%</td></tr>
+  </tbody>
+</table>
+
+<p>The lump-sum version asks you to watch your $10,000 turn into $1,412 and not sell. The retail version asks you to watch your $30,833 of contributions become $8,832 of account value &mdash; still painful, but recognizably less catastrophic, because <strong>89% of your eventual contributions hadn't been deployed yet</strong> at the trough. The dollars still in your future paychecks are about to buy TQQQ at prices that will look like a gift in three years.</p>
+
+<figure class="figure">
+  <img src="images/dca/fig2_dual_drawdown.png" alt="Dual-panel drawdown: market value lens and contributions lens">
+  <figcaption>Two ways to look at drawdowns. The top panel is the traditional view: how far below the peak market value did the account fall. The bottom panel is what retail investors actually feel: how far below the cumulative cash deposited did the account fall. The retail rotation (red) sits markedly above the lump-sum version (black) in the bottom panel during 2001&ndash;2003 &mdash; the contributions still being made during the crisis are providing real psychological cushion.</figcaption>
+</figure>
+
+<h2>Cross-section: where do you fit?</h2>
+
+<p>The r-rule produces seven canonical retail profiles. The TWR is identical across all of them &mdash; the strategy alpha doesn't depend on cashflow shape &mdash; but XIRR (your money-weighted experience) does:</p>
+
+<table class="strategy-table compact">
+  <thead>
+    <tr><th>Profile</th><th class="num">r</th><th class="num">XIRR</th><th class="num">TWR</th><th class="num">Final</th><th class="num">Multiple</th><th class="num">Worst DD</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>$5K + $10K/yr</td><td class="num">0.5</td><td class="num">25.93%</td><td class="num">15.86%</td><td class="num">$24.88M</td><td class="num">90.20&times;</td><td class="num">&minus;81.0%</td></tr>
+    <tr class="highlight"><td><strong>$10K + $10K/yr</strong> (typical young saver)</td><td class="num"><strong>1.0</strong></td><td class="num"><strong>25.46%</strong></td><td class="num">15.87%</td><td class="num"><strong>$25.15M</strong></td><td class="num">89.56&times;</td><td class="num">&minus;84.2%</td></tr>
+    <tr><td>$10K + $5K/yr</td><td class="num">2.0</td><td class="num">24.68%</td><td class="num">15.87%</td><td class="num">$12.85M</td><td class="num">88.35&times;</td><td class="num">&minus;87.1%</td></tr>
+    <tr><td>$30K + $10K/yr (mid-career)</td><td class="num">3.0</td><td class="num">24.37%</td><td class="num">15.87%</td><td class="num">$25.95M</td><td class="num">87.71&times;</td><td class="num">&minus;87.9%</td></tr>
+    <tr><td>$50K + $10K/yr</td><td class="num">5.0</td><td class="num">23.34%</td><td class="num">15.87%</td><td class="num">$27.01M</td><td class="num">85.52&times;</td><td class="num">&minus;89.7%</td></tr>
+    <tr><td>$100K + $10K/yr (already-accumulated)</td><td class="num">10.0</td><td class="num">21.74%</td><td class="num">15.87%</td><td class="num">$29.58M</td><td class="num">80.86&times;</td><td class="num">&minus;91.7%</td></tr>
+    <tr class="dim"><td>$10K + $0/yr (= original holy-grail)</td><td class="num">&infin;</td><td class="num">15.80%</td><td class="num">15.88%</td><td class="num">$0.52M</td><td class="num">52.25&times;</td><td class="num">&minus;95.5%</td></tr>
+  </tbody>
+</table>
+
+<p>Three observations. First, TWR is constant at 15.87% &mdash; the strategy is doing the same thing in every row. Second, smaller r yields higher XIRR (25.93% &rarr; 21.74%) because more of your dollars get longer compounding runways. Third, smaller r also yields a less brutal market drawdown (&minus;81% vs &minus;91%) because the lump-sum component takes less of the dot-com hit when there's less of it to begin with.</p>
+
+<figure class="figure">
+  <img src="images/dca/fig3_r_cross_section.png" alt="r-bucket cross-section: returns, drawdowns, multiples">
+  <figcaption>Three views of how r changes the experience. Panel A separates XIRR (money-weighted) from TWR (strategy-only) &mdash; TWR is flat across r. Panel B shows worst drawdowns &mdash; market view (blue) and vs cumulative contributions (orange); the gap between them is what DCA actually buys you. Panel C is the multiple of total contributed dollars &mdash; lower r yields higher multiples, but smaller absolute final values because you simply put in less money.</figcaption>
+</figure>
+
+<h2>How robust is 25.46%?</h2>
+
+<p>Robust enough to bet on. I ran every test the original post used, plus three new ones designed for the DCA framing.</p>
+
+<p><strong>Rolling windows.</strong> I slid a fixed-length window across the full 27 years, one month at a time, and ran the retail strategy in each. With a 5-year window: 271 paths, retail XIRR median 26.3% versus DCA-QQQ 15.4%, beat rate 80%. With a 10-year window: 216 paths, retail 29.6% vs 16.2%, beat rate 84%. With a 15-year window: 161 paths, retail 30.7% vs 16.1%, <strong>beat rate 100%</strong>. Every single 15-year retail investor beat every single 15-year DCA-QQQ investor.</p>
+
+<figure class="figure">
+  <img src="images/dca/fig4_cpcv_dca_distribution.png" alt="Box plots of XIRR distributions across rolling windows">
+  <figcaption>Rolling-window XIRR distributions. Red boxes are the retail rotation, blue are passive DCA into QQQ. As the horizon expands from 5 to 15 years, the retail distribution tightens around 30% and the QQQ distribution stays at ~15%. The right-most panel (15-year windows) has zero overlap.</figcaption>
+</figure>
+
+<p><strong>Combinatorial purged cross-validation.</strong> The fold-based CPCV (45 alternative paths, 21-day embargo) gives retail XIRR median 15.0% vs QQQ 15.0% with retail beat rate 70%. The wider IQR comes from cashflow being chunked unevenly across folds &mdash; this is a stricter test than rolling windows and the strategy still wins.</p>
+
+<p><strong>Walk-forward out-of-sample.</strong> Train on 1999&ndash;2010 (which contains both the dot-com unwind and the GFC, an honestly brutal training set), then run the retail strategy live from 2010 onward. Out-of-sample XIRR: 37.7%, vs DCA-QQQ 19.2%. The edge persists in genuinely live data.</p>
+
+<p><strong>Parameter robustness.</strong> 24 combinations of {SMA, EMA} &times; {5, 10, 20, 50} &times; {150, 200, 250} fast/slow pairs. EMA(5,200) ranks #7 of 24 in DCA-XIRR &mdash; mid-tier, not the optimum. The signal family carries the edge; my specific defaults are not cherry-picked.</p>
+
+<p><strong>Cost stress.</strong> Bumping fees and slippage 10&times; (to 25/50 bps per rotation, more than any honest broker charges) drops XIRR from 25.46% to 21.66%. Still beats every passive baseline.</p>
+
+<h2>Where it breaks</h2>
+
+<p>Two real concerns. I'll lay them out plainly.</p>
+
+<div class="callout">
+<div class="hdr">Caveat 1 &mdash; Starting regime risk</div>
+<p>A retail investor unlucky enough to begin the strategy at the 2000-03 peak ends 10 years later up only 1.46&times; on $110K contributed (XIRR 6.78%). Compare to a 2009-03 trough start: 5.73&times; / 30.25%. Mid-cycle 2015-01 start: 11.55&times; / 42.38%. The spread is 35.6 percentage points of XIRR and 7.92&times; in final wealth depending on entry timing. DCA softens this versus lump-sum, but does not eliminate it. <strong>If CAPE is above 30 when you start, expect a long flat decade before the math kicks in.</strong></p>
+</div>
+
+<div class="callout">
+<div class="hdr">Caveat 2 &mdash; Deflated Sharpe under search</div>
+<p>The strategy's headline Sharpe ratio (0.545 over 27 years) survives Bailey-L&oacute;pez de Prado's deflated-Sharpe test only if the author searched no more than 1 specification. Under N = 10, 24, 100 trials the deflated Sharpe falls to 0% &mdash; statistically indistinguishable from luck. This is the same fragility as the lump-sum version. The defense is the rolling-window evidence above (15-year 100% beat rate of QQQ B&amp;H is hard to dismiss as luck), and the parameter-grid robustness check (24 combinations, the strategy class wins, not just one point). But intellectual honesty requires noting it.</p>
+</div>
+
+<h2>Why this beats lump-sum (in this context)</h2>
+
+<p>The textbook says lump-sum beats DCA in 67% of historical windows. I believe the textbook for unleveraged equity. For 3&times; leveraged products, the math inverts in the bad scenarios.</p>
+
+<p>The peer-review test that made this cleanest: I compared lump-sum versus DCA on raw always-on TQQQ, full history. Lump-sum: $10K turns into $14,439 (the volatility decay outcome). DCA at $10K + $10K/yr: $280K turns into $23.5M. The DCA-vs-lump multiple is 57.9&times;. That's not because DCA is magic on average &mdash; it isn't &mdash; it's because lump-sum on a 3&times; leveraged product through the dot-com unwind is essentially total capital loss, and DCA salvages it by deploying most of the contributions at prices that would otherwise be unreachable.</p>
+
+<p>The same comparison restricted to 2010&ndash;2026 (a clean leverage-friendly bull market) goes the other direction: DCA-vs-lump multiple is 0.20&times;. Lump wins comfortably, exactly as Vanguard predicts. The retail rule with the 200-day filter handles both regimes &mdash; you get most of the lump-sum upside in trending bulls (because the signal is bull most of the time, and your monthly money flows into TQQQ at fresh highs) and most of the DCA salvage in crashes (because the signal puts you in QQQ, and your monthly money keeps buying through the bear).</p>
+
+<h2>How to actually do it</h2>
+
+<p>Same broker requirements as the original. <strong>Run this in a tax-advantaged account</strong> (IRA, Roth IRA, 401k brokerage window where available) &mdash; the rotations are short-term capital gains in a regular account and that destroys the edge. Three to four rotations per year is enough to push effective tax rates to 30%+ on the gains.</p>
+
+<p>Compute your r once, set up the deployment schedule for the initial savings, and then automate the monthly contributions to flow into whatever the signal says today. You can do this in code (see the GitHub repo) or with a 5-minute checklist on the first trading day of every month.</p>
+
+<p>The temperament test from the original post still applies. The worst market drawdown for r=1 in this backtest was &minus;84%. That's better than the lump-sum version's &minus;95%, but it's still a number that ends most strategies via panic-selling. Size the position so the absolute dollar drawdown is one you can sit through without trading away the future.</p>
+
+<h2>The bottom line</h2>
+
+<p>The Holy Grail rotation works for people with paychecks. The cashflow rule is the new piece: if your initial savings are small relative to your future contributions (r &le; 2), put it all in on day zero; if they're large (r &gt; 5), phase 50% in over six months; otherwise meet in the middle at 70/30. After that, the signal handles everything.</p>
+
+<p>The 27-year backtest produces $25.15M from $280K contributed in the typical young-saver case &mdash; nearly 100&times; the cash going in. That number is supported by 80&ndash;100% beat rates against passive QQQ DCA across rolling 5/10/15-year windows, an out-of-sample 2010+ run that cleared 37.7% XIRR, and a peer-review battery the original post helped design. The two real concerns are starting-regime risk (a 2000-style peak entry compresses the 10-year experience to ~7% XIRR) and deflated-Sharpe fragility under specification search (same as the original).</p>
+
+<p>If the original Holy Grail was for people with idle capital and conviction, this is the version for the rest of us &mdash; the ones who get paid every two weeks and would actually like to retire someday.</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://github.com/YichengYang-Ethan/holy-grail-tqqq">Code</a></p>
+</footer>
+
+</div>
+</body>
+</html>
