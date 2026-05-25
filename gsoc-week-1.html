@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Week 1 &mdash; Where streaming hooks into PyMC's ELBO machinery &mdash; Yicheng Yang</title>
+<meta name="description" content="GSoC 2026 Week 1 notes: PyMC 6 already separates minibatch random sampling from ELBO scaling, which is what makes streaming variational inference tractable.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 24px 0; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.55; }
+  pre code { font-family: inherit; font-size: inherit; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+  pre code { background: transparent; padding: 0; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Week 1</div>
+  <h1>Where streaming hooks into PyMC's ELBO machinery</h1>
+  <p class="meta">Yicheng Yang &middot; May 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<p>
+  Variational inference works great until your data doesn't fit in RAM.
+  My summer 2026 GSoC project with NumFOCUS / PyMC is fixing that &mdash;
+  making ADVI and Pathfinder work on datasets that don't fit in memory.
+  Mentors are Rob Zinkov (<a href="https://github.com/zaxtax">@zaxtax</a>)
+  and Chris Fonnesbeck (<a href="https://github.com/fonnesbeck">@fonnesbeck</a>).
+</p>
+
+<p>
+  Week 1 was mostly orientation, but with two concrete artifacts: a
+  working prototype and a design draft, ready for the May 26 design
+  review with Rob.
+</p>
+
+
+<h2>What I didn't expect</h2>
+
+<p>
+  Minibatch variational inference relies on a simple identity: if you
+  compute the expected log-likelihood over a random subset of size
+  <code>|B|</code> out of <code>N</code> total data points and multiply by
+  <code>N/|B|</code>, you get an unbiased estimate of the full-data ELBO.
+  That's the trick that makes VI scale to large datasets.
+</p>
+
+<p>
+  What I didn't realize until I read the source: in PyMC 6, those two
+  concerns &mdash; randomly sampling a batch, and applying the
+  <code>N/|B|</code> scaling factor in the log-probability computation
+  &mdash; live in two different files. <code>pm.Minibatch</code> in
+  <code>pymc/data.py:121</code> does the row sampling.
+  <code>MinibatchRandomVariable</code> in
+  <code>pymc/variational/minibatch_rv.py:102-106</code> applies the
+  scaling when the log-prob is registered:
+</p>
+
+<pre><code># pymc/variational/minibatch_rv.py — where the N/|B| scaling actually lives
+@_logprob.register(MinibatchRandomVariable)
+def minibatch_rv_logprob(op, values, *inputs, **kwargs):
+    [value] = values
+    rv, *total_size = inputs
+    return logp(rv, value, **kwargs) * get_scaling(total_size, value.shape)
+</code></pre>
+
+<p>
+  That decoupling is why a 12-week project is actually tractable. The
+  scaling machinery is already there, working correctly.
+  <code>StreamingDataset</code> only has to replace the data source
+  &mdash; feed a <code>pytensor.shared</code> buffer instead of a numpy
+  array &mdash; and the existing minibatch RV handles the rest.
+</p>
+
+
+<h2>What I'm sketching</h2>
+
+<p>
+  <code>StreamingDataset</code> wraps a <code>pytensor.shared</code>
+  buffer of fixed shape <code>(batch_size, *features)</code>. An
+  <code>advance()</code> method pulls the next batch from any Python
+  iterable &mdash; a generator, a file reader, a network stream &mdash;
+  and writes it into the shared buffer. A <code>fit_callback()</code>
+  method gives <code>pm.fit</code> something to call after each gradient
+  step so the buffer is refreshed for the next iteration.
+</p>
+
+<p>
+  To verify the algorithm is preserved: ran a synthetic test on
+  N&nbsp;=&nbsp;50,000 data points. Streaming ADVI (256-row batches,
+  never holding more than 256 rows in memory) converges to within 0.003
+  of in-memory ADVI's posterior mean &mdash; comfortably inside ADVI's
+  own optimization noise. The point isn't precision; it's that the
+  streaming version is provably the same algorithm, just with a
+  different data path.
+</p>
+
+
+<h2>Also this week &mdash; first pymc-examples PR</h2>
+
+<p>
+  Opened my first <code>pymc-examples</code> PR
+  (<a href="https://github.com/pymc-devs/pymc-examples/pull/882">#882</a>)
+  this week &mdash; a PyMC 6 / ArviZ 1 compatibility fix for
+  <code>variational_api_quickstart.ipynb</code>, the official VI tutorial
+  notebook. Started as four small fixes: <code>pm.callbacks</code> had
+  moved, <code>az.plot_posterior</code> was removed,
+  <code>Approximation.sample()</code> now needs a model context,
+  <code>total_size</code> wants an int instead of a tuple.
+</p>
+
+<p>
+  What I didn't expect was the review. Osvaldo Martin
+  (<a href="https://github.com/aloctavodia">@aloctavodia</a>, one of
+  ArviZ's core maintainers) came back with eight specific suggestions
+  &mdash; not just bug fixes, but a migration to the new ArviZ 1 plot
+  API: <code>az.plot_dist({"NUTS": idata, "ADVI": idata})</code> dict
+  form for multi-model comparisons, <code>az.plot_trace_dist</code>
+  instead of <code>plot_trace</code>, <code>az.convert_to_dataset</code>
+  for wrapping raw numpy, <code>pc.add_legend("model")</code>. Three
+  rounds of commits later, 18 review comments addressed.
+</p>
+
+<p>
+  Two takeaways. ArviZ has a richer visualization grammar than I
+  realized, and I'll be using it when reporting streaming ADVI results
+  later in the project. And doing a small focused contribution alongside
+  the design phase is a low-cost way to learn the project's contribution
+  culture before submitting anything bigger.
+</p>
+
+
+<h2>Next</h2>
+
+<p>
+  Heading into next week with one priority: lock the
+  <code>StreamingDataset</code> interface with Rob before any real
+  implementation work starts. Another thread to pick up is prior art &mdash;
+  Polars, Narwhals, and Dask have all wrestled with streaming dataset
+  abstractions in Python, and a comparison note will go up here as a
+  separate post. Phase 2 (starting July) will include a financial
+  tick-data tutorial, which is the use case closest to my own
+  background.
+</p>
+
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc">PyMC source</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc-examples/pull/882">PR #882</a> &middot;
+  <a href="https://www.jmlr.org/papers/v18/16-107.html">ADVI paper (Kucukelbir et al. 2017)</a> &middot;
+  Mentors <a href="https://github.com/zaxtax">@zaxtax</a> &middot; <a href="https://github.com/fonnesbeck">@fonnesbeck</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
