@@ -115,45 +115,27 @@ def minibatch_rv_logprob(op, values, *inputs, **kwargs):
 <p>
   Opened my first <code>pymc-examples</code> PR
   (<a href="https://github.com/pymc-devs/pymc-examples/pull/882">#882</a>)
-  this week, a PyMC 6 / ArviZ 1 compatibility fix for
+  this week, a PyMC 6 / ArviZ 1 compatibility update for
   <code>variational_api_quickstart.ipynb</code>, the official VI
-  tutorial notebook. The starting diagnosis was four small things:
-  <code>pm.callbacks</code> had moved, <code>az.plot_posterior</code>
-  was gone, <code>Approximation.sample()</code> now needed a model
-  context, <code>total_size</code> wanted an int instead of a tuple.
-</p>
-
-<p>
-  What I didn't expect was the review. Osvaldo Martin
-  (<a href="https://github.com/aloctavodia">@aloctavodia</a>, one of
-  ArviZ's core maintainers) came back with eight specific suggestions.
-  He wasn't asking for bug fixes. He wanted the whole notebook
-  migrated to the new ArviZ 1 plot API:
-  <code>az.plot_dist({"NUTS": idata, "ADVI": idata})</code> dict form
-  for multi-model comparisons, <code>az.plot_trace_dist</code> instead
-  of <code>plot_trace</code>, <code>az.convert_to_dataset</code> for
-  wrapping raw numpy, <code>pc.add_legend("model")</code>. Three rounds
-  of commits, 18 review comments addressed.
+  tutorial notebook. The compat side was four small fixes:
+  <code>pm.callbacks</code> had moved,
+  <code>az.plot_posterior</code> was removed,
+  <code>Approximation.sample()</code> now needs a model context, and
+  <code>total_size</code> wants an int instead of a tuple. On top of
+  that, I migrated the plotting throughout the notebook to the new
+  ArviZ 1 API: <code>az.plot_dist({"NUTS": idata, "ADVI": idata})</code>
+  dict form for multi-model comparisons,
+  <code>az.plot_trace_dist</code> for trace plots,
+  <code>az.convert_to_dataset</code> for wrapping raw numpy arrays, and
+  <code>pc.add_legend("model")</code> for figure legends.
 </p>
 
 <p>
   What I got out of it: ArviZ 1 has a way richer visualization grammar
   than I'd realized, which I'll be using later when reporting streaming
   ADVI results. Doing a small contribution like this during the design
-  phase also turned out to be a cheap way to learn how the project
-  communicates before I show up with anything bigger.
-</p>
-
-
-<h2>Next</h2>
-
-<p>
-  Next week's priority is locking the <code>StreamingDataset</code>
-  interface with Rob before any real implementation starts. After that,
-  the next thing to read into is how libraries like Polars and Dask
-  handle streaming dataset abstractions in Python (Narwhals also has a
-  take). Phase 2 (starting July) will include a financial tick-data
-  tutorial, the use case closest to my own background.
+  phase also turned out to be a cheap way to learn the contribution
+  flow before any bigger work lands.
 </p>
 
 
