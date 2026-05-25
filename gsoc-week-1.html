@@ -60,8 +60,9 @@
   Minibatch variational inference relies on a simple identity: compute
   the expected log-likelihood over a random subset of size
   <code>|B|</code> out of <code>N</code> points, multiply by
-  <code>N/|B|</code>, and you have an unbiased estimate of the full-data
-  ELBO. That's how VI scales.
+  <code>N/|B|</code>, and you have an unbiased estimate of the
+  full-data log-likelihood term in the ELBO (the prior and entropy
+  terms are computed unscaled). That's how VI scales.
 </p>
 
 <p>
@@ -81,11 +82,12 @@ def minibatch_rv_logprob(op, values, *inputs, **kwargs):
 </code></pre>
 
 <p>
-  That decoupling is why a 12-week project is actually tractable &mdash;
-  the scaling machinery is already there and working correctly.
-  <code>StreamingDataset</code> only has to replace the data source. Feed
-  it a <code>pytensor.shared</code> buffer instead of a numpy array, and
-  the existing minibatch RV handles the rest.
+  That decoupling is why a 12-week project is actually tractable: the
+  <code>N/|B|</code> scaling math is a single line that the streaming
+  side can reuse. <code>StreamingDataset</code>'s job is to keep a
+  <code>pytensor.shared</code> buffer fresh between iterations; the
+  current prototype wires this together with <code>pm.CustomDist</code>
+  for the rescaled log-prob.
 </p>
 
 
@@ -102,11 +104,10 @@ def minibatch_rv_logprob(op, values, *inputs, **kwargs):
 
 <p>
   To check that the algorithm is preserved, I ran a synthetic test on
-  N&nbsp;=&nbsp;50,000 data points. Streaming ADVI (256-row batches,
-  never holding more than 256 rows in memory) converges to within 0.003
-  of in-memory ADVI's posterior mean. That's well inside ADVI's own
-  optimization noise. The streaming version is the same algorithm. Only
-  the data path changes.
+  N&nbsp;=&nbsp;50,000 data points. Streaming ADVI with batch_size=256
+  converges to within 0.003 of in-memory ADVI's posterior mean. That's
+  well inside ADVI's own optimization noise. The streaming version is
+  the same algorithm. Only the data path changes.
 </p>
 
 
