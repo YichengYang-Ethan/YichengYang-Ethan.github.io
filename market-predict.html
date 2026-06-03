@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>market-predict — Yicheng Yang</title>
+<meta name="description" content="Single-page trader dashboard for SPY/QQQ: spot, options walls, dealer gamma (GEX), cross-asset risk, and Kalshi vs Polymarket vs the Fed path. Free data, refreshed every 15 min.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  /* Match the dashboard's own content width so the framed app lines up with
+     the header above it. */
+  .mp-wide { max-width: 1280px; }
+  /* Compact the standard header so the live panel is visible sooner. */
+  body header { padding: 38px 0 22px; margin-bottom: 0; }
+  /* Full-bleed, borderless, same cream as the page — the dashboard reads as
+     page content, not a boxed-in foreign widget. */
+  .embed-shell {
+    margin: 18px 0 6px;
+    background: transparent;
+  }
+  .embed-shell iframe {
+    display: block;
+    width: 100%;
+    height: 100vh;        /* fallback; JS grows this to the app's full height */
+    min-height: 900px;
+    border: 0;
+    background: transparent;
+    color-scheme: light;
+  }
+  .embed-note {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 40px;
+  }
+</style>
+</head>
+<body>
+
+<div class="container mp-wide">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects" class="active">Projects</a>
+    <a href="/gsoc">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">Live Dashboard</div>
+  <h1>market-predict</h1>
+  <p class="subtitle">SPY / QQQ trader context on one page &mdash; spot, options walls, dealer gamma, and where Kalshi, Polymarket, and the Fed path disagree.</p>
+  <p class="meta">Free data, refreshed every 15&nbsp;min via a GitHub&nbsp;Actions snapshot pipeline.&ensp;
+    <a href="https://github.com/YichengYang-Ethan/market-predict">Source &rarr;</a> &middot;
+    <a href="https://ethanyang85-market-predict.hf.space" target="_blank" rel="noopener">Open full screen &rarr;</a>
+  </p>
+</header>
+
+<div class="embed-shell">
+  <iframe
+    id="mpFrame"
+    title="market-predict dashboard"
+    loading="lazy"
+    allow="clipboard-write"
+    referrerpolicy="no-referrer-when-downgrade"></iframe>
+</div>
+
+<p class="embed-note">
+  The dashboard is hosted on Hugging&nbsp;Face Spaces and embedded here. If the frame is slow
+  to wake (Spaces cold-start), give it a few seconds or
+  <a href="https://ethanyang85-market-predict.hf.space" target="_blank" rel="noopener">open it full screen</a>.
+  Sources: yfinance (spot / options / VIX), Kalshi, Polymarket, FRED. Not investment advice.
+</p>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+
+<script>
+  (function () {
+    var f = document.getElementById('mpFrame');
+    // Preview against the local Streamlit when served from localhost; use the
+    // deployed Space in production.
+    var local = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    var base = local ? 'http://localhost:8520' : 'https://ethanyang85-market-predict.hf.space';
+    f.src = base + '/?embed=true&site=1';
+    // Grow the iframe to the height the app reports → no inner scrollbar; the
+    // whole page scrolls as one. Falls back to the CSS 100vh if no message
+    // arrives (e.g. an older deployed build that doesn't post its height).
+    window.addEventListener('message', function (e) {
+      var h = e.data && e.data.mpHeight;
+      if (typeof h === 'number' && h > 500) f.style.height = (h + 16) + 'px';
+    });
+  })();
+</script>
+
+</body>
+</html>
