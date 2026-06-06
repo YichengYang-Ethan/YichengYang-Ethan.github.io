@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Week 2 &mdash; Streaming ADVI on 122 GB, and the bug that didn't crash &mdash; Yicheng Yang</title>
+<meta name="description" content="GSoC 2026 Week 2: testing StreamingDataset on a self-recorded 122 GB Kalshi order book surfaced a silent posterior bias from block-shuffling time-ordered data, and the one-time pre-shuffle that fixed it.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 24px 0; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.55; }
+  pre code { font-family: inherit; font-size: inherit; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+  pre code { background: transparent; padding: 0; }
+  .eq { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 14px; margin: 22px 0; color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Week 2</div>
+  <h1>Streaming ADVI on 122 GB, and the bug that didn't crash</h1>
+  <p class="meta">Yicheng Yang &middot; June 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<p>
+  This week the goal is to let minibatch ADVI stream data from disk, so memory
+  usage does not grow with the number of rows. This matters because PyMC's current
+  <code>pm.Minibatch</code> still expects the full array to be in memory, which is
+  exactly the situation where minibatching is supposed to help but often cannot.
+</p>
+
+<h2>Testing it on 122 GB of order-book data</h2>
+
+<p>
+  Once the interface was mostly working, I wanted to test it on something real. I
+  happened to have a large Kalshi L2 order book dataset that I collected for a
+  separate market-making / alpha project, and it was a perfect stress test because
+  it does not fit comfortably in memory. The dataset is 122.67 GB, covering about
+  57 days from 2026-04-07 to 2026-06-04, with 2,685 files. After folding the raw
+  <code>book_delta</code> events back into book states, I ended up with about
+  121.8 million rows.
+</p>
+
+<p>
+  For the test model, I used a simple logistic regression:
+</p>
+
+<p class="eq">logit P(next mid-price move is up) = b0 + b1 &middot; mid + b2 &middot; spread + b3 &middot; imbalance</p>
+
+<p>
+  and fit it with ADVI using minibatches of size 4096.
+</p>
+
+<h2>The posteriors drifted &mdash; and nothing crashed</h2>
+
+<p>
+  I expected the streaming version and the in-RAM baseline to give basically the
+  same posterior. They did not. As I increased <code>N</code>, the posterior kept
+  drifting farther away: <code>max|&Delta;|</code> was about 0.045 at 1M rows, but
+  grew to 1.65 by 26M rows.
+</p>
+
+<p>
+  The worst part was that nothing crashed. There was no error, no warning, and no
+  obvious sign that anything was wrong. It just silently gave me the wrong
+  posterior, which is much more dangerous than a loud failure.
+</p>
+
+<h2>It was the shuffle story</h2>
+
+<p>
+  After digging into it, the issue turned out not to be the math in ADVI or a bug
+  in reading files. It was the shuffle story. The order book data is naturally
+  sorted by time. A bounded shuffle buffer can only do local, block-like
+  shuffling: rows are random inside the window, but the window itself still moves
+  forward through time. So the minibatches are not really i.i.d. globally. The
+  gradients become biased, and ADVI converges to a different posterior.
+</p>
+
+<p>
+  A simple way to think about it is a deck of cards sorted by suit. If you only
+  shuffle the top few cards before dealing, the hands will still come out in big
+  suit clusters.
+</p>
+
+<p>
+  The important design lesson is that a bounded buffer cannot magically fix
+  globally ordered data unless we do an O(N) full-data shuffle. But if we require
+  that inside <code>StreamingDataset</code>, then it is no longer truly streaming
+  with O(buffer) memory. So this is not really a bug; it is an API contract.
+</p>
+
+<h2>The fix: pre-shuffle once</h2>
+
+<p>
+  The fix was to pre-shuffle the dataset once on disk. In this case, each row is
+  only about 17 bytes, so doing a full offline shuffle was practical. After that,
+  sequential streaming behaved the way I expected. At 20M rows,
+  <code>max|&Delta;|</code> dropped from 0.69 to 0.027, and over the full run it
+  stayed under 0.07. At 122M rows, the difference was only 0.022.
+</p>
+
+<figure class="figure">
+  <img src="images/gsoc-week2-equivalence.png" alt="Bar chart of the four posterior coefficient means with standard-deviation error bars, in-RAM minibatch versus StreamingDataset, at N = 121,818,328; the bars nearly coincide with max absolute difference 0.022.">
+  <figcaption>After the pre-shuffle, the streaming and in-RAM posteriors agree at the full 121.8M rows (max|&Delta;| = 0.022) &mdash; well inside ADVI's own optimization noise.</figcaption>
+</figure>
+
+<h2>Why it matters: memory stays flat</h2>
+
+<p>
+  This also showed the main benefit of the streaming approach. The streaming
+  version stayed almost flat at around 0.5 GB of memory, while the in-RAM baseline
+  grew linearly and reached 9.1 GB at 122M rows, about 16x higher. Based on that
+  measured slope, a 24 GiB machine would run out of memory at roughly 372M rows.
+</p>
+
+<figure class="figure">
+  <img src="images/gsoc-week2-memory.png" alt="Log-log plot of peak resident memory versus dataset size N from 0.5M to 122M rows; the in-RAM minibatch baseline rises linearly to 9.1 GB and extrapolates to an out-of-memory point near 372M rows, while StreamingDataset stays flat near 0.5 GB.">
+  <figcaption>Peak resident memory vs N (9 measured points). In-RAM minibatch rises linearly to 9.1 GB at 122M rows; the dotted extrapolation hits the machine's memory ceiling near 372M rows. StreamingDataset stays flat at ~0.5 GB.</figcaption>
+</figure>
+
+<h2>What went into the PR</h2>
+
+<p>
+  For the PR, I added a bounded <code>shuffle_buffer</code> option for normal
+  streaming use, but the docstring now makes the contract explicit: if the data
+  has a meaningful global order, the user needs to pre-shuffle it first. I also
+  added <code>total_size="auto"</code>, so finite datasets can automatically infer
+  <code>N</code> from metadata, for example from Parquet files, while truly
+  infinite streams can still provide it manually.
+</p>
+
+<pre><code>from pymc.variational.streaming import StreamingDataset, shuffle_buffer, parquet_source
+
+# After a one-time global pre-shuffle on disk, stream shuffled minibatches:
+ds = StreamingDataset(
+    shuffle_buffer(parquet_source("shuffled/"),
+                   buffer_size=1_000_000, batch_size=4096, seed=0),
+    batch_size=4096,
+    sample_shape=(4,),     # 3 features + 1 observed column
+    total_size="auto",     # infer N from Parquet metadata
+)
+
+with pm.Model():
+    b = pm.Normal("b", 0.0, 3.0, shape=4)
+    buf = ds.as_tensor()
+    logit = b[0] + b[1] * buf[:, 0] + b[2] * buf[:, 1] + b[3] * buf[:, 2]
+    pm.Bernoulli("up", logit_p=logit, observed=buf[:, 3], total_size=ds.total_size)
+    approx = pm.fit(20_000, method="advi", callbacks=[ds.fit_callback()])
+</code></pre>
+
+<p>
+  The main takeaway for me is that streaming VI needs a real shuffle story. A
+  buffer alone is not enough when the data is ordered.
+</p>
+
+<p>
+  Next, I'm going to finalize the API with my mentor Rob and then open the upstream
+  PR.
+</p>
+
+<p style="font-family:Inter,sans-serif; font-size:13.5px; color:var(--text-secondary); margin-top:28px;">
+  A note on the test model: the next-move logistic regression is a stress test for
+  the streaming machinery, not a market claim. Consecutive order-book events are
+  highly autocorrelated, so its coefficients are not a microstructure finding; the
+  result I stand behind is the streaming&ndash;vs&ndash;in-RAM equivalence and the
+  memory curve. The 372M-row out-of-memory point is an extrapolation of the
+  measured slope, not a crash I triggered.
+</p>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc">PyMC source</a> &middot;
+  <a href="https://www.jmlr.org/papers/v18/16-107.html">ADVI paper (Kucukelbir et al. 2017)</a> &middot;
+  Mentors <a href="https://github.com/zaxtax">@zaxtax</a> &middot; <a href="https://github.com/fonnesbeck">@fonnesbeck</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
