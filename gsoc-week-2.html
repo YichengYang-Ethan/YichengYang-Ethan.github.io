@@ -94,8 +94,12 @@
   in reading files. It was the shuffle story. The order book data is naturally
   sorted by time. A bounded shuffle buffer can only do local, block-like
   shuffling: rows are random inside the window, but the window itself still moves
-  forward through time. So the minibatches are not really i.i.d. globally. The
-  gradients become biased, and ADVI converges to a different posterior.
+  forward through time. So each minibatch is a local, non-uniform slice of the
+  data rather than a uniform random sample over all <code>N</code> rows. That
+  matters because the <code>N/|B|</code> rescaling that minibatch ADVI relies on
+  is only an unbiased estimate of the full-data gradient when the minibatch is a
+  uniform sample; under block-shuffling it becomes biased, and ADVI converges to a
+  different (biased) variational approximation.
 </p>
 
 <p>
@@ -123,7 +127,7 @@
 
 <figure class="figure">
   <img src="images/gsoc-week2-equivalence.png" alt="Bar chart of the four posterior coefficient means with standard-deviation error bars, in-RAM minibatch versus StreamingDataset, at N = 121,818,328; the bars nearly coincide with max absolute difference 0.022.">
-  <figcaption>After the pre-shuffle, the streaming and in-RAM posteriors agree at the full 121.8M rows (max|&Delta;| = 0.022) &mdash; visually indistinguishable across all four coefficients.</figcaption>
+  <figcaption>After the pre-shuffle, the streaming and in-RAM posteriors agree at the full 121.8M rows (max|&Delta;| = 0.022); the small residual is just the difference between two independent stochastic ADVI runs, not a bias.</figcaption>
 </figure>
 
 <h2>Why it matters: memory stays flat</h2>
