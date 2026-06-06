@@ -76,14 +76,15 @@
 <p>
   I expected the streaming version and the in-RAM baseline to give basically the
   same posterior. They did not. As I increased <code>N</code>, the posterior kept
-  drifting farther away: <code>max|&Delta;|</code> was about 0.045 at 1M rows, but
-  grew to 1.65 by 26M rows.
+  drifting farther from the in-RAM baseline: <code>max|&Delta;|</code> was about
+  0.045 at 1M rows, but grew to 1.65 by 26M rows.
 </p>
 
 <p>
   The worst part was that nothing crashed. There was no error, no warning, and no
-  obvious sign that anything was wrong. It just silently gave me the wrong
-  posterior, which is much more dangerous than a loud failure.
+  obvious sign that anything was wrong. It just silently gave me a posterior that
+  increasingly disagreed with the in-RAM baseline, which is much more dangerous
+  than a loud failure.
 </p>
 
 <h2>It was the shuffle story</h2>
@@ -122,16 +123,17 @@
 
 <figure class="figure">
   <img src="images/gsoc-week2-equivalence.png" alt="Bar chart of the four posterior coefficient means with standard-deviation error bars, in-RAM minibatch versus StreamingDataset, at N = 121,818,328; the bars nearly coincide with max absolute difference 0.022.">
-  <figcaption>After the pre-shuffle, the streaming and in-RAM posteriors agree at the full 121.8M rows (max|&Delta;| = 0.022) &mdash; well inside ADVI's own optimization noise.</figcaption>
+  <figcaption>After the pre-shuffle, the streaming and in-RAM posteriors agree at the full 121.8M rows (max|&Delta;| = 0.022) &mdash; visually indistinguishable across all four coefficients.</figcaption>
 </figure>
 
 <h2>Why it matters: memory stays flat</h2>
 
 <p>
   This also showed the main benefit of the streaming approach. The streaming
-  version stayed almost flat at around 0.5 GB of memory, while the in-RAM baseline
-  grew linearly and reached 9.1 GB at 122M rows, about 16x higher. Based on that
-  measured slope, a 24 GiB machine would run out of memory at roughly 372M rows.
+  version stayed almost flat at around 0.5 GB &mdash; 0.57 GB at 122M rows &mdash;
+  while the in-RAM baseline grew linearly and reached 9.1 GB, about 16x higher.
+  Based on that measured slope, a 24 GiB machine would run out of memory at
+  roughly 372M rows.
 </p>
 
 <figure class="figure">
