@@ -204,15 +204,6 @@ with pm.Model():
   PR.
 </p>
 
-<p style="font-family:Inter,sans-serif; font-size:13.5px; color:var(--text-secondary); margin-top:28px;">
-  One caveat: that logistic regression is just a stress test for the streaming
-  code, not a trading claim. The order-book rows are heavily autocorrelated, so I
-  would not read anything into the actual coefficients. What I actually trust here
-  is that streaming matches the in-RAM run, plus the memory curve. And the 372M-row
-  out-of-memory point is me extrapolating the measured slope, not a crash I
-  actually hit.
-</p>
-
 <hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
 
 <p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
