@@ -14,7 +14,9 @@
   pre code { font-family: inherit; font-size: inherit; }
   code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
   pre code { background: transparent; padding: 0; }
-  .eq { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 14px; margin: 22px 0; color: var(--text); }
+  .eq { text-align: center; font-family: 'Source Serif 4', Georgia, serif; font-size: 18px; line-height: 1.7; margin: 28px 0; color: var(--text); }
+  .eq i { font-style: italic; }
+  .eq sub { font-size: 0.7em; vertical-align: -0.25em; padding-right: 0.5px; }
 </style>
 </head>
 <body>
@@ -63,7 +65,7 @@
   For the test model, I used a simple logistic regression:
 </p>
 
-<p class="eq">logit P(next mid-price move is up) = b0 + b1 &middot; mid + b2 &middot; spread + b3 &middot; imbalance</p>
+<p class="eq">logit&nbsp;<i>P</i>(next mid-price move is up)<br>= <i>b</i><sub>0</sub> + <i>b</i><sub>1</sub>&middot;mid + <i>b</i><sub>2</sub>&middot;spread + <i>b</i><sub>3</sub>&middot;imbalance</p>
 
 <p>
   and fit it with ADVI using minibatches of size 4096.
