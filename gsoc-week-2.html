@@ -44,21 +44,25 @@
 
 <p>
   This week the goal is to let minibatch ADVI stream data from disk, so memory
-  usage does not grow with the number of rows. This matters because PyMC's current
-  <code>pm.Minibatch</code> still expects the full array to be in memory, which is
-  exactly the situation where minibatching is supposed to help but often cannot.
+  usage does not grow with the number of rows. This matters because
+  <code>pm.Minibatch</code> (at least in the PyMC version I'm building against)
+  still expects the full array to be in memory &mdash; which is exactly the case
+  where minibatching is supposed to help but often can't.
 </p>
 
 <h2>Testing it on 122 GB of order-book data</h2>
 
 <p>
   Once the interface was mostly working, I wanted to test it on something real. I
-  happened to have a large Kalshi L2 order book dataset that I collected for a
-  separate market-making / alpha project, and it was a perfect stress test because
-  it does not fit comfortably in memory. The dataset is 122.67 GB, covering about
-  57 days from 2026-04-07 to 2026-06-04, with 2,685 files. After folding the raw
-  <code>book_delta</code> events back into book states, I ended up with about
-  121.8 million rows.
+  happened to have a large Kalshi L2 order book dataset I'd collected for a
+  separate market-microstructure project, and it was a good stress test because it
+  does not fit comfortably in memory. The raw data is 122.67 GB &mdash; about 57
+  days from 2026-04-07 to 2026-06-04, across 2,685 files. I folded the raw
+  <code>book_delta</code> events back into book states and turned each one into a
+  small feature row (mid, spread, imbalance, and the next-move label), which gave
+  me about 121.8 million rows. Those rows are tiny &mdash; about 17 bytes each
+  &mdash; so the training table itself is only a couple of GB, even though the raw
+  data is huge.
 </p>
 
 <p>
@@ -82,9 +86,8 @@
 
 <p>
   The worst part was that nothing crashed. There was no error, no warning, and no
-  obvious sign that anything was wrong. It just silently gave me a posterior that
-  increasingly disagreed with the in-RAM baseline, which is much more dangerous
-  than a loud failure.
+  obvious sign that anything was wrong. It just silently gave me the wrong
+  posterior, which is much more dangerous than a loud failure.
 </p>
 
 <h2>It was the shuffle story</h2>
@@ -94,12 +97,9 @@
   in reading files. It was the shuffle story. The order book data is naturally
   sorted by time. A bounded shuffle buffer can only do local, block-like
   shuffling: rows are random inside the window, but the window itself still moves
-  forward through time. So each minibatch is a local, non-uniform slice of the
-  data rather than a uniform random sample over all <code>N</code> rows. That
-  matters because the <code>N/|B|</code> rescaling that minibatch ADVI relies on
-  is only an unbiased estimate of the full-data gradient when the minibatch is a
-  uniform sample; under block-shuffling it becomes biased, and ADVI converges to a
-  different (biased) variational approximation.
+  forward through time. So the minibatches stop being a fair sample of the whole
+  dataset &mdash; each one is really just a single slice of time. The gradients
+  become biased, and ADVI converges to a different posterior.
 </p>
 
 <p>
@@ -110,16 +110,17 @@
 
 <p>
   The important design lesson is that a bounded buffer cannot magically fix
-  globally ordered data unless we do an O(N) full-data shuffle. But if we require
-  that inside <code>StreamingDataset</code>, then it is no longer truly streaming
-  with O(buffer) memory. So this is not really a bug; it is an API contract.
+  globally ordered data unless we do an O(N) full-data shuffle. But if we force
+  that inside <code>StreamingDataset</code>, it is no longer really single-pass
+  streaming &mdash; it becomes an offline step you run once up front. So this is
+  not really a bug; it is an API contract.
 </p>
 
 <h2>The fix: pre-shuffle once</h2>
 
 <p>
-  The fix was to pre-shuffle the dataset once on disk. In this case, each row is
-  only about 17 bytes, so doing a full offline shuffle was practical. After that,
+  The fix was to pre-shuffle the whole table once on disk. Since the rows are so
+  small, doing it offline was cheap and I only had to do it once. After that,
   sequential streaming behaved the way I expected. At 20M rows,
   <code>max|&Delta;|</code> dropped from 0.69 to 0.027, and over the full run it
   stayed under 0.07. At 122M rows, the difference was only 0.022.
@@ -133,11 +134,11 @@
 <h2>Why it matters: memory stays flat</h2>
 
 <p>
-  This also showed the main benefit of the streaming approach. The streaming
-  version stayed almost flat at around 0.5 GB &mdash; 0.57 GB at 122M rows &mdash;
-  while the in-RAM baseline grew linearly and reached 9.1 GB, about 16x higher.
-  Based on that measured slope, a 24 GiB machine would run out of memory at
-  roughly 372M rows.
+  This also showed the main benefit. Streaming stayed almost flat &mdash; around
+  0.5 GB, still only 0.57 GB at 122M rows &mdash; while the in-RAM baseline climbed
+  straight to 9.1 GB (it keeps every row in memory as float64, so it is much bigger
+  than the 17-byte rows on disk), about 16x higher. From that measured slope, a
+  24 GiB machine (about 26 GB) would run out of memory around 372M rows.
 </p>
 
 <figure class="figure">
@@ -156,12 +157,20 @@
   infinite streams can still provide it manually.
 </p>
 
-<pre><code>from pymc.variational.streaming import StreamingDataset, shuffle_buffer, parquet_source
+<pre><code>from pymc.variational.streaming import (
+    StreamingDataset,
+    shuffle_buffer,
+    parquet_source,
+)
 
-# After a one-time global pre-shuffle on disk, stream shuffled minibatches:
+# Pre-shuffle once on disk, then stream shuffled minibatches:
 ds = StreamingDataset(
-    shuffle_buffer(parquet_source("shuffled/"),
-                   buffer_size=1_000_000, batch_size=4096, seed=0),
+    shuffle_buffer(
+        parquet_source("shuffled/"),
+        buffer_size=1_000_000,
+        batch_size=4096,
+        seed=0,
+    ),
     batch_size=4096,
     sample_shape=(4,),     # 3 features + 1 observed column
     total_size="auto",     # infer N from Parquet metadata
@@ -170,8 +179,18 @@ ds = StreamingDataset(
 with pm.Model():
     b = pm.Normal("b", 0.0, 3.0, shape=4)
     buf = ds.as_tensor()
-    logit = b[0] + b[1] * buf[:, 0] + b[2] * buf[:, 1] + b[3] * buf[:, 2]
-    pm.Bernoulli("up", logit_p=logit, observed=buf[:, 3], total_size=ds.total_size)
+    logit = (
+        b[0]
+        + b[1] * buf[:, 0]
+        + b[2] * buf[:, 1]
+        + b[3] * buf[:, 2]
+    )
+    pm.Bernoulli(
+        "up",
+        logit_p=logit,
+        observed=buf[:, 3],
+        total_size=ds.total_size,
+    )
     approx = pm.fit(20_000, method="advi", callbacks=[ds.fit_callback()])
 </code></pre>
 
@@ -186,12 +205,12 @@ with pm.Model():
 </p>
 
 <p style="font-family:Inter,sans-serif; font-size:13.5px; color:var(--text-secondary); margin-top:28px;">
-  A note on the test model: the next-move logistic regression is a stress test for
-  the streaming machinery, not a market claim. Consecutive order-book events are
-  highly autocorrelated, so its coefficients are not a microstructure finding; the
-  result I stand behind is the streaming&ndash;vs&ndash;in-RAM equivalence and the
-  memory curve. The 372M-row out-of-memory point is an extrapolation of the
-  measured slope, not a crash I triggered.
+  One caveat: that logistic regression is just a stress test for the streaming
+  code, not a trading claim. The order-book rows are heavily autocorrelated, so I
+  would not read anything into the actual coefficients. What I actually trust here
+  is that streaming matches the in-RAM run, plus the memory curve. And the 372M-row
+  out-of-memory point is me extrapolating the measured slope, not a crash I
+  actually hit.
 </p>
 
 <hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
