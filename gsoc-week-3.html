@@ -133,6 +133,16 @@ with pm.Model() as model:
   &mdash; it recovers the same model an in-memory fit would.
 </p>
 
+<p>
+  It lines up with the in-RAM <code>pm.Minibatch</code> baseline too &mdash; the
+  standard approach when the data does fit &mdash; coefficient for coefficient:
+</p>
+
+<figure class="figure">
+  <img src="images/gsoc-week3-criteo-equivalence.png" alt="Grouped bar chart of the 14 logistic-regression posterior coefficient means with standard-deviation error bars, in-RAM minibatch ADVI versus StreamingDataset, on 1,000,000 Criteo rows; the two bars coincide in every group.">
+  <figcaption>The 14 posterior coefficients from streaming ADVI and from the in-RAM <code>pm.Minibatch</code> baseline, on 1,000,000 Criteo rows. They agree coefficient for coefficient (max |&Delta;| = 0.12, on the &minus;3.62 intercept); the small gaps are just the difference between two independent stochastic ADVI runs.</figcaption>
+</figure>
+
 <h2>Memory stays flat; the baseline runs out</h2>
 
 <p>
