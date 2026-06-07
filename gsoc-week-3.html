@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Week 3 &mdash; It was already a DataLoader &mdash; Yicheng Yang</title>
+<meta name="description" content="GSoC 2026 Week 3: after a mentor design review, reworking the streaming VI API into PyTorch-style Dataset/DataLoader/Trainer, and validating it on the public Criteo 1TB benchmark — same posterior as an in-memory fit, flat memory.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 24px 0; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.55; }
+  pre code { font-family: inherit; font-size: inherit; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+  pre code { background: transparent; padding: 0; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Week 3</div>
+  <h1>It was already a DataLoader, and a public-data check on Criteo</h1>
+  <p class="meta">Yicheng Yang &middot; June 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<p>
+  Last week I got minibatch ADVI to stream data from disk. This week was mostly
+  about the design rather than the code. I had a review with my mentors, Rob and
+  Chris, and the short version is that the thing I had built was already a data
+  loader &mdash; I just hadn't named it like one.
+</p>
+
+<h2>The feedback: it's basically a DataLoader</h2>
+
+<p>
+  Rob's first point was that my <code>StreamingDataset</code> looked almost exactly
+  like PyTorch's <code>DataLoader</code>, and there was no reason to invent new
+  names for an idea people already know. So the source of rows became an
+  <code>IterableDataset</code>, and the object that batches and shuffles it became
+  a <code>DataLoader</code>. Same words, same mental model, nothing new to learn.
+</p>
+
+<p>
+  His second point was the callbacks. To advance the stream each step, the user
+  had to pass <code>callbacks=[ds.fit_callback()]</code> into <code>pm.fit</code>.
+  That leaks the training loop into user code, and it reads badly. The fix is a
+  <code>Trainer</code>, in the style of PyTorch Lightning: it owns the loop and
+  advances the data itself, so the user-facing API has no callbacks at all.
+</p>
+
+<p>
+  The third point was an open question &mdash; could <code>total_size</code> leave
+  the model entirely? You pass it to the likelihood so the minibatch
+  log-likelihood gets rescaled by <code>N / batch_size</code>, but it's an awkward
+  thing to have leaking into the model. A design note from Jesse Grabowski, another
+  PyMC dev, already had the answer: the loader is sized, so <code>N</code> is just
+  <code>len(loader)</code>, and the data reaches the model through a
+  <code>pm.Data</code> placeholder that the trainer refills each step. The model
+  never has to know the loader exists.
+</p>
+
+<h2>What the API looks like now</h2>
+
+<p>
+  Putting those together: the model declares a <code>pm.Data</code> placeholder,
+  reads it like any other data, and passes <code>total_size=len(loader)</code>. The
+  <code>Trainer</code> streams minibatches into that placeholder with
+  <code>set_data</code>. There are no callbacks.
+</p>
+
+<pre><code>from pymc.variational.streaming import (
+    DataLoader, Trainer, parquet_source,
+)
+
+loader = DataLoader(
+    parquet_source("criteo/"),
+    batch_size=4096,
+    sample_shape=(14,),    # 13 features + label
+    total_size="auto",     # len(loader) == N
+)
+
+with pm.Model() as model:
+    b = pm.Normal("b", 0.0, 1.5, shape=14)
+    batch = pm.Data("batch", np.zeros((4096, 14)))   # placeholder
+    logit = b[0] + pm.math.dot(batch[:, :13], b[1:])
+    pm.Bernoulli(
+        "click",
+        logit_p=logit,
+        observed=batch[:, 13],
+        total_size=len(loader),
+    )
+    # no callbacks: the Trainer feeds "batch" each step
+    approx = Trainer(
+        method="advi", dataloader=loader, data_name="batch"
+    ).fit(20_000)
+</code></pre>
+
+<h2>Checking it on public data: Criteo</h2>
+
+<p>
+  The Week 2 results were on 122 GB of Kalshi order-book data I had recorded
+  myself. That's fine for me, but nobody else can rerun it, and for a library
+  feature the result should be reproducible. So I re-ran on the
+  <a href="https://huggingface.co/datasets/criteo/CriteoClickLogs">Criteo 1TB Click
+  Logs</a>, the standard public benchmark for out-of-core learning. It's binary
+  classification &mdash; was an ad clicked &mdash; which is the same logistic
+  regression I had been fitting, just with different columns.
+</p>
+
+<p>
+  I streamed a million real rows straight from Hugging Face, without downloading
+  the whole thing, through <code>parquet_source</code> &rarr; <code>DataLoader</code>
+  &rarr; <code>Trainer</code>, and compared the ADVI posterior to an ordinary
+  in-memory scikit-learn logistic fit on the same rows. The coefficients line up:
+  correlation 0.999 across all 14, and the intercept (&minus;3.62) is just the
+  logit of the 3.3% click rate. The streaming path isn't doing anything strange
+  &mdash; it recovers the same model an in-memory fit would.
+</p>
+
+<h2>Memory stays flat; the baseline runs out</h2>
+
+<p>
+  The point of all of this is memory. I swept <code>N</code> from 1 to 150 million
+  rows and measured peak resident memory two ways: streaming through the
+  <code>DataLoader</code>, and the in-RAM <code>pm.Minibatch</code> baseline that
+  keeps every row resident. Streaming stays flat at about 0.7 GB the whole way. The
+  in-RAM baseline climbs linearly &mdash; 15.7 GB at 150 million rows, about
+  21&times; more &mdash; and at that slope the line runs out of this machine's 26 GB
+  around 238 million rows. Streaming never gets there.
+</p>
+
+<figure class="figure">
+  <img src="images/gsoc-week3-criteo-memory.png" alt="Peak resident memory versus dataset size N on Criteo: StreamingDataset stays flat near 0.7 GB while the in-RAM pm.Minibatch baseline rises linearly to 3.3 GB at 16M rows and extrapolates to the 26 GB memory ceiling near 148M rows.">
+  <figcaption>Peak resident memory vs N on public Criteo. Streaming stays flat at ~0.7 GB all the way to 150 million rows, while the in-RAM <code>pm.Minibatch</code> baseline rises linearly to 15.7 GB (21&times; more) and the dotted extrapolation hits this machine's 26 GB ceiling around 238 million rows. Everything up to 150M is measured; only the out-of-memory point is extrapolated &mdash; and unlike last week's Kalshi figure, anyone can reproduce this one.</figcaption>
+</figure>
+
+<h2>What's next</h2>
+
+<p>
+  Next I'll open the draft PR for my mentors to review, and sort out where the
+  example data should live &mdash; the feature table is only a couple of GB, so
+  Hugging Face is the likely home. After that I want to look at a Dask integration,
+  starting with the boring but necessary question of whether Dask is still actively
+  maintained before building against it.
+</p>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc">PyMC source</a> &middot;
+  <a href="https://huggingface.co/datasets/criteo/CriteoClickLogs">Criteo 1TB Click Logs</a> &middot;
+  Mentors <a href="https://github.com/zaxtax">@zaxtax</a> &middot; <a href="https://github.com/fonnesbeck">@fonnesbeck</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
