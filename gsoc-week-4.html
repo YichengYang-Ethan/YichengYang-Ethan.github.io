@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Week 4 &mdash; Three pull requests, and a benchmark anyone can rerun &mdash; Yicheng Yang</title>
+<meta name="description" content="GSoC 2026 Week 4: the streaming VI prototype became three pull requests — a data loader, a trainer, and an example notebook — plus a download script that reproduces the Criteo benchmark from the public dataset.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Week 4</div>
+  <h1>Three pull requests, and a benchmark anyone can rerun</h1>
+  <p class="meta">Yicheng Yang &middot; June 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<p>
+  Last week the streaming code was a validated prototype on my laptop. This week I
+  turned it into pull requests &mdash; three of them &mdash; and walked through them
+  with my mentors.
+</p>
+
+<h2>The three PRs</h2>
+
+<p>
+  I split the work into three.
+  <a href="https://github.com/pymc-devs/pymc/pull/8325">#8325</a> is the data layer
+  &mdash; <code>IterableDataset</code>, <code>parquet_source</code>,
+  <code>DataLoader</code>, <code>shuffle_buffer</code> &mdash; the part that reads
+  Parquet shards off disk, re-batches them, and shuffles.
+  <a href="https://github.com/pymc-devs/pymc/pull/8333">#8333</a> is the
+  <code>Trainer</code>, stacked on top: it owns the fitting loop and feeds each
+  minibatch into the model itself, so there are no callbacks for the user to wire
+  up. <a href="https://github.com/pymc-devs/pymc-examples/pull/888">#888</a> is the
+  example notebook that puts the two together end to end. I split the loader off
+  from the trainer on purpose &mdash; it is self-contained and does not depend on
+  how inference runs, so it can be reviewed on its own.
+</p>
+
+<h2>Polishing the code</h2>
+
+<p>
+  A good chunk of the week was cleaning the PRs up from the first round of comments.
+  The tests now describe themselves with docstrings instead of inline comments, the
+  decorative banners are gone, and the public names mirror PyTorch's
+  <code>torch.utils.data</code> &mdash; <code>DataLoader</code>,
+  <code>IterableDataset</code>, <code>shuffle</code> &mdash; so the API is
+  recognizable from the first line instead of being something new to learn. None of
+  it changes behaviour; it just makes the code much easier to read.
+</p>
+
+<h2>A benchmark anyone can rerun</h2>
+
+<p>
+  Last week's Criteo memory result was real, but you had to take my word for it
+  &mdash; I had run it on a slice I prepped myself. So this week I added a download
+  script that pulls the slice straight from the public Hugging Face dataset, so
+  anyone can reproduce the whole run from scratch instead of trusting my numbers.
+  The posterior check still holds: on a million real rows, streaming ADVI recovers
+  the same coefficients as an ordinary in-memory fit, slope for slope.
+</p>
+
+<figure class="figure">
+  <img src="images/gsoc-week4-equivalence.png" alt="Dumbbell chart of the 13 logistic-regression slope coefficients on 1,000,000 Criteo rows, comparing the in-RAM pm.Minibatch posterior mean (red) with the StreamingDataset posterior mean (teal); most pairs nearly coincide, while the two near-zero slopes I6 and I8 straddle zero and flip sign.">
+  <figcaption>
+    The 13 logistic slope coefficients on 1,000,000 real Criteo rows: in-RAM
+    <code>pm.Minibatch</code> (red) vs the streaming <code>DataLoader</code> (teal).
+    Most pin to within ~0.05; the largest gap is 0.12 (I12), and the correlation
+    across all 14 coefficients is 0.998. The two highlighted slopes (I6, I8) sit
+    within noise of zero, so two independent stochastic ADVI runs can even flip their
+    sign &mdash; that is the ambiguity of a near-zero coefficient, not a streaming
+    bug. The intercept (&minus;3.59 vs &minus;3.60) is off-scale and agrees to 0.01.
+  </figcaption>
+</figure>
+
+<h2>What's next</h2>
+
+<p>
+  Next is the deeper review round and finishing the test coverage on the data
+  loader. More soon.
+</p>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://github.com/pymc-devs/pymc/pull/8325">DataLoader PR #8325</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc/pull/8333">Trainer PR #8333</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc-examples/pull/888">Example PR #888</a> &middot;
+  <a href="https://huggingface.co/datasets/criteo/CriteoClickLogs">Criteo 1TB Click Logs</a> &middot;
+  Mentors <a href="https://github.com/zaxtax">@zaxtax</a> &middot; <a href="https://github.com/fonnesbeck">@fonnesbeck</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
