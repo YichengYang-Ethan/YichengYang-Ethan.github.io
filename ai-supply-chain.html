@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>AI Supply Chain Research &mdash; Yicheng Yang</title>
+<meta name="description" content="Ten-sector, source-verified research series on the AI compute build-out, with an independent credibility audit of SemiAnalysis.">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+
+<style>
+/* scoped SemiAnalysis-inspired dark theme for this section only */
+body{background:#14101B;color:#EDEBF0;font-family:'Spectral',Georgia,serif;}
+nav{border-bottom:1px solid #34303A;}
+nav .nav-name,nav .nav-links a{color:#B5B4B7!important;}
+nav .nav-links a:hover,nav .nav-name:hover{color:#F8A848!important;opacity:1;}
+header .label{color:#F8A848;font-family:'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:13px;font-weight:600;}
+h1{color:#EDEBF0;} h2{color:#F8A848;margin:36px 0 12px;font-size:24px;}
+h3{color:#EDEBF0;margin:22px 0 8px;font-size:19px;}
+p.meta,.muted{color:#B5B4B7;}
+a{color:#F8A848;} a:hover{color:#FFC069;opacity:1;}
+.card{background:#1B1722;border:1px solid #34303A;border-radius:8px;padding:20px 22px;margin:14px 0;}
+.card-label{color:#F8A848;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.card-title{font-weight:600;font-size:19px;margin-bottom:6px;color:#EDEBF0;}
+.card-desc{color:#C9C7CE;font-size:16.5px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;} @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+table{width:100%;border-collapse:collapse;font-size:15px;font-family:'Inter',sans-serif;}
+table.wtab{table-layout:fixed;} table.wtab td:first-child{width:150px;font-weight:600;color:#EDEBF0;vertical-align:top;padding-top:10px;}
+table.ktab{table-layout:fixed;} table.ktab th:nth-child(1),table.ktab td:nth-child(1){width:26%;} table.ktab th:nth-child(2),table.ktab td:nth-child(2){width:22%;} 
+td{vertical-align:top;line-height:1.55;}
+th{color:#F8A848;text-align:left;border-bottom:1px solid #56535B;padding:8px 10px;font-weight:600;cursor:pointer;user-select:none;}
+td{border-bottom:1px solid #2B2832;padding:7px 10px;color:#D8D6DD;}
+tr:hover td{background:#1B1722;}
+.pos{color:#57C08A;} .neg{color:#E8756A;}
+blockquote{border-left:3px solid #F8A848;background:#1B1722;margin:12px 0;padding:10px 16px;font-style:italic;color:#C9C7CE;font-size:16px;}
+blockquote .attr{display:block;font-style:normal;font-size:13.5px;color:#8B8992;margin-top:6px;font-family:'Inter',sans-serif;}
+.vc{display:flex;flex-direction:column;gap:0;margin:18px 0;}
+.vc .stage{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center;background:#1B1722;border:1px solid #F8A848;border-radius:8px;padding:10px 16px;}
+.vc .stage b{color:#F8A848;font-family:'Inter',sans-serif;font-size:15px;}
+.vc .stage span{color:#B5B4B7;font-size:14.5px;font-family:'Inter',sans-serif;}
+.vc .arrow{color:#F79C2F;text-align:center;line-height:1.1;font-size:15px;margin:1px 0;}
+.klist p{margin:0 0 12px;} .klist b{color:#F8A848;}
+.thesis{margin:0 0 18px;} .thesis .tclaim{font-weight:600;color:#EDEBF0;font-size:17.5px;}
+.thesis .trat{color:#C9C7CE;font-size:16px;margin-top:4px;}
+.pill{display:inline-block;background:#221E29;border:1px solid #34303A;border-radius:20px;padding:2px 12px;margin:2px 4px 2px 0;font-family:'Inter',sans-serif;font-size:13.5px;color:#C9C7CE;}
+.bars{font-family:'Inter',sans-serif;font-size:14px;margin:14px 0;}
+.bars .row{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;margin:6px 0;}
+.bars .track{background:#221E29;border-radius:4px;height:16px;position:relative;}
+.bars .fill{height:16px;border-radius:4px;position:absolute;top:0;}
+.disclaimer{border-top:1px solid #34303A;margin-top:44px;padding-top:16px;font-size:13.5px;color:#8B8992;font-family:'Inter',sans-serif;}
+.srcs{font-size:14.5px;color:#B5B4B7;} .srcs li{margin:3px 0;}
+footer{border-top:none!important;color:#8B8992!important;}
+.section-label{color:#F8A848!important;}
+</style>
+</head>
+<body>
+<div class="container">
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain" class="active" style="color:#F8A848!important">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+<header>
+  <div class="label">Independent research series</div>
+  <h1>AI Supply Chain Research</h1>
+  <p class="meta">From Demand Shock to Bottleneck Relay — Ten Sectors, One Story of the AI Compute Build-Out<br>Distilled and verified from 311 public SemiAnalysis articles (2020&ndash;2026) &middot; every claim sourced and linked &middot; includes an <a href="/ai-supply-chain-credibility">independent credibility audit</a> of the source itself.</p>
+</header>
+<article>
+<div class="card"><div class="card-label">Abstract</div><div class="card-desc">Read together, the ten sectors of this book are cross-sections of a single machine. One demand shock — agentic AI began to really work, Anthropic's ARR ran from $9B toward $44B, coding assistants passed $30B — propagated upstream until every layer broke at once: H100 rentals rose ~40% into a sold-out 2026, AI claims 86% of TSMC's N3 output by 2027, DRAM entered a 'once-in-four-decades shortage,' and a terawatt of load requests queued against a 745GW US grid peak. Because classical scaling broke — N3 is the weakest cost-per-transistor step in 50+ years and SRAM stopped shrinking — the industry now buys performance with packaging, HBM, optics and 800VDC power instead of lithography, and the unit of competition climbed from chip to rack to gigawatt campus. The six through-lines below trace how the shortage travels, where the margin pools, why software is the durable moat, and how the US-China conflict bifurcates.</div></div>
+<h2>The Ten Sectors</h2><div class="grid2">
+<a class="card" style="display:block" href="/ai-supply-chain-01-accelerators"><div class="card-label">Sector 01 &middot; 13 theses</div><div class="card-title" style="font-size:17px">AI Accelerators (GPU / ASIC)</div><div class="card-desc" style="font-size:14.5px">Nvidia is still King of the Jungle, but for the first time three credible challengers — Google TPU, AWS Trainium, and AMD MI450X — have arrived at once, and the real battlefield has moved from chip specs to rack-scale systems, software, and performance-per-TCO.<br><span style="color:#8B8992;font-family:Inter;font-size:13px">Winners: Nvidia, Broadcom, TSMC</span></div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-02-foundry"><div class="card-label">Sector 02 &middot; 13 theses</div><div class="card-title" style="font-size:17px">Foundry &amp; Advanced Process</div><div class="card-desc" style="font-size:14.5px">One square mile in southern Taiwan makes the transistors the entire AI economy runs on — and the whole industry is now fighting over N3 wafers, backside power, and whether anyone can ever build a second TSMC.<br><span style="color:#8B8992;font-family:Inter;font-size:13px">Winners: TSMC, ASML, Deposition/etch/metrology WFE</span></div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-03-memory"><div class="card-label">Sector 03 &middot; 14 theses</div><div class="card-title" style="font-size:17px">Memory &amp; HBM</div><div class="card-desc" style="font-size:14.5px">DRAM stopped scaling a decade ago; AI turned that broken physics into the highest-margin product memory has ever sold. HBM is where the money, the yield pain, and the geopolitics all collide.<br><span style="color:#8B8992;font-family:Inter;font-size:13px">Winners: SK Hynix, Micron, TSMC</span></div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-04-packaging"><div class="card-label">Sector 04 &middot; 14 theses</div><div class="card-title" style="font-size:17px">Advanced Packaging</div><div class="card-desc" style="font-size:14.5px">Transistors kept shrinking but IO didn't — packaging is where broken Moore's Law economics get repaired. Hybrid bonding is the biggest manufacturing shift since EUV, and it moves the whole game from OSATs into the fab.<br><span style="color:#8B8992;font-family:Inter;font-size:13px">Winners: TSMC, EV Group, Besi</span></div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-05-equipment"><div class="card-label">Sector 05 &middot; 12 theses</div><div class="card-title" style="font-size:17px">Semiconductor Equipment</div><div class="card-desc" style="font-size:14.5px">The picks-and-shovels of AI: whoever owns EUV, etch, deposition and metrology owns the physical bottleneck of Moore's Law — and, increasingly, the cost curve is decided by process tricks, not just by ASML's next scanner.<br><span style="color:#8B8992;font-family:Inter;font-size:13px">Winners: ASML, Applied Materials, Lam Research</span></div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-06-networking"><div class="card-label">Sector 06 &middot; 13 theses</div><div class="card-title" style="font-size:17px">Networking, Interconnect &amp; Optics</div><div class="card-desc" style="font-size:14.5px">Bandwidth, not FLOPs, is the wall — copper reaches its 448G ceiling, and light takes over scale-up.<br><span style="color:#8B8992;font-family:Inter;font-size:13px">Winners: TSMC, Broadcom, Nvidia</span></div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-07-datacenter-power"><div class="card-label">Sector 07 &middot; 14 theses</div><div class="card-title" style="font-size:17px">Datacenter, Power &amp; Cooling</div><div class="card-desc" style="font-size:14.5px">AI's real bottleneck is no longer chips but electrons, and the datacenter is being redesigned from the grid substation down to the sub-1V rail to squeeze out every token per watt.<br><span style="color:#8B8992;font-family:Inter;font-size:13px">Winners: Bloom Energy, GE Vernova / Siemens Energy / Mitsubishi Power, Delta Electronics</span></div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-08-hyperscalers-econ"><div class="card-label">Sector 08 &middot; 14 theses</div><div class="card-title" style="font-size:17px">Hyperscalers &amp; AI Economics</div><div class="card-desc" style="font-size:14.5px">The trillion-dollar buildout, decoded: who pays for GPUs, who captures the margin, and why a token is now the unit of economic value.<br><span style="color:#8B8992;font-family:Inter;font-size:13px">Winners: Amazon / AWS, Anthropic, Oracle</span></div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-09-models-software"><div class="card-label">Sector 09 &middot; 14 theses</div><div class="card-title" style="font-size:17px">AI Models, Labs &amp; Software</div><div class="card-desc" style="font-size:14.5px">Scaling never died — it stacked. Pre-training gave way to reinforcement learning and test-time compute, data replaced weights as the moat, and agents like Claude Code turned models into the fastest-growing software business ever.<br><span style="color:#8B8992;font-family:Inter;font-size:13px">Winners: Anthropic, OpenAI, Data foundries &amp; RL-env startups</span></div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-10-china-geopolitics"><div class="card-label">Sector 10 &middot; 12 theses</div><div class="card-title" style="font-size:17px">China, Geopolitics &amp; Export Controls</div><div class="card-desc" style="font-size:14.5px">The AI cold war fought in wafers, HBM stacks and actuators — where export controls bite, where they leak, and where China already dominates.<br><span style="color:#8B8992;font-family:Inter;font-size:13px">Winners: Western WFE majors, Nvidia, Unitree</span></div></a>
+</div>
+<h2>Six Through-Lines</h2>
+<div class="thesis"><div class="tclaim">1. One demand shock, one synchronized shortage across the whole chain</div><div class="trat">The proximate cause is a repricing of tokens: agentic AI works, so coding is now &gt;70% of OpenAI's and Anthropic's ARR, Claude Code authors ~4% of GitHub public commits, and Anthropic's inference gross margin swung from 38% to above 70%. That demand hit a chain with no slack anywhere. H100 one-year rentals rose ~40% ($1.70→$2.35/hr) with capacity booked through September 2026; every merchant and custom accelerator converges on TSMC N3 in 2026, pushing effective utilization past 100% and AI's share of N3 output to 86% by 2027; DRAM — whose density now doubles per decade, not every 18 months — entered a 'once-in-four-decades shortage' with prices set to double again; and ~1 terawatt of load requests queues against a 745GW US grid peak. Nothing responds quickly: every layer's supply lead time is measured in years, and gas-turbine makers, scarred by past busts, refuse to expand.</div></div>
+<div class="thesis"><div class="tclaim">2. Moore's Law broke — packaging, memory and process tricks are the repair crew</div><div class="trat">The economic engine beneath everything — cheaper transistors every node — has stalled: N3 delivered ~15% cost-per-transistor improvement, the weakest in 50+ years, and the SRAM bitcell is identical across N5, N3E and Intel 18A (0.021µm²). IO is worse — data rates double every four years against transistors' two — so designs hit a pad-limited wall. Value migrates to whatever repairs the gap. TSMC's CoWoS revenue reached $9.6B, 2.5× Apple's InFO; hybrid bonding, 'more transformative than EUV,' pulls packaging into the fab because its cleanliness physics (a 1µm particle makes a 10mm bond void; ISO-3 cleanrooms) structurally lock OSATs out. In equipment, lithography is no longer destiny: High-NA single-patterning costs more than low-NA double-patterning through 1nm, so etch/deposition-led vertical scaling (3D NAND: +30%/yr density) and tricks like Sculpta and DSA carry the roadmap. Memory's repair is HBM — already 60%+ of a Blackwell GPU's manufacturing cost.</div></div>
+<div class="thesis"><div class="tclaim">3. The unit of competition climbed from chip to rack to gigawatt campus</div><div class="trat">'Systems beat dies' is now the organizing law of the whole chain. Nvidia's 72-GPU NVLink domain is why the 8-GPU MI355X 'cannot compete head on' in frontier MoE inference; Huawei's CloudMatrix 384 answers with 16 racks, 6,912 LPO transceivers and zero copper — twice GB200 NVL72's compute at 4.1× the power, a rational trade where silicon, not electricity, is scarce. Rack physics then rewrites everything below: copper ends at ~2m reach and a 448G SerDes ceiling, pulling optics into the package (TSMC's COUPE won over even CPO-pioneer Broadcom); 600kW racks break 54V distribution, forcing 800VDC (~15× less current) and liquid cooling; the failure domain grows from node to whole rack. Finally the datacenter itself became the product: at $10-13M revenue per MW-year, xAI's 122-day, gas-turbine-powered Colossus proved that speed-to-power — not just silicon — is the moat.</div></div>
+<div class="thesis"><div class="tclaim">4. The value-capture war: deliberate under-pricing below, violent rotation to the labs above</div><div class="trat">Who keeps the margin is a policy choice, not an accident. Nvidia (~75% gross margin, ~4× markup) defends share with equity checks instead of price cuts, and together with TSMC under-prices into scarcity like a 'central bank of AI,' keeping downstream labs profitable so total demand compounds. Custom silicon disciplines from below: OpenAI extracted ~30% off its entire Nvidia fleet before deploying a single TPU; Anthropic committed to ≥1M TPUs (~$10B of Broadcom racks plus ~$42B of GCP RPO); Broadcom became the silent #2 AI-chip company. HBM transfers wealth upstream to SK Hynix at 3×+ per-GB premiums. Then in December 2025 the pool snapped downstream: Anthropic's inference margin crossed 70%, Bedrock's seller-of-record structure lifted AWS EBIT +213bp while peers' margins fell, and Microsoft's capacity pause gifted Oracle &gt;$420B of OpenAI contracts (~$150B of gross profit). Every layer's price is now strategy.</div></div>
+<div class="thesis"><div class="tclaim">5. Software is the durable moat — CUDA below the API, data and harnesses above it</div><div class="trat">Hardware gaps close in a product cycle; software gaps compound. Below the API line: MI300X's paper superiority evaporated in out-of-box PyTorch; H100 training MFU rose 34%→54% in twelve months from CUDA kernels alone; one software stack (wideEP + disaggregated serving + MTP) 14×'d DeepSeek throughput on the same B300 silicon — while AMD needed 26 days of hand-written kernels to lift MI355X's Day-0 numbers &gt;100×, the ecosystem-maturity gap made visible. Above the line, RL made data the moat: cloned-UI environments run ~$20k each and OpenAI bought hundreds; Surge passed ~$1B ARR selling expert rubrics. Token economics became harness engineering — Opus's true blended agentic price is ~$0.99/MTok against a $5/$25 sticker, because 300:1 input ratios and 90%+ cache hits set cost-per-task. Even cluster quality is software-rated: ClusterMAX steered ~$400B of contracts, and CoreWeave's SUNK scheduler keeps it the sole Platinum cloud.</div></div>
+<div class="thesis"><div class="tclaim">6. China's bifurcation: choked at the HBM node, unopposed in robotics</div><div class="trat">Export controls work and leak at once — and the binding constraint is memory, not logic. SMIC can print millions of Ascend dies (N+3 reaches TSMC N6-class density without EUV; its 32.5nm metal pitch is tighter than shipping Intel 18A), but China's ~13M foreign HBM stacks — 11.4M from Samsung, 7M shipped in the one-month pre-enforcement gap — are running out, and CXMT's ~2M stacks in 2026 support only 250-300k 910Cs. So Huawei builds fewer Ascends next year, even as shell fabs and 2.9M smuggled TSMC dies prove the entity list structurally defeatable. China compensates systemically: power-rich, it trades watts for wafers (CloudMatrix 384), while CXMT rationally harvests the DRAM cycle (~$8.6B revenue) instead of low-yield HBM. And on the one front with no US answer, Unitree's $27.3K humanoid carries 67% gross margin on a ~$9K BoM, and Chinese firms hold ~50% of the world's largest robot market.</div></div>
+<h2>The Bottleneck Cascade</h2><p>Demand no longer gates this cycle — physics and lead times do. Token demand keeps exploding (Anthropic ARR $9B→$44B+, coding &gt;70% of frontier-lab revenue, H100 rentals +40% since Oct-25), so every accelerator roadmap — Nvidia, TPU, Trainium, MI450X — converges on TSMC N3-class silicon: AI takes ~60% of N3 output in 2026, ~86% in 2027, at &gt;100% utilization. Each die then queues for memory and assembly: HBM is 50-60%+ of GPU cost in a once-in-four-decades shortage (prices ~6x, DRAM set to double again in 2026), while CoWoS interposers, TSV and TC bonders gate how fast HBM attaches to logic. Upstream, ASML's EUV output isn't scaling, capping how fast anyone adds fabs. Downstream, watts are the final gate: +21GW of 2026 US datacenter demand versus ~15GW/yr of net grid additions, a ~1TW interconnection queue, 3-4-year transformers, 24-30-month turbines. Chips gate power; power gates chips — the cascade is circular, and every link is sold out.</p>
+<h2>Chain-Wide Winners</h2><table class="wtab"><tbody>
+<tr><td>TSMC (TSM)</td><td>The toll-taker on every branch of the war — &gt;90% of advanced-node capacity with AI eating 60%→86% of N3, the CoWoS/SoIC packaging gate ($9.6B in 2025), the HBM4 base-die foundry and COUPE for co-packaged optics — it wins whoever wins.</td></tr>
+<tr><td>Nvidia (NVDA)</td><td>Still king: ~75% gross margin, the NVL72 rack-scale moat that RL-era inference rewards ($0.156/Mtok on GB300), CUDA's Day-0 software flywheel, networking bundled in, and $20B to absorb Groq — three simultaneous challengers only nibble at the flanks.</td></tr>
+<tr><td>Broadcom (AVGO)</td><td>The silent #2 AI chip company: co-designer of Google's TPU, Meta's MTIA and now OpenAI's XPU, merchant switch leader (Tomahawk 5/6) and first to ship production CPO — the anti-Nvidia trade and the networking trade in one ticker.</td></tr>
+<tr><td>SK Hynix</td><td>The HBM leader on MR-MUF packaging and reliability — 60.4% gross margin in FY25, first in line for every content increase on Nvidia's roadmap toward 1TB of HBM4E per GPU (Rubin Ultra).</td></tr>
+<tr><td>Micron (MU)</td><td>The Western pure-play that leapfrogged into HBM with ~30% lower power via superior TSV/power-delivery, a cheaper internal HBM4 base die, and full exposure to the broad DRAM shortage.</td></tr>
+<tr><td>ASML &amp; the WFE oligopoly (AMAT, Lam, KLA, TEL, Kokusai)</td><td>Quiet monopolies at every step — ASML's EUV, TEL's 100% EUV-track lock, KLA's 1,000-step inspection toll, Kokusai's ~70% batch-ALD — with value migrating from litho to deposition/etch as GAA, backside power and 3D stacking arrive, and China rush-orders (46-48% of peak-quarter revenue) as a bonus.</td></tr>
+<tr><td>Packaging &amp; bonding toolchain (EVG, Besi, ASMPT/K&amp;S, Disco)</td><td>Hybrid bonding and TCB convert packaging into fab-grade capex: EVG owns W2W (sub-50nm alignment), Besi is the de-facto D2W bonder at TSMC, ASMPT/K&amp;S order books rise with every HBM stack height, and Disco 'more than tripled'.</td></tr>
+<tr><td>Anthropic &amp; OpenAI (frontier labs)</td><td>The swing profit pool on top: Anthropic is the purest value capture (ARR $9B→$44B, inference GM 38%→70%+, Claude Code ~4% of GitHub commits), OpenAI the distribution king (#5 website, 700M+ free users awaiting agentic-checkout monetization).</td></tr>
+<tr><td>Amazon / AWS (AMZN)</td><td>The best-positioned hyperscaler — the only CSP whose AI mix is token-as-a-service (Bedrock ~$5.5B run-rate, 80-90% Anthropic) plus vertical silicon (Trainium &gt;50% of Bedrock tokens): AI hit 10% of AWS with margins up 213bp.</td></tr>
+<tr><td>Power &amp; electrical complex (GE Vernova, Bloom, Delta, Vertiv, Tesla Megapack)</td><td>The last physical gate, monetized: turbine 'Big Three' booked into 2028-29, Bloom's fuel cells deployable in weeks, Delta leading the 800VDC transition, Vertiv/Boyd shorting the liquid-cooling ramp, Megapack as the default gigawatt buffer.</td></tr>
+</tbody></table>
+<h2>How Reliable Is the Source?</h2>
+<div class="card"><div class="card-label">Credibility audit</div>
+<div class="card-desc">Before trusting a single source this much, I audited it: an independent event study of 664 stance-bearing company mentions across 119 tickers, measuring what happened after SemiAnalysis praised or panned a name. Verdict: the narratives are remarkably right, the stock picks are not. <a href="/ai-supply-chain-credibility">Read the audit &rarr;</a></div></div>
+<h2>Watchlist</h2><div>
+<span class="pill">GPU rental index &amp; InferenceMAX prints — H100 1-yr rentals $1.70→$2.35 (+40%); a rollover is the earliest air-pocket signal for the entire chain.</span>
+<span class="pill">H2-2026 rack-scale showdown — AMD MI450X (IF64/128) vs Nvidia VR200 NVL144, the first true 72+-GPU apples-to-apples, plus TPUv7 Ironwood and Trainium3 landing on independent inference leaderboards.</span>
+<span class="pill">Memory prints — DRAM contract prices modeled to double in 2026, the HBM4 ramp with Samsung's re-entry, Rubin Ultra's 1TB HBM4E per GPU, and the CXMT STAR IPO as China-memory's disclosure event.</span>
+<span class="pill">Foundry milestones — TSMC N2/A16 (GAA + backside power) ramp, Intel 18A HVM in late 2026 and its first external anchor customer, and whether smartphone cuts free N3 for AI (~0.7M more Rubins).</span>
+<span class="pill">Power signposts — 800VDC-native Kyber/Rubin Ultra shipping late-2026/27, the first SST UL certification (DG Matrix, target end-Q2 2026), ERCOT Batch Zero (Jul 2026), and turbine order books versus a surging secondary market.</span>
+<span class="pill">CPO adoption curve — Nvidia's 10-15k 'pipe-cleaner' scale-out CPO switches in 2026, Meta/Broadcom field-reliability data (2.6M-hr MTBF), and AWS Trainium4 with Celestial/Marvell scale-up CPO in late 2027.</span>
+<span class="pill">Frontier cadence &amp; agentic monetization — GPT-5.5 'Spud' and Anthropic 'Capybara' pre-trains, OpenAI Instant Checkout switching on 700M+ free users, and Claude Code's GitHub-commit share (4% → projected 20%+).</span>
+<span class="pill">Hyperscaler prints — AWS AI margins (+213bp), Oracle's &gt;$420B backlog converting to revenue, Microsoft's capacity freeze (&gt;2GW of LOIs dropped), and Anthropic ARR versus its &gt;$100B year-end model.</span>
+<span class="pill">China policy — the foreign-HBM stockpile running out (forcing the real CXMT test), the CXMT entity-listing decision, Nvidia B30A license terms, and the ~$7B Unitree IPO as the robotics bellwether.</span>
+</div></article>
+<div class="disclaimer">
+<strong>Independence &amp; sourcing.</strong> This is independent analysis by Yicheng Yang, distilled from publicly accessible SemiAnalysis articles (free posts and free previews; no paywall circumvention) and verified against the underlying text. It is not affiliated with, endorsed by, or a substitute for <a href="https://semianalysis.com">SemiAnalysis</a> &mdash; subscribe there for the full research. All referenced claims are sourced and linked per SemiAnalysis's attribution terms. No SemiAnalysis images are reproduced. Nothing here is investment advice.
+</div>
+<footer style="padding:24px 0 40px;font-family:'Inter',sans-serif;font-size:13px;">&copy; 2026 Yicheng Yang</footer>
+</div>
+</body>
+</html>

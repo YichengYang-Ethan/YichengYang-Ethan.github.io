@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>How Reliable Is SemiAnalysis? &mdash; Yicheng Yang</title>
+<meta name="description" content="An independent event study of 664 stance-bearing company mentions across 119 tickers: what happens after SemiAnalysis praises or pans a stock.">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+
+<style>
+/* scoped SemiAnalysis-inspired dark theme for this section only */
+body{background:#14101B;color:#EDEBF0;font-family:'Spectral',Georgia,serif;}
+nav{border-bottom:1px solid #34303A;}
+nav .nav-name,nav .nav-links a{color:#B5B4B7!important;}
+nav .nav-links a:hover,nav .nav-name:hover{color:#F8A848!important;opacity:1;}
+header .label{color:#F8A848;font-family:'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:13px;font-weight:600;}
+h1{color:#EDEBF0;} h2{color:#F8A848;margin:36px 0 12px;font-size:24px;}
+h3{color:#EDEBF0;margin:22px 0 8px;font-size:19px;}
+p.meta,.muted{color:#B5B4B7;}
+a{color:#F8A848;} a:hover{color:#FFC069;opacity:1;}
+.card{background:#1B1722;border:1px solid #34303A;border-radius:8px;padding:20px 22px;margin:14px 0;}
+.card-label{color:#F8A848;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.card-title{font-weight:600;font-size:19px;margin-bottom:6px;color:#EDEBF0;}
+.card-desc{color:#C9C7CE;font-size:16.5px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;} @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+table{width:100%;border-collapse:collapse;font-size:15px;font-family:'Inter',sans-serif;}
+table.wtab{table-layout:fixed;} table.wtab td:first-child{width:150px;font-weight:600;color:#EDEBF0;vertical-align:top;padding-top:10px;}
+table.ktab{table-layout:fixed;} table.ktab th:nth-child(1),table.ktab td:nth-child(1){width:26%;} table.ktab th:nth-child(2),table.ktab td:nth-child(2){width:22%;} 
+td{vertical-align:top;line-height:1.55;}
+th{color:#F8A848;text-align:left;border-bottom:1px solid #56535B;padding:8px 10px;font-weight:600;cursor:pointer;user-select:none;}
+td{border-bottom:1px solid #2B2832;padding:7px 10px;color:#D8D6DD;}
+tr:hover td{background:#1B1722;}
+.pos{color:#57C08A;} .neg{color:#E8756A;}
+blockquote{border-left:3px solid #F8A848;background:#1B1722;margin:12px 0;padding:10px 16px;font-style:italic;color:#C9C7CE;font-size:16px;}
+blockquote .attr{display:block;font-style:normal;font-size:13.5px;color:#8B8992;margin-top:6px;font-family:'Inter',sans-serif;}
+.vc{display:flex;flex-direction:column;gap:0;margin:18px 0;}
+.vc .stage{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center;background:#1B1722;border:1px solid #F8A848;border-radius:8px;padding:10px 16px;}
+.vc .stage b{color:#F8A848;font-family:'Inter',sans-serif;font-size:15px;}
+.vc .stage span{color:#B5B4B7;font-size:14.5px;font-family:'Inter',sans-serif;}
+.vc .arrow{color:#F79C2F;text-align:center;line-height:1.1;font-size:15px;margin:1px 0;}
+.klist p{margin:0 0 12px;} .klist b{color:#F8A848;}
+.thesis{margin:0 0 18px;} .thesis .tclaim{font-weight:600;color:#EDEBF0;font-size:17.5px;}
+.thesis .trat{color:#C9C7CE;font-size:16px;margin-top:4px;}
+.pill{display:inline-block;background:#221E29;border:1px solid #34303A;border-radius:20px;padding:2px 12px;margin:2px 4px 2px 0;font-family:'Inter',sans-serif;font-size:13.5px;color:#C9C7CE;}
+.bars{font-family:'Inter',sans-serif;font-size:14px;margin:14px 0;}
+.bars .row{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;margin:6px 0;}
+.bars .track{background:#221E29;border-radius:4px;height:16px;position:relative;}
+.bars .fill{height:16px;border-radius:4px;position:absolute;top:0;}
+.disclaimer{border-top:1px solid #34303A;margin-top:44px;padding-top:16px;font-size:13.5px;color:#8B8992;font-family:'Inter',sans-serif;}
+.srcs{font-size:14.5px;color:#B5B4B7;} .srcs li{margin:3px 0;}
+footer{border-top:none!important;color:#8B8992!important;}
+.section-label{color:#F8A848!important;}
+</style>
+</head>
+<body>
+<div class="container">
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain" class="active" style="color:#F8A848!important">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+<header>
+  <div class="label">AI Supply Chain Research &middot; Credibility Audit</div>
+  <h1>How Reliable Is SemiAnalysis?</h1>
+  <p class="meta">An independent event study of what happens after the most influential newsletter in AI hardware praises or pans a stock. &nbsp;<a href="/ai-supply-chain">&larr; back to the series</a></p>
+</header>
+<article>
+<p>Everything in this book is distilled from SemiAnalysis, so the reader deserves to know how much this source can be trusted, and for what. We ran an independent event study: 27 parallel agents extracted every stance-bearing company mention from 311 articles (664 single-stock events across 119 tickers; 384 bullish / 168 bearish), then measured geometric excess returns vs. the SMH semiconductor ETF over 1M/1Y/3Y from publication date. Methodology: equal-weight by name with ticker clustering (to kill the soft look-ahead of winners being covered repeatedly), pre-IPO look-ahead removed (ARM/CRWV etc.), delistings settled at last price, and three adversarial audit rounds fixing eight methodological defects. One-line verdict: the narratives are remarkably right, but the stock picks carry no alpha — which makes this book's use of the source (mechanisms and bottlenecks, not tickers) exactly the right one.</p>
+<h2>Key Findings</h2>
+<div class="thesis"><div class="tclaim">1.</div><div class="trat">The only significant leading signal lasts ~1 month: bullish names earn +2.0% excess at 1M (t=1.63), and the bull-minus-bear spread is +3.9% (Welch t=2.33) — the study's only significant positive result.</div></div>
+<div class="thesis"><div class="tclaim">2.</div><div class="trat">Long horizons reverse: the typical bullish name lags SMH by -5.2% at 1Y and -27.2% at 3Y (t=-4.49, significantly negative). Buying the bull list loses to simply holding SMH.</div></div>
+<div class="thesis"><div class="tclaim">3.</div><div class="trat">Aggregate returns are a beta illusion: the big absolute gains come from the semi bull market plus NVDA being covered 62 times; excluding the five most-covered names (NVDA/TSM/AMD/GOOGL/AVGO), the remaining bullish names' 1Y excess is -6.1%.</div></div>
+<div class="thesis"><div class="tclaim">4.</div><div class="trat">Bearish calls beat bullish ones: bearish names lag SMH by -10.7% at 1Y (t=-2.90, significant). INTC was panned 30 times and Samsung 15 — both played out. Whom SA pans is closer to a tradeable signal than whom it praises.</div></div>
+<div class="thesis"><div class="tclaim">5.</div><div class="trat">Right industry, wrong stock: at sector level only AI accelerators beat an equal-weight peer index (entirely carried by NVDA/AVGO), while packaging/OSAT and foundry are significantly negative at 3Y. The memory-shortage, CoWoS-bottleneck and datacenter-power narratives were all right — but the money went to NVDA/TSM, and same-theme second-tier names underperformed.</div></div>
+<h2>Post-Coverage Drift at a Glance</h2>
+<div class="bars"><div class="row"><div>Bullish 1M</div><div class="track"><div class="fill" style="left:50%;width:3.337903616089262%;background:#57C08A"></div></div><div style="text-align:right;color:#57C08A">+2.0%</div></div><div class="row"><div>Bullish 1Y</div><div class="track"><div class="fill" style="right:50%;width:8.633039569488439%;background:#E8756A"></div></div><div style="text-align:right;color:#E8756A">-5.2%</div></div><div class="row"><div>Bullish 3Y</div><div class="track"><div class="fill" style="right:50%;width:45.36153532494759%;background:#E8756A"></div></div><div style="text-align:right;color:#E8756A">-27.2%</div></div><div class="row"><div>Bearish 1M</div><div class="track"><div class="fill" style="right:50%;width:3.100005360563766%;background:#E8756A"></div></div><div style="text-align:right;color:#E8756A">-1.9%</div></div><div class="row"><div>Bearish 1Y</div><div class="track"><div class="fill" style="right:50%;width:17.77195081496072%;background:#E8756A"></div></div><div style="text-align:right;color:#E8756A">-10.7%</div></div><div class="row"><div>Bearish 3Y</div><div class="track"><div class="fill" style="right:50%;width:29.05453389627169%;background:#E8756A"></div></div><div style="text-align:right;color:#E8756A">-17.4%</div></div></div>
+<p class="muted" style="font-family:Inter;font-size:14px">Bars show mean excess return vs SMH after coverage (equal-weight by name). For bearish coverage, negative = the call was right.</p>
+<h2>Bullish Scorecard</h2><p class="muted">Bullish scorecard (names covered ≥5 times; equal-weight by name, geometric excess vs SMH)</p>
+<table class="sortable" id="bulls"><thead><tr><th>Ticker</th><th>N</th><th>1M</th><th>1Y</th><th>3Y</th></tr></thead><tbody><tr><td style="font-weight:600;color:#EDEBF0">ARM</td><td data-v="5">5</td><td class="pos" data-v="0.006511666666666665">+0.7%</td><td class="pos" data-v="0.54271">+54.3%</td><td>&ndash;</td></tr><tr><td style="font-weight:600;color:#EDEBF0">NVDA</td><td data-v="62">62</td><td class="neg" data-v="-0.0013512622950819673">-0.1%</td><td class="pos" data-v="0.303720612244898">+30.4%</td><td class="pos" data-v="1.683792714285714">+168.4%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">GFS</td><td data-v="6">6</td><td class="pos" data-v="0.1628636">+16.3%</td><td class="pos" data-v="0.2200066">+22.0%</td><td class="neg" data-v="-0.6125746">-61.3%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">META</td><td data-v="5">5</td><td class="pos" data-v="0.0113016">+1.1%</td><td class="pos" data-v="0.171916">+17.2%</td><td class="neg" data-v="-0.385103">-38.5%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">AVGO</td><td data-v="20">20</td><td class="pos" data-v="0.021521649999999996">+2.2%</td><td class="pos" data-v="0.15868986666666668">+15.9%</td><td class="pos" data-v="0.769444">+76.9%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">000660.KS</td><td data-v="15">15</td><td class="pos" data-v="0.03071442857142857">+3.1%</td><td class="pos" data-v="0.10614845454545456">+10.6%</td><td class="pos" data-v="0.4925814">+49.3%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">MU</td><td data-v="11">11</td><td class="pos" data-v="0.0865981">+8.7%</td><td class="pos" data-v="0.08732957142857144">+8.7%</td><td class="neg" data-v="-0.3088245">-30.9%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">LRCX</td><td data-v="8">8</td><td class="pos" data-v="0.0334275">+3.3%</td><td class="pos" data-v="0.07998014285714285">+8.0%</td><td class="neg" data-v="-0.14862820000000002">-14.9%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">005930.KS</td><td data-v="5">5</td><td class="neg" data-v="-0.0488072">-4.9%</td><td class="pos" data-v="0.024154">+2.4%</td><td class="neg" data-v="-0.58037">-58.0%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">QCOM</td><td data-v="6">6</td><td class="pos" data-v="0.036580499999999995">+3.7%</td><td class="pos" data-v="0.0016705000000000008">+0.2%</td><td class="neg" data-v="-0.310731">-31.1%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">TSM</td><td data-v="32">32</td><td class="pos" data-v="0.0034578064516129037">+0.3%</td><td class="neg" data-v="-0.031060961538461537">-3.1%</td><td class="neg" data-v="-0.0429505">-4.3%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">AMD</td><td data-v="27">27</td><td class="neg" data-v="-0.0017674074074074115">-0.2%</td><td class="neg" data-v="-0.046154499999999994">-4.6%</td><td class="neg" data-v="-0.224575625">-22.5%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">GOOGL</td><td data-v="23">23</td><td class="pos" data-v="0.008743739130434783">+0.9%</td><td class="neg" data-v="-0.06432505555555555">-6.4%</td><td class="neg" data-v="-0.15549839999999998">-15.5%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">AMAT</td><td data-v="10">10</td><td class="neg" data-v="-0.0331347">-3.3%</td><td class="neg" data-v="-0.07994455555555555">-8.0%</td><td class="neg" data-v="-0.16388724999999998">-16.4%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">2454.TW</td><td data-v="8">8</td><td class="pos" data-v="0.04156375">+4.2%</td><td class="neg" data-v="-0.10791312500000001">-10.8%</td><td class="neg" data-v="-0.151295625">-15.1%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">ASML</td><td data-v="6">6</td><td class="neg" data-v="-0.0197905">-2.0%</td><td class="neg" data-v="-0.1203344">-12.0%</td><td class="neg" data-v="-0.377741">-37.8%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">MSFT</td><td data-v="9">9</td><td class="neg" data-v="-0.026767666666666665">-2.7%</td><td class="neg" data-v="-0.176803">-17.7%</td><td class="neg" data-v="-0.529792">-53.0%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">8035.T</td><td data-v="6">6</td><td class="pos" data-v="0.001679000000000001">+0.2%</td><td class="neg" data-v="-0.1878671666666667">-18.8%</td><td class="neg" data-v="-0.38589633333333334">-38.6%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">MRVL</td><td data-v="7">7</td><td class="neg" data-v="-0.035194">-3.5%</td><td class="neg" data-v="-0.22151000000000004">-22.2%</td><td class="neg" data-v="-0.3975876">-39.8%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">INTC</td><td data-v="12">12</td><td class="neg" data-v="-0.01867554545454545">-1.9%</td><td class="neg" data-v="-0.2728474444444444">-27.3%</td><td class="neg" data-v="-0.7375827142857142">-73.8%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">0981.HK</td><td data-v="6">6</td><td class="neg" data-v="-0.04727383333333334">-4.7%</td><td class="neg" data-v="-0.31788060000000007">-31.8%</td><td class="pos" data-v="0.111056">+11.1%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">AMZN</td><td data-v="7">7</td><td class="neg" data-v="-0.07219316666666666">-7.2%</td><td class="neg" data-v="-0.33635433333333337">-33.6%</td><td class="neg" data-v="-0.253792">-25.4%</td></tr></tbody></table><p class="muted" style="font-size:13.5px;font-family:Inter">Click a column header to sort. Excess returns vs SMH, equal-weight by name, geometric, from publication date.</p>
+<h2>Bearish Scorecard</h2><p class="muted">Bearish scorecard (covered ≥3 times; negative excess = the bearish call was right)</p>
+<table class="sortable" id="bears"><thead><tr><th>Ticker</th><th>N</th><th>1M</th><th>1Y</th><th>3Y</th></tr></thead><tbody><tr><td style="font-weight:600;color:#EDEBF0">NVDA</td><td data-v="7">7</td><td class="pos" data-v="0.061900142857142855">+6.2%</td><td class="pos" data-v="0.6354671428571429">+63.5%</td><td class="pos" data-v="2.4233818">+242.3%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">MRVL</td><td data-v="3">3</td><td class="neg" data-v="-0.119126">-11.9%</td><td class="pos" data-v="0.3399625">+34.0%</td><td class="neg" data-v="-0.307952">-30.8%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">AVGO</td><td data-v="6">6</td><td class="neg" data-v="-0.027460666666666664">-2.7%</td><td class="pos" data-v="0.20538733333333334">+20.5%</td><td class="pos" data-v="1.0715612">+107.2%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">AAPL</td><td data-v="3">3</td><td class="neg" data-v="-0.005408666666666666">-0.5%</td><td class="pos" data-v="0.12525966666666669">+12.5%</td><td class="neg" data-v="-0.19746000000000002">-19.7%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">CRDO</td><td data-v="3">3</td><td class="neg" data-v="-0.010557666666666668">-1.1%</td><td class="pos" data-v="0.103576">+10.4%</td><td class="pos" data-v="2.6081403333333335">+260.8%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">LRCX</td><td data-v="3">3</td><td class="pos" data-v="0.09048466666666667">+9.0%</td><td class="pos" data-v="0.012374333333333334">+1.2%</td><td class="neg" data-v="-0.030809500000000004">-3.1%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">MU</td><td data-v="6">6</td><td class="neg" data-v="-0.04322466666666666">-4.3%</td><td class="pos" data-v="0.005826399999999998">+0.6%</td><td class="pos" data-v="0.690516">+69.1%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">2454.TW</td><td data-v="4">4</td><td class="pos" data-v="0.035064">+3.5%</td><td class="neg" data-v="-0.047184000000000004">-4.7%</td><td class="neg" data-v="-0.21985833333333335">-22.0%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">GOOGL</td><td data-v="3">3</td><td class="pos" data-v="0.063573">+6.4%</td><td class="neg" data-v="-0.0815665">-8.2%</td><td class="neg" data-v="-0.05987850000000001">-6.0%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">005930.KS</td><td data-v="15">15</td><td class="neg" data-v="-0.010638133333333336">-1.1%</td><td class="neg" data-v="-0.08754146153846154">-8.8%</td><td class="neg" data-v="-0.5026284">-50.3%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">TSM</td><td data-v="3">3</td><td class="neg" data-v="-0.011699333333333332">-1.2%</td><td class="neg" data-v="-0.1148905">-11.5%</td><td class="pos" data-v="0.078559">+7.9%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">QCOM</td><td data-v="5">5</td><td class="pos" data-v="0.0050165999999999995">+0.5%</td><td class="neg" data-v="-0.16116400000000003">-16.1%</td><td class="neg" data-v="-0.42810174999999995">-42.8%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">ASML</td><td data-v="4">4</td><td class="pos" data-v="0.0055495">+0.6%</td><td class="neg" data-v="-0.194366">-19.4%</td><td class="neg" data-v="-0.3496325">-35.0%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">GFS</td><td data-v="3">3</td><td class="pos" data-v="0.12033633333333332">+12.0%</td><td class="neg" data-v="-0.21900399999999998">-21.9%</td><td class="neg" data-v="-0.7678823333333332">-76.8%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">AMD</td><td data-v="8">8</td><td class="neg" data-v="-0.040382375">-4.0%</td><td class="neg" data-v="-0.23139416666666665">-23.1%</td><td class="neg" data-v="-0.3666565">-36.7%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">INTC</td><td data-v="30">30</td><td class="neg" data-v="-0.005362099999999999">-0.5%</td><td class="neg" data-v="-0.24544510714285714">-24.5%</td><td class="neg" data-v="-0.6171877619047619">-61.7%</td></tr><tr><td style="font-weight:600;color:#EDEBF0">ARM</td><td data-v="6">6</td><td class="neg" data-v="-0.070975">-7.1%</td><td class="neg" data-v="-0.534599">-53.5%</td><td>&ndash;</td></tr></tbody></table><p class="muted" style="font-size:13.5px;font-family:Inter">Click a column header to sort. Excess returns vs SMH, equal-weight by name, geometric, from publication date.</p>
+<h2>How to Use the Source</h2><p>How to use: treat SemiAnalysis as a microscope on mechanisms and bottlenecks, not a buy list. That is precisely what this book distills — chain structure, bottleneck propagation, cost economics — the parts of the source that verify best. For trading: only the ~1-month drift is usable (and thin), bearish calls deserve real weight, and at long horizons return to a portfolio/beta framework.</p>
+<h2>Methodology &amp; Limits</h2>
+<p class="muted" style="font-size:15.5px">Scope: events dated at publication; benchmark = SMH; corpus includes paid-article previews (79% of full text), stances extracted from available text. This is the author's independent analysis, unaffiliated with SemiAnalysis.</p>
+<ul class="muted" style="font-size:15.5px">
+<li><strong>Design.</strong> Classic analyst-coverage event study (Womack 1996 lineage): buy-and-hold geometric excess returns vs a sector benchmark (Barber &amp; Lyon 1997), equal-weight by name with ticker clustering, pre-IPO look-ahead removed, delistings settled at last price.</li>
+<li><strong>Fairness.</strong> SemiAnalysis explicitly states it does not provide investment advice, ratings, or price targets &mdash; scoring it as a stock-picker is my frame, not theirs. The audit measures information content, not their stated product.</li>
+<li><strong>Limits, stated plainly.</strong> No calendar-time portfolio check (long-horizon t-stats are optimistic under overlapping windows; the 3Y direction is robust, its precision is not). The single positive result (1M spread, t=2.33) does not survive strict multiple-testing correction. Stance extraction is LLM-based on available text without a human-labeled validation sample. Benchmark is a cap-weighted sector ETF rather than characteristics-matched portfolios.</li>
+</ul>
+<script>
+document.querySelectorAll('table.sortable th').forEach(function(th){
+  th.addEventListener('click',function(){
+    var t=th.closest('table'),tb=t.querySelector('tbody'),i=Array.prototype.indexOf.call(th.parentNode.children,th);
+    var rows=Array.prototype.slice.call(tb.querySelectorAll('tr'));
+    var dir=th.dataset.dir==='asc'?-1:1; th.dataset.dir=dir===1?'asc':'desc';
+    rows.sort(function(a,b){
+      var av=a.children[i].dataset.v, bv=b.children[i].dataset.v;
+      if(av!==undefined&&bv!==undefined) return (parseFloat(av)-parseFloat(bv))*dir;
+      return a.children[i].textContent.localeCompare(b.children[i].textContent)*dir;
+    });
+    rows.forEach(function(r){tb.appendChild(r);});
+  });
+});
+</script>
+</article>
+<div class="disclaimer">
+<strong>Independence &amp; sourcing.</strong> This is independent analysis by Yicheng Yang, distilled from publicly accessible SemiAnalysis articles (free posts and free previews; no paywall circumvention) and verified against the underlying text. It is not affiliated with, endorsed by, or a substitute for <a href="https://semianalysis.com">SemiAnalysis</a> &mdash; subscribe there for the full research. All referenced claims are sourced and linked per SemiAnalysis's attribution terms. No SemiAnalysis images are reproduced. Nothing here is investment advice.
+</div>
+<footer style="padding:24px 0 40px;font-family:'Inter',sans-serif;font-size:13px;">&copy; 2026 Yicheng Yang</footer>
+</div>
+</body>
+</html>
