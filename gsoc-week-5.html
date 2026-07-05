@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Week 5 &mdash; Where the scaling should live &mdash; Yicheng Yang</title>
+<meta name="description" content="GSoC 2026 Week 5: the streaming data loader moves to pymc-extras, and the trainer opens a real design question — who owns the N/batch_size scaling — that ties into an in-flight rewrite of PyMC's ADVI API.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 24px 0; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.55; }
+  pre code { font-family: inherit; font-size: inherit; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+  pre code { background: transparent; padding: 0; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Week 5</div>
+  <h1>Where the scaling should live, and a move to pymc-extras</h1>
+  <p class="meta">Yicheng Yang &middot; July 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<p>
+  Last week I turned the streaming code into three pull requests. This week almost
+  none of it was code &mdash; it was two questions about where things belong: which
+  repository the work should live in, and, inside the trainer, where the scaling
+  should live. The second one turned out to be the interesting one.
+</p>
+
+<h2>The data loader is moving to pymc-extras</h2>
+
+<p>
+  Rob put the question to the team &mdash; should this go straight into core PyMC, or into
+  <code>pymc-extras</code> first &mdash; and Ricardo, one of the core maintainers, gave the
+  usual answer for a new feature: if it can go in extras, start there. That's the normal
+  path: it lands in <code>pymc-extras</code>, people use it, and it graduates to core once
+  it has settled. So I ported the data loader over as
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/698">#698</a>. The move was
+  almost mechanical &mdash; the loader has no PyMC coupling at all, just NumPy and a
+  lazy <code>pyarrow</code> import, so it is the same code in a new home. The trainer
+  will follow once its design is settled.
+</p>
+
+<h2>The easy half and the hard half</h2>
+
+<p>
+  In the review the split was clear. The data loader is self-contained enough that it
+  should just sail through &mdash; it reads rows and batches them and does not care how
+  inference runs, so it can be reviewed on its own. The trainer is the one that needs a
+  conversation, because it reaches into the part of PyMC that several people are
+  actively rethinking. That is not a problem to code around; it is a question to agree
+  on first.
+</p>
+
+<h2>Where should the scaling live?</h2>
+
+<p>
+  Here is the actual question. Minibatch VI rescales the minibatch log-likelihood by
+  <code>N / batch_size</code> so that one batch can stand in for the whole dataset. The
+  question is who owns that number. Right now it lives in the model: you pass
+  <code>total_size=len(loader)</code> to the likelihood, and PyMC's existing minibatch
+  machinery does the rescaling inside <code>model.logp()</code>. It works, and it reuses
+  code that is already tested.
+</p>
+
+<p>
+  But Rob made a point that stuck with me: the model doesn't really know how big
+  your dataset is, and neither does the approximation. The only thing that knows both
+  <code>N</code> and the batch size is the fitting loop &mdash; it is the object holding
+  the loader. So the argument is that the trainer should compute the scale and hand it to
+  the inference step, rather than the model quietly carrying it.
+</p>
+
+<pre><code>from pymc.variational.streaming import DataLoader, Trainer, parquet_source
+
+loader = DataLoader(
+    parquet_source("criteo/"),
+    batch_size=4096,
+    sample_shape=(14,),     # 13 features + label
+    total_size="auto",      # len(loader) == N, read from Parquet metadata
+)
+
+with pm.Model() as model:
+    b = pm.Normal("b", 0.0, 1.5, shape=14)
+    batch = pm.Data("batch", np.zeros((4096, 14)))
+    logit = b[0] + pm.math.dot(batch[:, :13], b[1:])
+    pm.Bernoulli(
+        "click", logit_p=logit, observed=batch[:, 13],
+        total_size=len(loader),      # the N / batch_size scaling lives here, in the model
+    )
+
+# the Trainer owns the loop and holds the loader, so it is already the one
+# object that knows both N and batch_size.
+approx = Trainer(method="advi", dataloader=loader, data_name="batch").fit(20_000)
+</code></pre>
+
+<p>
+  I built it this way on purpose. Keeping the scale in the model runs on today's
+  <code>pm.fit</code> and doesn't require inventing a new inference-step API in the
+  middle of the project, so it let me validate the whole streaming path end to end. I
+  think Rob is right that the "trainer owns the scale" version is the cleaner end state,
+  and it fits especially naturally with a rewrite that is already in flight &mdash; which
+  is the other thing I ran into this week.
+</p>
+
+<h2>The trainer landed in the middle of a VI rewrite</h2>
+
+<p>
+  That rewrite is Jesse Grabowski's new ADVI API,
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/635">#635</a> in
+  <code>pymc-extras</code>. It reworks how the guide model and the fit function are put
+  together, and it is exactly where a clean scaling hook would naturally live. Rob pointed
+  me to it early on, which I'm glad he did &mdash; it's actively being developed and could
+  well land before I'm done, so it's worth designing with it in mind and aligning with it
+  from the start.
+</p>
+
+<p>
+  The reassuring part is what its objective actually computes:
+  <code>logq &minus; model.logp()</code>. It uses the full model log-density, so whatever
+  rescaling the model applies flows straight through it. That means the interim isn't a
+  dead end &mdash; the <code>total_size</code> approach keeps working unchanged against the
+  new API &mdash; and the trainer-owned version has a natural home once the new inference
+  step exists. So the two designs aren't a fork in the road; one is the bridge to the
+  other.
+</p>
+
+<h2>What's next</h2>
+
+<p>
+  The plan Rob and Chris landed on is to get the data loader reviewed and merged in extras
+  on its own, and to have a short sync with Ricardo and Jesse to agree on the trainer
+  object and the data types before I build the clean scaling version &mdash; after which
+  the two can move in parallel. On my own timeline the next piece is the online
+  convergence monitor, so the fit can decide when to stop from noisy streaming ELBO
+  estimates rather than a fixed step count. More soon.
+</p>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/698">DataLoader in extras #698</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc/pull/8333">Trainer PR #8333</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/635">Jesse's new ADVI API #635</a> &middot;
+  <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot;
+  Mentors <a href="https://github.com/zaxtax">@zaxtax</a> &middot; <a href="https://github.com/fonnesbeck">@fonnesbeck</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
