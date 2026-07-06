@@ -29,10 +29,13 @@ a{color:#F8A848;} a:hover{color:#FFC069;opacity:1;}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;} @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
 table{width:100%;border-collapse:collapse;font-size:15px;font-family:'Inter',sans-serif;}
 table.wtab{table-layout:fixed;} table.wtab td:first-child{width:150px;font-weight:600;color:#EDEBF0;vertical-align:top;padding-top:10px;}
-table.ktab{table-layout:fixed;} table.ktab th:nth-child(1),table.ktab td:nth-child(1){width:26%;} table.ktab th:nth-child(2),table.ktab td:nth-child(2){width:22%;} 
+table.ktab{table-layout:fixed;} table.ktab th:nth-child(1),table.ktab td:nth-child(1){width:26%;} table.ktab th:nth-child(2),table.ktab td:nth-child(2){width:32%;} 
 table.ntab{table-layout:fixed;} table.ntab th:nth-child(1),table.ntab td:nth-child(1){width:30%;} table.ntab th:nth-child(2),table.ntab td:nth-child(2){width:38%;}
 .modbadge{display:inline-block;margin-top:6px;font-family:'Inter',sans-serif;font-size:11.5px;color:#F8A848;border:1px solid #56535B;border-radius:12px;padding:1px 9px;}
 .modbadge:hover{border-color:#F8A848;}
+.artimg{display:block;max-width:100%;max-height:560px;width:auto;height:auto;margin:0 auto;border-radius:8px;border:1px solid #34303A;}
+.figcap{font-size:13px;font-family:'Inter',sans-serif;color:#B5B4B7;margin-top:6px;text-align:center;}
+.wrow{margin:0 0 14px;font-size:16px;} .wrow b{color:#EDEBF0;}
 td{vertical-align:top;line-height:1.55;}
 th{color:#F8A848;text-align:left;border-bottom:1px solid #56535B;padding:8px 10px;font-weight:600;cursor:pointer;user-select:none;}
 td{border-bottom:1px solid #2B2832;padding:7px 10px;color:#D8D6DD;}
@@ -130,9 +133,9 @@ footer{border-top:none!important;color:#8B8992!important;}
 **MoE** — mixture-of-experts: only a slice of the model computes per token, trading FLOPS for memory and interconnect.
 **FDPR / Entity List** — US export-control levers: reach foreign-made goods via US tech content; blacklist named firms.
 **Die bank** — stockpiled dies (Huawei banked 2.9M+ from TSMC) that keep a sanctioned firm shipping for years.</p>
-<div style="margin:20px 0"><img src="/images/primer/pm10_en.png" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Own illustration &middot; Yicheng Yang</div></div>
-<div style="margin:20px 0"><img src="/images/primer/inst_10_10d8b6bf9e.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">A patterned silicon wafer — the industry's unit of account. Wafer starts per month, cost per wafer, yield and utilization all price this one object; a leading-edge wafer now costs ~$16,000 at N5 vs ~$9,500 at N7. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:5C2A5953R_-_49913961083_%E2%80%93_Silicon_Wafer_20200519.jpg">Wikimedia Commons (CC BY 2.0, photo by Rob Bulmahn)</a></div></div>
-<div style="margin:20px 0"><img src="/images/primer/inst_10_d03581ca18.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">SK hynix HBM3E, lidded and bare. 'HBM content per GPU' — the gigabytes of this stacked DRAM riding on each accelerator — is now the single biggest line in an AI GPU's bill of materials (~50-60% of manufacturing cost). &mdash; Source: <a href="https://news.skhynix.com/sk-hynix-begins-volume-production-of-industry-first-hbm3e/">SK hynix Newsroom</a></div></div>
+<div style="margin:20px 0"><img class="artimg" src="/images/primer/pm10_en.png"><div class="figcap">Own illustration &middot; Yicheng Yang</div></div>
+<div style="margin:20px 0"><img class="artimg" src="/images/primer/inst_10_10d8b6bf9e.jpg"><div class="figcap">A patterned silicon wafer — the industry's unit of account. Wafer starts per month, cost per wafer, yield and utilization all price this one object; a leading-edge wafer now costs ~$16,000 at N5 vs ~$9,500 at N7. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:5C2A5953R_-_49913961083_%E2%80%93_Silicon_Wafer_20200519.jpg">Wikimedia Commons (CC BY 2.0, photo by Rob Bulmahn)</a></div></div>
+<div style="margin:20px 0"><img class="artimg" src="/images/primer/inst_10_d03581ca18.jpg"><div class="figcap">SK hynix HBM3E, lidded and bare. 'HBM content per GPU' — the gigabytes of this stacked DRAM riding on each accelerator — is now the single biggest line in an AI GPU's bill of materials (~50-60% of manufacturing cost). &mdash; Source: <a href="https://news.skhynix.com/sk-hynix-begins-volume-production-of-industry-first-hbm3e/">SK hynix Newsroom</a></div></div>
 <h2>Key Numbers</h2><table class="ntab"><thead><tr><th>Metric</th><th>Value</th><th>Source</th></tr></thead><tbody>
 <tr><td>GB200 NVL72 total cost of ownership vs an equivalent H100 fleet</td><td style="color:#F8A848;font-weight:500">~1.6x — so it must be ≥1.6x faster to win on perf-per-TCO</td><td><a href="https://semianalysis.com/2025/08/20/h100-vs-gb200-nvl72-training-benchmarks/">SemiAnalysis — H100 vs GB200 NVL72 Training Benchmarks - Power, TCO, and Reliability Analysis</a></td></tr>
 <tr><td>H100 training MFU gain from software alone (12 months, no hardware change)</td><td style="color:#F8A848;font-weight:500">BF16 MFU 34% → 54% (+57% throughput)</td><td><a href="https://semianalysis.com/2024/12/22/mi300x-vs-h100-vs-h200-benchmark-part-1-training/">SemiAnalysis — MI300X vs H100 vs H200 Benchmark Part 1: Training - CUDA Moat Still Alive</a></td></tr>
