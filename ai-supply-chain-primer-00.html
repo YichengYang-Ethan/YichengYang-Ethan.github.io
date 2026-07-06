@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Primer 00: How to Read This Series &mdash; Yicheng Yang</title>
+<meta name="description" content="The ten sectors as one machine: what it looks like, which primer module unlocks which door, and the shortest reading path for your job.">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+
+<style>
+/* scoped SemiAnalysis-inspired dark theme for this section only */
+body{background:#14101B;color:#EDEBF0;font-family:'Spectral',Georgia,serif;}
+nav{border-bottom:1px solid #34303A;}
+nav .nav-name,nav .nav-links a{color:#B5B4B7!important;}
+nav .nav-links a:hover,nav .nav-name:hover{color:#F8A848!important;opacity:1;}
+header .label{color:#F8A848;font-family:'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:13px;font-weight:600;}
+h1{color:#EDEBF0;} h2{color:#F8A848;margin:36px 0 12px;font-size:24px;}
+h3{color:#EDEBF0;margin:22px 0 8px;font-size:19px;}
+p.meta,.muted{color:#B5B4B7;}
+p.meta a,header a,.card-desc a{color:#F8A848!important;}
+a{color:#F8A848;} a:hover{color:#FFC069;opacity:1;}
+.card{background:#1B1722;border:1px solid #34303A;border-radius:8px;padding:20px 22px;margin:14px 0;}
+.card-label{color:#F8A848;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.card-title{font-weight:600;font-size:19px;margin-bottom:6px;color:#EDEBF0;}
+.card-desc{color:#C9C7CE;font-size:16.5px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;} @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+table{width:100%;border-collapse:collapse;font-size:15px;font-family:'Inter',sans-serif;}
+table.wtab{table-layout:fixed;} table.wtab td:first-child{width:150px;font-weight:600;color:#EDEBF0;vertical-align:top;padding-top:10px;}
+table.ktab{table-layout:fixed;} table.ktab th:nth-child(1),table.ktab td:nth-child(1){width:26%;} table.ktab th:nth-child(2),table.ktab td:nth-child(2){width:22%;} 
+td{vertical-align:top;line-height:1.55;}
+th{color:#F8A848;text-align:left;border-bottom:1px solid #56535B;padding:8px 10px;font-weight:600;cursor:pointer;user-select:none;}
+td{border-bottom:1px solid #2B2832;padding:7px 10px;color:#D8D6DD;}
+tr:hover td{background:#1B1722;}
+.pos{color:#57C08A;} .neg{color:#E8756A;}
+blockquote{border-left:3px solid #F8A848;background:#1B1722;margin:12px 0;padding:10px 16px;font-style:italic;color:#C9C7CE;font-size:16px;}
+blockquote .attr{display:block;font-style:normal;font-size:13.5px;color:#8B8992;margin-top:6px;font-family:'Inter',sans-serif;}
+.vc{display:flex;flex-direction:column;gap:0;margin:18px 0;}
+.vc .stage{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center;background:#1B1722;border:1px solid #F8A848;border-radius:8px;padding:10px 16px;}
+.vc .stage b{color:#F8A848;font-family:'Inter',sans-serif;font-size:15px;}
+.vc .stage span{color:#B5B4B7;font-size:14.5px;font-family:'Inter',sans-serif;}
+.vc .arrow{color:#F79C2F;text-align:center;line-height:1.1;font-size:15px;margin:1px 0;}
+.klist p{margin:0 0 12px;} .klist b{color:#F8A848;}
+.thesis{margin:0 0 18px;} .thesis .tclaim{font-weight:600;color:#EDEBF0;font-size:17.5px;}
+.thesis .trat{color:#C9C7CE;font-size:16px;margin-top:4px;}
+.pill{display:inline-block;background:#221E29;border:1px solid #34303A;border-radius:20px;padding:2px 12px;margin:2px 4px 2px 0;font-family:'Inter',sans-serif;font-size:13.5px;color:#C9C7CE;}
+.bars{font-family:'Inter',sans-serif;font-size:14px;margin:14px 0;}
+.bars .row{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;margin:6px 0;}
+.bars .track{background:#221E29;border-radius:4px;height:16px;position:relative;}
+.bars .fill{height:16px;border-radius:4px;position:absolute;top:0;}
+.disclaimer{border-top:1px solid #34303A;margin-top:44px;padding-top:16px;font-size:13.5px;color:#8B8992;font-family:'Inter',sans-serif;}
+.srcs{font-size:14.5px;color:#B5B4B7;} .srcs li{margin:3px 0;}
+footer{border-top:none!important;color:#8B8992!important;}
+.section-label{color:#F8A848!important;}
+</style>
+</head>
+<body>
+<div class="container">
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain" class="active" style="color:#F8A848!important">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+<header>
+  <div class="label">Foundations Primer &middot; Module 00 of 10</div>
+  <h1>How to Read This Series</h1>
+  <p class="meta">The ten sectors as one machine: what it looks like, which primer module unlocks which door, and the shortest reading path for your job.<br><a href="/ai-supply-chain-primer">Primer index</a> &middot; <a href="/ai-supply-chain-primer-01">§01 &rarr;</a> &middot; <a href="/ai-supply-chain">series hub</a></p>
+</header>
+<article>
+<h2>First, see the whole machine</h2>
+<p>This series covers ten sectors, but it does not tell ten separate stories. It describes one machine viewed from ten angles — a machine that turns sand and electricity into intelligence, sold by the token. Trace the physical path once and the table of contents explains itself. Quartz is refined into silicon wafers, which a foundry (Sector 02) patterns into logic chips using semiconductor equipment (Sector 05) — lithography, etch and deposition tools. The compute die is useless alone: advanced packaging (Sector 04) bonds it to stacks of high-bandwidth memory (Sector 03), and only then does it become an AI accelerator (Sector 01). Thousands of accelerators are wired together by networking and optics (Sector 06) into racks, which live in datacenters drawing gigawatts from the grid (Sector 07). Hyperscalers (Sector 08) rent that capacity to AI labs (Sector 09), whose models emit the tokens people actually pay for. And the whole machine operates inside a geopolitical force field (Sector 10) that decides who may buy which parts. In 2025-26 a demand shock hit the machine's output end: agentic AI started genuinely working. Anthropic's ARR ran from $9B toward $44B+, and coding became more than 70% of frontier-lab revenue. The shock propagated upstream and every layer broke at roughly the same time: H100 rentals rose ~40% into a sold-out 2026; AI is modeled to claim 86% of TSMC's N3 wafer output by 2027; DRAM entered a 'once-in-four-decades' shortage; and roughly a terawatt of grid-connection requests now queues against a US peak load of 745 GW. Why synchronized? Because every layer's supply lead time is measured in years — fabs, HBM lines, transformers, gas turbines — and none of them held slack. A demand shock in a chain with no inventory arrives everywhere at once. Hold that picture — sand in at one end, tokens out at the other, ten toll booths in between — and every chapter becomes a question about one toll booth: what does it charge, who runs it, and can anyone build a bypass?</p>
+<h2>Six through-lines: the real spine of the book</h2>
+<p>Each sector brief stands alone, but six arguments recur so often they form the series' real spine. One: a single demand shock produced a synchronized, whole-chain shortage — remember the mechanism (no slack plus multi-year lead times), not just the headlines. Two: Moore's Law broke economically — N3 delivered roughly 15% cost-per-transistor improvement, the weakest step in over fifty years, and SRAM stopped shrinking outright — so the industry now buys performance with packaging, HBM, optics and 800-volt power instead of smaller transistors, and value migrates to this 'repair crew.' Three: the unit of competition climbed from the chip to the rack to the gigawatt campus; Nvidia's 72-GPU NVLink domain, Huawei's 16-rack CloudMatrix 384 and xAI's 122-day Colossus build are the same law expressed at three scales. Four: who keeps the margin is a policy choice, not an accident — Nvidia (~75% gross margin) and TSMC deliberately under-price into scarcity like a 'central bank of AI,' custom silicon disciplines them from below, and in late 2025 the profit pool rotated violently toward the labs. Five: software is the durable moat — CUDA below the API line, data and harnesses above it; hardware gaps close within a product cycle, software gaps compound. Six: China's trajectory bifurcates — choked at the HBM node even though its logic fabs can print millions of dies, yet effectively unopposed in robotics. When a sector brief makes a claim, ask which through-line it serves. And when two chapters seem to disagree, the resolution is almost always that they sit at different layers of the same machine.</p>
+<h2>The primer is the map legend: which module unlocks which sector</h2>
+<p>The primer's ten modules travel the same path as the machine, and they come in pairs. Modules 01 (from sand to silicon) and 02 (the end of cheap scaling) unlock Foundry (02) and Equipment (05): you need to know what a process step is before you can care who sells etch tools, and you need the economics of scaling before TSMC's pricing power or the lithography roadmap makes sense. Modules 03 (anatomy of an AI accelerator) and 04 (training vs inference) unlock Accelerators (01) and Models &amp; Software (09): once you can tell a compute-bound workload from a memory-bound one, GPU spec sheets stop being alphabet soup. Modules 05 (the memory hierarchy, and why HBM exists) and 06 (2.5D packaging: how HBM meets the GPU) unlock Memory (03) and Packaging (04) — the two sectors where the post-Moore repair crew earns its money; HBM already accounts for over 60% of a Blackwell GPU's manufacturing cost. Modules 07 (scale-up vs scale-out) and 08 (the datacenter power chain) unlock Networking (06) and Datacenter &amp; Power (07), the physics chapters. Finally, modules 09 (the industry map: who does what) and 10 (the investor's dashboard: which metrics matter) unlock Hyperscalers &amp; AI Economics (08) and China &amp; Export Controls (10), where the analysis is more strategy than silicon. Every module is self-contained and carries its own diagrams. Treat the primer as a toolbox, not an entrance exam: if a sector brief throws a term you don't know, come back, read one module, and return.</p>
+<h2>Three reading paths</h2>
+<p>For a generalist researcher building durable coverage, read the primer in order (01→10), then the sectors in book order (01→10); after each sector, file its main claims under one of the six through-lines — that filing is what turns reading into a mental model. If you prefer narrative to numbering, follow the money upstream instead: Models (09) → Hyperscalers (08) → Accelerators (01) → the silicon layers (02-05) → the physical plant (06-07) → Geopolitics (10) last, as the force field around everything. For a time-poor PM, the spine is: this module, then primer modules 09 and 10 (industry map and metrics), then the two or three sectors nearest your book — for most portfolios today that means Accelerators (01), Memory (03) and Hyperscalers (08), the layers where the margin pool is actually moving. Within each brief, read the key numbers and the investment section first, and only read backwards into mechanism when a number surprises you; a surprising number is the market telling you your model of the machine is wrong somewhere, and that is precisely where the money is. For an engineer, invert the order: you likely know how a chip works, so skip primer 01 and 03 and start with 04 (training vs inference) and 07-08 (networks and power) — system-level economics are usually the gap. Then read Networking (06), Datacenter (07) and Packaging (04), the chapters where physics binds hardest, and finish with Hyperscalers (08) and China (10) for the strategy layer your stack traces don't show.</p>
+<h2>How to read the numbers</h2>
+<p>Every key number in this series carries a date and a source — mostly SemiAnalysis field data and models from 2022-2026, plus company filings and standards bodies. Keep two registers in your head. Physics numbers — the reticle limit, an SRAM bitcell's area, copper's roughly two-meter reach at modern data rates — change on decade timescales and are worth memorizing. Market numbers — rental prices, ARR, DRAM contract prices — are snapshots with a half-life of months: treat each as 'true as of its date,' never as a constant. Wide ranges in the text are honesty, not vagueness; they usually mark where the primary data genuinely disagrees. And one working rule above all: mechanism first, number second. If you remember only that H100 rents rose ~40%, the fact expires; if you remember why — sold-out capacity meeting supply that takes years to add — you can re-derive tomorrow's number yourself.</p>
+<div style="margin:20px 0"><img src="/images/primer/pm00_en.png" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Own illustration &middot; Yicheng Yang</div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_00_a4f2fd9f11.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">TSMC's Fab 18 campus in Tainan, Taiwan — home of the N5/N3 nodes where nearly every leading AI accelerator begins life. AI demand is modeled to claim 86% of N3 wafer output by 2027. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:TSMC_Fab_18_May_2025.jpg">Wikimedia Commons (CC BY 4.0)</a></div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_07_1c5c554276.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">An Nvidia GB200 NVL72 rack: 72 GPUs wired into a single NVLink domain. The rack — not the chip — is now the unit of competition, a through-line that recurs across half the sectors in this series. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:Nvidia_DGX_GB200.jpg">Wikimedia Commons (CC BY-SA 4.0)</a></div></div>
+<h2>Key Numbers</h2><table class="ktab"><thead><tr><th>Metric</th><th>Value</th><th>Source</th></tr></thead><tbody>
+<tr><td>H100 1-year rental price (Oct-25 → Mar-26)</td><td style="color:#F8A848;font-weight:500">$1.70 → $2.35/hr/GPU (+~40%), capacity sold out into late 2026</td><td><a href="https://newsletter.semianalysis.com/p/the-great-gpu-shortage-rental-capacity">SemiAnalysis — The Great GPU Shortage – Rental Capacity</a></td></tr>
+<tr><td>AI share of TSMC N3 wafer output</td><td style="color:#F8A848;font-weight:500">~60% (2026) → 86% (2027), squeezing out smartphone and CPU wafers</td><td><a href="https://newsletter.semianalysis.com/p/the-great-ai-silicon-shortage">SemiAnalysis — The Great AI Silicon Shortage</a></td></tr>
+<tr><td>DRAM shortage severity</td><td style="color:#F8A848;font-weight:500">A 'once-in-four-decades' shortage; memory prices set to double again</td><td><a href="https://newsletter.semianalysis.com/p/memory-mania-how-a-once-in-four-decades">SemiAnalysis — Memory Mania: How a Once-in-Four-Decades Shortage Is Fueling a Memory Boom</a></td></tr>
+<tr><td>HBM share of AI GPU manufacturing cost</td><td style="color:#F8A848;font-weight:500">H100 ~50%+ → Blackwell ~60%+</td><td><a href="https://semianalysis.com/2025/08/12/scaling-the-memory-wall-the-rise-and-roadmap-of-hbm/">SemiAnalysis — Scaling the Memory Wall: The Rise and Roadmap of HBM</a></td></tr>
+<tr><td>US grid: queued load requests vs peak load</td><td style="color:#F8A848;font-weight:500">~1 terawatt of load requests vs 745 GW US peak</td><td><a href="https://newsletter.semianalysis.com/p/us-grid-constraints-towards-40gw">SemiAnalysis — US Grid Constraints: Towards 40GW+ of Behind-The-Meter Datacenter by 2028?</a></td></tr>
+<tr><td>Anthropic ARR and inference gross margin (2025→26)</td><td style="color:#F8A848;font-weight:500">ARR $9B → $44B+; inference gross margin 38% → 70%+</td><td><a href="https://newsletter.semianalysis.com/p/ai-value-capture-the-shift-to-model">SemiAnalysis — AI Value Capture - The Shift To Model Labs</a></td></tr>
+</tbody></table>
+<div class="card"><div class="card-label">Why this matters for the investor</div><div class="card-desc">Most expensive mistakes in AI investing are layer confusions: pricing a physics constraint as if it were a market cycle (the HBM shortage), pricing a strategic choice as if it were scarcity (Nvidia's margin umbrella), or crediting a hardware company with a software moat. The map in this module tells you which layer of the machine a company actually lives in, which through-line governs its economics, and therefore what kind of evidence would change the thesis. Ten minutes here buys leverage on every later chapter: you will read each sector brief knowing where its numbers come from, what they connect to, and which of them will still be true next year.</div></div>
+<h2>Go deeper</h2><div>
+<a class="pill" href="/ai-supply-chain-01-accelerators">Sector 01 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-02-foundry">Sector 02 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-03-memory">Sector 03 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-04-packaging">Sector 04 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-05-equipment">Sector 05 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-06-networking">Sector 06 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-07-datacenter-power">Sector 07 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-08-hyperscalers-econ">Sector 08 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-09-models-software">Sector 09 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-10-china-geopolitics">Sector 10 deep-dive</a>
+</div>
+</article>
+<div class="disclaimer">
+<strong>Independence &amp; sourcing.</strong> This is independent analysis by Yicheng Yang, distilled from publicly accessible SemiAnalysis articles (free posts and free previews; no paywall circumvention) and verified against the underlying text. It is not affiliated with, endorsed by, or a substitute for <a href="https://semianalysis.com">SemiAnalysis</a> &mdash; subscribe there for the full research. All referenced claims are sourced and linked per SemiAnalysis's attribution terms. No SemiAnalysis images are reproduced. Nothing here is investment advice.
+</div>
+<footer style="padding:24px 0 40px;font-family:'Inter',sans-serif;font-size:13px;">&copy; 2026 Yicheng Yang</footer>
+</div>
+</body>
+</html>

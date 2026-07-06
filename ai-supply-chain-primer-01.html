@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Primer 01: From Sand to Silicon &mdash; Yicheng Yang</title>
+<meta name="description" content="How purified sand becomes the most precisely manufactured object humans make — and why yield math and $20B fabs explain half of the AI supply chain.">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+
+<style>
+/* scoped SemiAnalysis-inspired dark theme for this section only */
+body{background:#14101B;color:#EDEBF0;font-family:'Spectral',Georgia,serif;}
+nav{border-bottom:1px solid #34303A;}
+nav .nav-name,nav .nav-links a{color:#B5B4B7!important;}
+nav .nav-links a:hover,nav .nav-name:hover{color:#F8A848!important;opacity:1;}
+header .label{color:#F8A848;font-family:'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:13px;font-weight:600;}
+h1{color:#EDEBF0;} h2{color:#F8A848;margin:36px 0 12px;font-size:24px;}
+h3{color:#EDEBF0;margin:22px 0 8px;font-size:19px;}
+p.meta,.muted{color:#B5B4B7;}
+p.meta a,header a,.card-desc a{color:#F8A848!important;}
+a{color:#F8A848;} a:hover{color:#FFC069;opacity:1;}
+.card{background:#1B1722;border:1px solid #34303A;border-radius:8px;padding:20px 22px;margin:14px 0;}
+.card-label{color:#F8A848;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.card-title{font-weight:600;font-size:19px;margin-bottom:6px;color:#EDEBF0;}
+.card-desc{color:#C9C7CE;font-size:16.5px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;} @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+table{width:100%;border-collapse:collapse;font-size:15px;font-family:'Inter',sans-serif;}
+table.wtab{table-layout:fixed;} table.wtab td:first-child{width:150px;font-weight:600;color:#EDEBF0;vertical-align:top;padding-top:10px;}
+table.ktab{table-layout:fixed;} table.ktab th:nth-child(1),table.ktab td:nth-child(1){width:26%;} table.ktab th:nth-child(2),table.ktab td:nth-child(2){width:22%;} 
+td{vertical-align:top;line-height:1.55;}
+th{color:#F8A848;text-align:left;border-bottom:1px solid #56535B;padding:8px 10px;font-weight:600;cursor:pointer;user-select:none;}
+td{border-bottom:1px solid #2B2832;padding:7px 10px;color:#D8D6DD;}
+tr:hover td{background:#1B1722;}
+.pos{color:#57C08A;} .neg{color:#E8756A;}
+blockquote{border-left:3px solid #F8A848;background:#1B1722;margin:12px 0;padding:10px 16px;font-style:italic;color:#C9C7CE;font-size:16px;}
+blockquote .attr{display:block;font-style:normal;font-size:13.5px;color:#8B8992;margin-top:6px;font-family:'Inter',sans-serif;}
+.vc{display:flex;flex-direction:column;gap:0;margin:18px 0;}
+.vc .stage{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center;background:#1B1722;border:1px solid #F8A848;border-radius:8px;padding:10px 16px;}
+.vc .stage b{color:#F8A848;font-family:'Inter',sans-serif;font-size:15px;}
+.vc .stage span{color:#B5B4B7;font-size:14.5px;font-family:'Inter',sans-serif;}
+.vc .arrow{color:#F79C2F;text-align:center;line-height:1.1;font-size:15px;margin:1px 0;}
+.klist p{margin:0 0 12px;} .klist b{color:#F8A848;}
+.thesis{margin:0 0 18px;} .thesis .tclaim{font-weight:600;color:#EDEBF0;font-size:17.5px;}
+.thesis .trat{color:#C9C7CE;font-size:16px;margin-top:4px;}
+.pill{display:inline-block;background:#221E29;border:1px solid #34303A;border-radius:20px;padding:2px 12px;margin:2px 4px 2px 0;font-family:'Inter',sans-serif;font-size:13.5px;color:#C9C7CE;}
+.bars{font-family:'Inter',sans-serif;font-size:14px;margin:14px 0;}
+.bars .row{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;margin:6px 0;}
+.bars .track{background:#221E29;border-radius:4px;height:16px;position:relative;}
+.bars .fill{height:16px;border-radius:4px;position:absolute;top:0;}
+.disclaimer{border-top:1px solid #34303A;margin-top:44px;padding-top:16px;font-size:13.5px;color:#8B8992;font-family:'Inter',sans-serif;}
+.srcs{font-size:14.5px;color:#B5B4B7;} .srcs li{margin:3px 0;}
+footer{border-top:none!important;color:#8B8992!important;}
+.section-label{color:#F8A848!important;}
+</style>
+</head>
+<body>
+<div class="container">
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain" class="active" style="color:#F8A848!important">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+<header>
+  <div class="label">Foundations Primer &middot; Module 01 of 10</div>
+  <h1>From Sand to Silicon</h1>
+  <p class="meta">How purified sand becomes the most precisely manufactured object humans make — and why yield math and $20B fabs explain half of the AI supply chain.<br><a href="/ai-supply-chain-primer-00">&larr; §00</a> &middot; <a href="/ai-supply-chain-primer">Primer index</a> &middot; <a href="/ai-supply-chain-primer-02">§02 &rarr;</a> &middot; <a href="/ai-supply-chain">series hub</a></p>
+</header>
+<article>
+<h2>Step Zero: From Beach Sand to a Perfect Crystal</h2>
+<p>Every chip begins as quartz — silicon dioxide, the main mineral in ordinary sand. Smelting quartz with carbon in an arc furnace yields 'metallurgical-grade' silicon, roughly 98–99% pure. That sounds clean; for electronics it is filth. A transistor works by deliberately adding a tiny number of impurity atoms ('dopants') to silicon to control exactly how it conducts. The trick only works if the background material is almost perfectly empty: a stray phosphorus or boron atom in the wrong place is indistinguishable from an intentional one. So raw silicon is converted into a gas (trichlorosilane), distilled like whiskey to strip out contaminants, then re-deposited as hyperpure polysilicon. Wacker, one of the leading producers, ships semiconductor-grade polysilicon at better than 99.9999999999% purity — critical impurities measured in parts per trillion.</p><p>Purity alone is not enough; the atoms must also line up. Polysilicon is a jumble of small crystals, and the boundaries between grains scatter electrons, making every transistor behave slightly differently. The fix is the Czochralski process: melt the polysilicon at about 1,414°C, dip a small seed crystal into the melt, and pull it upward slowly while rotating. Atoms freeze onto the seed in perfect crystalline order, growing a single flawless crystal — a mirror-gray ingot up to 300mm in diameter and a couple of meters long. Diamond wire saws then slice the ingot into discs under a millimeter thick, which are ground and polished until the surface is flat to within atoms. That 300mm mirror is the canvas. Every GPU and every HBM stack in this series is drawn on one.</p>
+<h2>The Fab Loop: Building a Skyscraper with Light and Stencils</h2>
+<p>A finished chip is not a flat drawing but a three-dimensional city: transistors occupy the ground floor, with fifteen or more levels of copper wiring stacked above like highway interchanges. The fab builds it one layer at a time, looping through five basic verbs:</p><p>Deposit — lay an ultra-thin, uniform film (insulator, metal, or silicon) over the whole wafer; the finest films are grown one atomic layer at a time (ALD).
+Pattern — coat the wafer with light-sensitive photoresist and project this layer's design through a photomask, a quartz stencil, shrinking the image 4x onto the wafer. The most advanced machines (EUV) do this with 13.5nm-wavelength light.
+Etch — use plasma or chemicals to eat away material wherever the developed resist leaves it exposed, transferring the pattern from resist into film.
+Implant — fire dopant ions into selected regions to create the electrically active hearts of the transistors, then anneal at high temperature to heal the crystal.
+Polish (CMP) — grind the surface flat with a chemical slurry so the next layer starts on a plane.</p><p>Then repeat. A leading-edge process uses more than 60 lithography layers, and each carries its own cluster of deposition, etch, clean, and metrology steps; Intel has shown a single metal-wiring scheme that alone required three EUV exposures and over 40 process steps. In total a wafer traverses on the order of a thousand steps over roughly three months of around-the-clock processing — and an error at step 700 scraps the previous 699. What is genuinely hard to copy about a fab is not any single machine; it is the proven recipe for running a thousand steps in a row without failing.</p>
+<h2>What a 'Node' Actually Is — and Why '3nm' Measures Nothing</h2>
+<p>'3nm' sounds like a measurement. It isn't. A process node is a complete, frozen, qualified recipe — the full combination of masks, materials, machine settings, and design rules that a fab sells capacity on. Nothing on a '3nm' chip is 3nm wide; the tightest metal lines sit 20–30nm apart. The numbers that actually mean something are pitches (how closely gates and wires can be packed), the transistor density they produce, and PPA — performance, power, area. Each node also spawns a family of variants (N3B, N3E, N3P, N3X…) tuned toward cost, phones, or high-performance computing.</p><p>Nodes matter economically because for fifty years each new one made transistors cheaper — that was the commercial engine of Moore's Law. The engine is now sputtering. SemiAnalysis's cost model of TSMC's 3nm found cost per transistor improving only ~15% versus 5nm in the best case — the weakest scaling of any major node in more than fifty years — while a single 3nm photomask set costs about $40M, versus over $10M at 7nm and around $1M at 28nm. Design costs balloon alongside. Three consequences follow: fewer and fewer companies can afford leading-edge designs at all; value migrates toward chiplets and advanced packaging, which squeeze more out of existing transistors (Module 04 territory); and node names have become marketing weapons in the TSMC–Intel–Samsung race, where the honest scorecard is density, power, and cost — not the number in the brand (Sector Brief 02).</p>
+<h2>Yield: The Exponential That Rules Chip Economics</h2>
+<p>Picture the wafer as a sheet of postage stamps; each stamp is one die, the rectangle that becomes a chip. Defects — a particle that landed mid-process, an etch a nanometer too deep — scatter across the wafer roughly at random, with an average defect density called D0 (defects per cm²). One killer defect usually means one dead die. The math is merciless: die yield ≈ e^(−area × D0), exponential in die area. Small dies slip between the defects; big dies are targets. Double the area and your survival probability squares: if a small chip yields 90% on a given line, a chip four times its size yields about 66% at the same D0. AI GPUs live at the extreme — nearly all are designed against the ~858mm² 'reticle limit,' the largest area one exposure can print — so early in a node's life their yields can sit below half.</p><p>Three consequences. First, yield learning is the business: a node launches with high D0 that falls for years, which is why margins on a new node start ugly and improve — and why TSMC's aggressive N3B struggled while the relaxed N3E that replaced it showed, in TSMC's words, consistently healthier defect density. Second, giant dies pay a superlinear area tax — a core reason AI silicon is moving to chiplets: split one huge die into several small ones that each yield well, then reassemble them inside the package. Third, salvage: designs carry spare cores and memory so a partially defective die can be sold, bad blocks disabled, as a cheaper SKU.</p>
+<h2>Cleanrooms and the $20 Billion Ticket</h2>
+<p>Because one invisible particle can kill a die, the fab must be among the cleanest places humans have ever built. Cleanroom air is scrubbed by wall-to-wall filtration until it holds orders of magnitude fewer particles than a hospital operating room; wafers travel in sealed pods (FOUPs) carried by overhead robots; people — the dirtiest objects in the building — wear full-body 'bunny suits' and touch nothing.</p><p>Yet the cleanroom shell is the cheap part. The money is in the tools that fill it. A single EUV lithography machine sells for about $225M and can pattern more than $650M worth of finished wafers per year; lithography alone consumes ~35% of the cost of a 3nm process. Fill a building with hundreds of such tools and, by Intel's own arithmetic, a leading-edge fab costs $25–30B per 10,000 wafers per week of capacity — TSMC has quoted roughly $42B for its Arizona 3nm capacity. TSMC's total planned US investment — three additional fabs, two advanced packaging plants, and an R&amp;D center on top of the original $65B three-fab Phoenix site — comes to $165B.</p><p>The economics follow directly. A fab's cost is mostly depreciation, which burns whether or not wafers move, so fabs must run flat-out around the clock; swings in utilization pass almost one-for-one into profit — that is foundry cyclicality. And each generation's fab costs more than the last, so only firms with locked-in demand for the next node can fund the next fab. That flywheel built the most concentrated critical industry on earth — the subject of Sector Brief 02.</p>
+<div style="margin:20px 0"><img src="/images/primer/pm01_en.png" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Own illustration &middot; Yicheng Yang</div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_01_52ba405c22.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">A monocrystalline silicon ingot — one flawless crystal grown from hyperpure polysilicon, ready to be sliced into wafers. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:Monocrystalline_silicon_ingot.jpg">Wikimedia Commons</a></div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_01_cb2f3a922b.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Silicon wafers from 2 to 8 inches in diameter. Bigger discs mean more chips per pass; leading-edge fabs today run 300mm (12-inch) wafers. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:Wafers_from_2_to_8_Inches_01.jpg">Wikimedia Commons</a></div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_01_94b27e9b3e.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Inside a semiconductor cleanroom: filtered air, full-body suits, and nothing touched by hand — because a single particle can kill a die. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:Clean_room.jpg">Wikimedia Commons</a></div></div>
+<h2>Key Numbers</h2><table class="ktab"><thead><tr><th>Metric</th><th>Value</th><th>Source</th></tr></thead><tbody>
+<tr><td>Semiconductor-grade polysilicon purity</td><td style="color:#F8A848;font-weight:500">&gt;99.9999999999% (critical impurities in parts per trillion)</td><td><a href="https://www.wacker.com/cms/en-us/press-and-media/press/press-releases/2025/press-releases-detail-2025-257922.html">Wacker Chemie AG — press release, Jul 17, 2025</a></td></tr>
+<tr><td>EUV lithography tool economics</td><td style="color:#F8A848;font-weight:500">$225M per tool → &gt;$650M of finished wafers per year</td><td><a href="https://newsletter.semianalysis.com/p/how-to-kill-2-monopolies-with-1-tool">SemiAnalysis — How to Kill 2 Monopolies with 1 Tool</a></td></tr>
+<tr><td>Lithography share of 3nm process cost</td><td style="color:#F8A848;font-weight:500">~35%</td><td><a href="https://semianalysis.com/2023/03/06/euv-requirements-halved-applied-materials/">SemiAnalysis — EUV Requirements Halved? Applied Materials' Sculpta Redefines Lithography And Patterning</a></td></tr>
+<tr><td>Photomask set cost by node (28nm → 7nm → 3nm)</td><td style="color:#F8A848;font-weight:500">~$1M → &gt;$10M → ~$40M; leading edge uses &gt;60 lithography layers</td><td><a href="https://semianalysis.com/2022/07/24/the-dark-side-of-the-semiconductor/">SemiAnalysis — The Dark Side Of The Semiconductor Design Renaissance</a></td></tr>
+<tr><td>N3 cost-per-transistor improvement vs N5</td><td style="color:#F8A848;font-weight:500">~15% best case — weakest major-node scaling in 50+ years</td><td><a href="https://semianalysis.com/2022/12/21/tsmcs-3nm-conundrum-does-it-even/">SemiAnalysis — TSMC's 3nm Conundrum, Does It Even Make Sense?</a></td></tr>
+<tr><td>Leading-edge fab capital cost</td><td style="color:#F8A848;font-weight:500">$25–30B per 10,000 wafers/week (Intel); TSMC quoted ~$42B for Arizona 3nm</td><td><a href="https://semianalysis.com/2024/04/02/is-intel-back-foundry-and-product/">SemiAnalysis — Is Intel Back? Foundry &amp; Product Resurgence Measured</a></td></tr>
+<tr><td>TSMC total planned US investment</td><td style="color:#F8A848;font-weight:500">US$165B — 3 new fabs + 2 advanced packaging plants + R&amp;D center, on top of the $65B three-fab Phoenix site</td><td><a href="https://pr.tsmc.com/english/news/3210">TSMC — press release, Mar 4, 2025</a></td></tr>
+</tbody></table>
+<div class="card"><div class="card-label">Why this matters for the investor</div><div class="card-desc">This module is the foundation under every sector brief. Equipment capex cycles (05) are a function of node transitions; the gross margin and ramp timing of each new accelerator (01) is set by the yield learning curve; advanced packaging (04) exists because of the exponential area tax on big dies; foundry cyclicality and moats (02) follow from a depreciation-dominated cost structure and a flywheel where only locked-in demand can fund the next fab; and the difficulty of subsidized fab relocation (10) is the difficulty of moving cleanrooms, hyperpure supply chains, and thousand-step recipes. When a company reports 'defect density on track' or 'N2 ramping,' you can now translate that into margins and capacity.</div></div>
+<h2>Go deeper</h2><div>
+<a class="pill" href="/ai-supply-chain-01-accelerators">Sector 01 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-02-foundry">Sector 02 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-03-memory">Sector 03 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-04-packaging">Sector 04 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-05-equipment">Sector 05 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-10-china-geopolitics">Sector 10 deep-dive</a>
+</div>
+</article>
+<div class="disclaimer">
+<strong>Independence &amp; sourcing.</strong> This is independent analysis by Yicheng Yang, distilled from publicly accessible SemiAnalysis articles (free posts and free previews; no paywall circumvention) and verified against the underlying text. It is not affiliated with, endorsed by, or a substitute for <a href="https://semianalysis.com">SemiAnalysis</a> &mdash; subscribe there for the full research. All referenced claims are sourced and linked per SemiAnalysis's attribution terms. No SemiAnalysis images are reproduced. Nothing here is investment advice.
+</div>
+<footer style="padding:24px 0 40px;font-family:'Inter',sans-serif;font-size:13px;">&copy; 2026 Yicheng Yang</footer>
+</div>
+</body>
+</html>

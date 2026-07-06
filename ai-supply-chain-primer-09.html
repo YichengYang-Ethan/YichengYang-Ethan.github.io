@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Primer 09: The Industry Map: Who Does What and Where the Money Pools &mdash; Yicheng Yang</title>
+<meta name="description" content="After this module you can place any company in the AI supply chain on one map — and predict its gross margin, its capex burden, and its pricing power before you ever open its 10-K.">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+
+<style>
+/* scoped SemiAnalysis-inspired dark theme for this section only */
+body{background:#14101B;color:#EDEBF0;font-family:'Spectral',Georgia,serif;}
+nav{border-bottom:1px solid #34303A;}
+nav .nav-name,nav .nav-links a{color:#B5B4B7!important;}
+nav .nav-links a:hover,nav .nav-name:hover{color:#F8A848!important;opacity:1;}
+header .label{color:#F8A848;font-family:'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:13px;font-weight:600;}
+h1{color:#EDEBF0;} h2{color:#F8A848;margin:36px 0 12px;font-size:24px;}
+h3{color:#EDEBF0;margin:22px 0 8px;font-size:19px;}
+p.meta,.muted{color:#B5B4B7;}
+p.meta a,header a,.card-desc a{color:#F8A848!important;}
+a{color:#F8A848;} a:hover{color:#FFC069;opacity:1;}
+.card{background:#1B1722;border:1px solid #34303A;border-radius:8px;padding:20px 22px;margin:14px 0;}
+.card-label{color:#F8A848;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.card-title{font-weight:600;font-size:19px;margin-bottom:6px;color:#EDEBF0;}
+.card-desc{color:#C9C7CE;font-size:16.5px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;} @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+table{width:100%;border-collapse:collapse;font-size:15px;font-family:'Inter',sans-serif;}
+table.wtab{table-layout:fixed;} table.wtab td:first-child{width:150px;font-weight:600;color:#EDEBF0;vertical-align:top;padding-top:10px;}
+table.ktab{table-layout:fixed;} table.ktab th:nth-child(1),table.ktab td:nth-child(1){width:26%;} table.ktab th:nth-child(2),table.ktab td:nth-child(2){width:22%;} 
+td{vertical-align:top;line-height:1.55;}
+th{color:#F8A848;text-align:left;border-bottom:1px solid #56535B;padding:8px 10px;font-weight:600;cursor:pointer;user-select:none;}
+td{border-bottom:1px solid #2B2832;padding:7px 10px;color:#D8D6DD;}
+tr:hover td{background:#1B1722;}
+.pos{color:#57C08A;} .neg{color:#E8756A;}
+blockquote{border-left:3px solid #F8A848;background:#1B1722;margin:12px 0;padding:10px 16px;font-style:italic;color:#C9C7CE;font-size:16px;}
+blockquote .attr{display:block;font-style:normal;font-size:13.5px;color:#8B8992;margin-top:6px;font-family:'Inter',sans-serif;}
+.vc{display:flex;flex-direction:column;gap:0;margin:18px 0;}
+.vc .stage{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center;background:#1B1722;border:1px solid #F8A848;border-radius:8px;padding:10px 16px;}
+.vc .stage b{color:#F8A848;font-family:'Inter',sans-serif;font-size:15px;}
+.vc .stage span{color:#B5B4B7;font-size:14.5px;font-family:'Inter',sans-serif;}
+.vc .arrow{color:#F79C2F;text-align:center;line-height:1.1;font-size:15px;margin:1px 0;}
+.klist p{margin:0 0 12px;} .klist b{color:#F8A848;}
+.thesis{margin:0 0 18px;} .thesis .tclaim{font-weight:600;color:#EDEBF0;font-size:17.5px;}
+.thesis .trat{color:#C9C7CE;font-size:16px;margin-top:4px;}
+.pill{display:inline-block;background:#221E29;border:1px solid #34303A;border-radius:20px;padding:2px 12px;margin:2px 4px 2px 0;font-family:'Inter',sans-serif;font-size:13.5px;color:#C9C7CE;}
+.bars{font-family:'Inter',sans-serif;font-size:14px;margin:14px 0;}
+.bars .row{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;margin:6px 0;}
+.bars .track{background:#221E29;border-radius:4px;height:16px;position:relative;}
+.bars .fill{height:16px;border-radius:4px;position:absolute;top:0;}
+.disclaimer{border-top:1px solid #34303A;margin-top:44px;padding-top:16px;font-size:13.5px;color:#8B8992;font-family:'Inter',sans-serif;}
+.srcs{font-size:14.5px;color:#B5B4B7;} .srcs li{margin:3px 0;}
+footer{border-top:none!important;color:#8B8992!important;}
+.section-label{color:#F8A848!important;}
+</style>
+</head>
+<body>
+<div class="container">
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain" class="active" style="color:#F8A848!important">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+<header>
+  <div class="label">Foundations Primer &middot; Module 09 of 10</div>
+  <h1>The Industry Map: Who Does What and Where the Money Pools</h1>
+  <p class="meta">After this module you can place any company in the AI supply chain on one map — and predict its gross margin, its capex burden, and its pricing power before you ever open its 10-K.<br><a href="/ai-supply-chain-primer-08">&larr; §08</a> &middot; <a href="/ai-supply-chain-primer">Primer index</a> &middot; <a href="/ai-supply-chain-primer-10">§10 &rarr;</a> &middot; <a href="/ai-supply-chain">series hub</a></p>
+</header>
+<article>
+<h2>One chip, a dozen hands: the silicon side of the map</h2>
+<p>No company on Earth makes an AI chip alone. Think of publishing a book. Someone writes it, someone sells the word processor, someone licenses the fonts, a printing house prints it, machine makers built the presses, and a bindery assembles the final copies. The chip industry splits the same way, and each role has a name. EDA (electronic design automation) — Cadence, Synopsys, Siemens EDA — sells the design software: you cannot hand-draw 200 billion transistors, so every chip on the planet is designed inside these tools. IP vendors — Arm is the archetype — license pre-designed circuit blocks (a CPU core, a memory interface) and collect a royalty on every chip shipped. Fabless companies — Nvidia, AMD, Qualcomm, Broadcom — write the 'book': they design chips, build the software ecosystem, and own the customer, but operate no factories. Foundries — TSMC, Samsung Foundry, Intel Foundry — are the printing houses: contract manufacturers who turn designs into physical silicon; TSMC alone holds over 90% of the world's advanced-node capacity. IDMs (integrated device manufacturers) do both design and manufacturing in-house — Intel historically, and crucially the three memory makers (Samsung, SK Hynix, Micron), who mass-produce the HBM stacks every AI chip depends on. OSATs — ASE, Amkor — are the binderies: outsourced assembly, packaging, and test, historically the low-glamour end, though AI-era advanced packaging (Module 05's CoWoS) pulled the most valuable packaging work back into TSMC itself. Finally, equipment makers — ASML, Applied Materials, Lam Research, KLA, Tokyo Electron — build the presses: the lithography, deposition, etch, and inspection machines every fab must buy, with ASML holding a literal monopoly on EUV lithography.</p>
+<h2>From chip to token: the compute-economy layers</h2>
+<p>The map doesn't end when the chip is packaged — that's only where the AI-specific half begins. Hyperscalers — Microsoft, Google, Amazon, Meta — buy chips by the hundreds of thousands, build the datacenters, and sell the result as cloud computing. Three of them also design their own AI chips (Google's TPU, Amazon's Trainium), which makes them part-time fabless companies and Nvidia's most dangerous customers. Neoclouds — CoreWeave, Nebius, and dozens of smaller firms — are specialist GPU landlords: they do one thing (rent out Nvidia GPUs by the hour) and their economics are pure real estate — borrow money, buy an asset, and earn a spread. An H100 costs a well-financed operator roughly $1.5 per GPU-hour all-in (capital, debt, power, datacenter), and rented for ~$2/hour at the best deals: a thin, leverage-sensitive margin, nothing like Nvidia's. AI labs — OpenAI, Anthropic, Google DeepMind, xAI — convert rented compute into models and sell tokens; they are the demand engine for everything upstream, and coding assistants alone are over 70% of OpenAI's and Anthropic's revenue. A useful bridge metric across these layers: one megawatt of AI datacenter capacity generates roughly $10–12M of AI cloud revenue per year — which is why the industry increasingly quotes itself in megawatts and gigawatts rather than chips. When a lab signs a '1 GW deal,' you can now translate: about $10–12B a year of compute spending flowing up the chain you just mapped.</p>
+<h2>The margin ladder: why each layer earns what it earns</h2>
+<p>Line the layers up by gross margin — the share of each sales dollar left after direct production costs — and a striking ladder appears. EDA and IP sit at ~80–90%: software economics, a near-duopoly, and a price that is a rounding error next to the $100M+ chip project it enables. Nvidia earns ~75% on AI systems — it sells hardware at roughly 4x its build cost. TSMC printed 62.3% in 4Q25. Equipment makers cluster around 45–60% (KLA at the top). Memory swings wildly with the cycle — deeply negative in busts, above 50% in booms — because standard DRAM is a commodity; HBM is slowly making it less of one. OSATs scrape by at roughly 15–20%. The mechanism behind the ladder is not effort or even technology — it is scarcity times switching cost, divided by how visible your price is to the customer. EDA and ASML face almost no competition; Nvidia's CUDA software moat makes switching painful mid–AI race; TSMC's process lead means there is nowhere else to print a frontier chip. OSATs, by contrast, compete with each other on price for work anyone can do. One more axis matters: capital intensity. Nvidia's 75% needs no factories; TSMC's 62% must first pay for the most expensive factories ever built. High margin plus low capex (EDA, fabless) prints free cash flow; high margin plus brutal capex (TSMC, memory) is a treadmill where the margin is the reward for shouldering risk no one else will take.</p>
+<h2>Fab economics: the most expensive factories ever built</h2>
+<p>Foundry economics deserve their own stop on the map, because they gate everything else. The numbers are hard to absorb on first read. Intel says a leading-edge fab costs $25–30B of capex per 10,000 wafers per week of capacity; TSMC has cited about $42B per 10,000 wafers for 3nm. TSMC's capital budget for 2026 alone is $52–56B — more than the annual capex of any oil major. A single EUV lithography tool costs ~$225M, and a fab needs dozens. Why does anyone sign up for this? Because each tool is a money press when busy: that $225M machine patterns more than $650M worth of wafers per year. The catch is the cost structure: a fab's costs are almost entirely fixed — depreciation (the giant purchase price expensed over ~5 years) plus staff and facilities that run 24/7 regardless of output. A fab resembles an airline: the marginal cost of filling one more seat (printing one more wafer) is small, and an empty slot is revenue lost forever. That makes utilization the single most important variable in foundry economics. In the 2023 downturn, TSMC's 7nm utilization fell from 100% to below 60% in two quarters, and margins sagged immediately. This is why foundries demand customer prepayments, why TSMC refuses to overbuild even when AI customers beg for wafers — underwriting a $40B fab against demand that might evaporate is how foundries die — and why the current AI boom keeps slamming into a silicon supply ceiling: capacity discipline learned in past busts.</p>
+<h2>Follow the AI capex dollar — and watch where the pool moves</h2>
+<p>Now run one dollar of hyperscaler AI capex through the map. Most of it buys compute systems, and here the flow gets lopsided: Nvidia sells at ~75% gross margin, so of every dollar a cloud pays for an Nvidia system, roughly 75 cents stays in Santa Clara as gross profit and only ~25 cents flows on to the people who physically made it. Of that manufacturing cost, HBM memory alone is about half — which is why the memory makers are the second-biggest AI winners — while TSMC's wafer and packaging take a smaller slice than most people guess. The markup applies to everything in the box: one GB200 rack carries ~$551k of optical transceivers at cost, which becomes ~$2.2M by the time the customer pays. The rest of the capex dollar buys networking, land, buildings, and increasingly power infrastructure. Then the dollar tries to come back: each megawatt deployed earns $10–12M a year of cloud revenue, out of which neoclouds keep a thin rental spread and labs keep whatever their token prices exceed compute costs. The key investing insight is that the pools move. In 2023–25 the money pooled at the bottlenecks: Nvidia, HBM, CoWoS packaging, then power equipment. By 2025–26, serving costs collapsed while token demand exploded, and value began pooling downstream in the model labs — Anthropic's inference gross margin swung from -94% in 2024 to 38% in 2025 to above 70% in 2026. The map is static; the money is not. Ask, every year: which layer is scarce now?</p>
+<div style="margin:20px 0"><img src="/images/primer/pm09_en.png" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Own illustration &middot; Yicheng Yang</div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_09_08d2a8f462.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">TSMC's Fab 12A at its Hsinchu headquarters. The foundry layer owns the most expensive factories ever built — $25–42B of capex per 10,000 wafers of weekly leading-edge capacity — and because costs are almost entirely fixed, utilization is the single variable that makes or breaks its margins. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:TSMC_Fab_12A_02.jpg">Wikimedia Commons — 曾成訓 (CC BY 2.0)</a></div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_09_465a9bf436.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Nvidia's Santa Clara campus: offices, not factories. The fabless model — design the chip, own the software ecosystem, let TSMC do the manufacturing — is how a company with no fab keeps ~75% gross margin on AI systems while its manufacturing partners shoulder the capex. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:Nvidia_HQ.jpg">Wikimedia Commons — Kevin McCarthy (CC BY 2.0)</a></div></div>
+<h2>Key Numbers</h2><table class="ktab"><thead><tr><th>Metric</th><th>Value</th><th>Source</th></tr></thead><tbody>
+<tr><td>Nvidia gross margin on AI systems (≈4x markup over build cost)</td><td style="color:#F8A848;font-weight:500">~75%</td><td><a href="https://semianalysis.com/2024/07/17/gb200-hardware-architecture-and-component/">SemiAnalysis — GB200 Hardware Architecture - Component Supply Chain &amp; BOM</a></td></tr>
+<tr><td>Foundry capex intensity (TSMC, 2022 milestone)</td><td style="color:#F8A848;font-weight:500">$40-44B annual capex announced — far surpassing Intel and Samsung at the time</td><td><a href="https://semianalysis.com/2022/01/13/tsmc-throws-down-a-40b-44b-gauntlet/">SemiAnalysis — TSMC Throws Down a $40B-$44B Gauntlet</a></td></tr>
+<tr><td>Leading-edge fab capex intensity</td><td style="color:#F8A848;font-weight:500">Intel: $25–30B per 10k wafers/week; TSMC: ~$42B per 10k wafers at 3nm</td><td><a href="https://semianalysis.com/2024/04/02/is-intel-back-foundry-and-product/">SemiAnalysis — Is Intel Back? Foundry &amp; Product Resurgence Measured</a></td></tr>
+<tr><td>HBM share of an H100-class AI chip's manufacturing cost</td><td style="color:#F8A848;font-weight:500">~50% (nearly half)</td><td><a href="https://semianalysis.com/2023/05/13/on-device-ai-double-edged-sword/">SemiAnalysis — On Device AI – Double-Edged Sword</a></td></tr>
+<tr><td>Taiwan's share of global advanced-node capacity (via TSMC)</td><td style="color:#F8A848;font-weight:500">&gt;90% (and &gt;60% of world semiconductor output)</td><td><a href="https://newsletter.semianalysis.com/p/tsmc-overseas-fabs-a-success">SemiAnalysis — TSMC Overseas Fabs – A Success?</a></td></tr>
+<tr><td>TSMC 7nm utilization swing in the 2023 downturn</td><td style="color:#F8A848;font-weight:500">100% → below 60% in two quarters</td><td><a href="https://semianalysis.com/2023/04/20/tsmcs-heroic-assumption-low-utilization/">SemiAnalysis — TSMC's Heroic Assumption – Low Utilization Rates, Fab Cancellation</a></td></tr>
+<tr><td>AI cloud revenue per megawatt of datacenter capacity</td><td style="color:#F8A848;font-weight:500">$10–12M per MW per year</td><td><a href="https://newsletter.semianalysis.com/p/how-ai-labs-are-solving-the-power">SemiAnalysis — How AI Labs Are Solving the Power Crisis: The Onsite Gas Deep Dive</a></td></tr>
+</tbody></table>
+<div class="card"><div class="card-label">Why this matters for the investor</div><div class="card-desc">This map is the router for the entire series: every sector brief that follows is a zoom-in on one box. For an investor it converts headlines into positions. A company's layer tells you its business model before you open the filings — gross margin, capex burden, cyclicality, and pricing power are properties of the box, not the logo. The margin ladder shows who keeps each AI capex dollar: Nvidia ~75 cents gross of its systems dollar, HBM half the chip's build cost, OSATs pennies. And the pools move with scarcity — GPUs, then HBM and packaging, then power, now model labs — so the habit is to ask which layer is this year's binding constraint, and own that toll booth.</div></div>
+<h2>Go deeper</h2><div>
+<a class="pill" href="/ai-supply-chain-01-accelerators">Sector 01 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-02-foundry">Sector 02 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-03-memory">Sector 03 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-04-packaging">Sector 04 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-05-equipment">Sector 05 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-08-hyperscalers-econ">Sector 08 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-09-models-software">Sector 09 deep-dive</a>
+</div>
+</article>
+<div class="disclaimer">
+<strong>Independence &amp; sourcing.</strong> This is independent analysis by Yicheng Yang, distilled from publicly accessible SemiAnalysis articles (free posts and free previews; no paywall circumvention) and verified against the underlying text. It is not affiliated with, endorsed by, or a substitute for <a href="https://semianalysis.com">SemiAnalysis</a> &mdash; subscribe there for the full research. All referenced claims are sourced and linked per SemiAnalysis's attribution terms. No SemiAnalysis images are reproduced. Nothing here is investment advice.
+</div>
+<footer style="padding:24px 0 40px;font-family:'Inter',sans-serif;font-size:13px;">&copy; 2026 Yicheng Yang</footer>
+</div>
+</body>
+</html>

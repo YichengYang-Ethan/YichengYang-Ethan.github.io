@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Primer 06: Advanced Packaging 101 &mdash; Yicheng Yang</title>
+<meta name="description" content="Why the last step of chipmaking became the chokepoint of AI compute — and what chiplets, CoWoS, HBM integration and hybrid bonding actually are.">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+
+<style>
+/* scoped SemiAnalysis-inspired dark theme for this section only */
+body{background:#14101B;color:#EDEBF0;font-family:'Spectral',Georgia,serif;}
+nav{border-bottom:1px solid #34303A;}
+nav .nav-name,nav .nav-links a{color:#B5B4B7!important;}
+nav .nav-links a:hover,nav .nav-name:hover{color:#F8A848!important;opacity:1;}
+header .label{color:#F8A848;font-family:'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:13px;font-weight:600;}
+h1{color:#EDEBF0;} h2{color:#F8A848;margin:36px 0 12px;font-size:24px;}
+h3{color:#EDEBF0;margin:22px 0 8px;font-size:19px;}
+p.meta,.muted{color:#B5B4B7;}
+p.meta a,header a,.card-desc a{color:#F8A848!important;}
+a{color:#F8A848;} a:hover{color:#FFC069;opacity:1;}
+.card{background:#1B1722;border:1px solid #34303A;border-radius:8px;padding:20px 22px;margin:14px 0;}
+.card-label{color:#F8A848;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.card-title{font-weight:600;font-size:19px;margin-bottom:6px;color:#EDEBF0;}
+.card-desc{color:#C9C7CE;font-size:16.5px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;} @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+table{width:100%;border-collapse:collapse;font-size:15px;font-family:'Inter',sans-serif;}
+table.wtab{table-layout:fixed;} table.wtab td:first-child{width:150px;font-weight:600;color:#EDEBF0;vertical-align:top;padding-top:10px;}
+table.ktab{table-layout:fixed;} table.ktab th:nth-child(1),table.ktab td:nth-child(1){width:26%;} table.ktab th:nth-child(2),table.ktab td:nth-child(2){width:22%;} 
+td{vertical-align:top;line-height:1.55;}
+th{color:#F8A848;text-align:left;border-bottom:1px solid #56535B;padding:8px 10px;font-weight:600;cursor:pointer;user-select:none;}
+td{border-bottom:1px solid #2B2832;padding:7px 10px;color:#D8D6DD;}
+tr:hover td{background:#1B1722;}
+.pos{color:#57C08A;} .neg{color:#E8756A;}
+blockquote{border-left:3px solid #F8A848;background:#1B1722;margin:12px 0;padding:10px 16px;font-style:italic;color:#C9C7CE;font-size:16px;}
+blockquote .attr{display:block;font-style:normal;font-size:13.5px;color:#8B8992;margin-top:6px;font-family:'Inter',sans-serif;}
+.vc{display:flex;flex-direction:column;gap:0;margin:18px 0;}
+.vc .stage{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center;background:#1B1722;border:1px solid #F8A848;border-radius:8px;padding:10px 16px;}
+.vc .stage b{color:#F8A848;font-family:'Inter',sans-serif;font-size:15px;}
+.vc .stage span{color:#B5B4B7;font-size:14.5px;font-family:'Inter',sans-serif;}
+.vc .arrow{color:#F79C2F;text-align:center;line-height:1.1;font-size:15px;margin:1px 0;}
+.klist p{margin:0 0 12px;} .klist b{color:#F8A848;}
+.thesis{margin:0 0 18px;} .thesis .tclaim{font-weight:600;color:#EDEBF0;font-size:17.5px;}
+.thesis .trat{color:#C9C7CE;font-size:16px;margin-top:4px;}
+.pill{display:inline-block;background:#221E29;border:1px solid #34303A;border-radius:20px;padding:2px 12px;margin:2px 4px 2px 0;font-family:'Inter',sans-serif;font-size:13.5px;color:#C9C7CE;}
+.bars{font-family:'Inter',sans-serif;font-size:14px;margin:14px 0;}
+.bars .row{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;margin:6px 0;}
+.bars .track{background:#221E29;border-radius:4px;height:16px;position:relative;}
+.bars .fill{height:16px;border-radius:4px;position:absolute;top:0;}
+.disclaimer{border-top:1px solid #34303A;margin-top:44px;padding-top:16px;font-size:13.5px;color:#8B8992;font-family:'Inter',sans-serif;}
+.srcs{font-size:14.5px;color:#B5B4B7;} .srcs li{margin:3px 0;}
+footer{border-top:none!important;color:#8B8992!important;}
+.section-label{color:#F8A848!important;}
+</style>
+</head>
+<body>
+<div class="container">
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain" class="active" style="color:#F8A848!important">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+<header>
+  <div class="label">Foundations Primer &middot; Module 06 of 10</div>
+  <h1>Advanced Packaging 101</h1>
+  <p class="meta">Why the last step of chipmaking became the chokepoint of AI compute — and what chiplets, CoWoS, HBM integration and hybrid bonding actually are.<br><a href="/ai-supply-chain-primer-05">&larr; §05</a> &middot; <a href="/ai-supply-chain-primer">Primer index</a> &middot; <a href="/ai-supply-chain-primer-07">§07 &rarr;</a> &middot; <a href="/ai-supply-chain">series hub</a></p>
+</header>
+<article>
+<h2>Why packaging hit the front page</h2>
+<p>For fifty years, 'more computing' had a single recipe: shrink the transistor. Packaging — the final step that wraps a finished die in a protective shell and connects it to the circuit board — was an afterthought, outsourced to low-margin assembly houses. Around 2020 that quietly inverted, because three walls closed in at once.</p><p>First, the reticle limit. A lithography scanner projects a chip design through a photomask onto the wafer one exposure at a time, and the largest field it can expose is 26mm × 33mm — about 858mm². You physically cannot print a bigger single chip. Nvidia's datacenter GPUs have been pressed against this ceiling for years; 'just make it bigger' is no longer an option.</p><p>Second, yield. Defects scatter across a wafer roughly at random, like darts at a board. Double a die's area and you roughly double its odds of catching a killer defect, so the cost of a good chip rises much faster than its size. The biggest chips are exactly the ones you can least afford to build.</p><p>Third, and least appreciated: IO stopped scaling. Transistor density doubled about every two years, but chip-to-package data rates doubled only every four — and the solder bumps that carry signals off the die barely shrank from 2000 to 2021 (stuck at 150-200µm pitch). Many designs became 'pad-limited': die area set by connection pads, not by logic. Add that wafer prices jumped from ~$9,500 (N7) to ~$16,000 (N5), ending the free fall in cost-per-transistor, and the industry's only remaining lever is how dies get wired together. That lever is advanced packaging.</p>
+<h2>Chiplets: bargaining with defect math</h2>
+<p>The first response is to stop building monoliths. Split one huge die into several small 'chiplets' and the defect lottery changes in your favor: a dart that lands on a small die scraps a cheap fragment, not an $800 flagship. Just as important, each piece can be tested before assembly, so you only combine Known Good Die (KGD) — a three-letter idea that quietly governs almost every packaging decision in this module. AMD ships everything from 8-core desktops to 64-core servers by reusing one small compute chiplet, covering with 3 chip designs a market Intel needed 5 monolithic designs to span — and it mixes process nodes, putting compute on the newest node and IO on an older, cheaper one.</p><p>But chiplets are a tool, not a religion. Every split adds interface circuits that burn area and power, plus a packaging step that can itself fail. SemiAnalysis's cost model exposes a subtler tax: lithography is roughly a third of wafer cost, and the scanner exposes fixed 26×33mm fields — a chiplet that tiles that field badly needs 1.875× the exposures, repricing the wafer from $17,000 to $21,364 and shrinking the chiplet's silicon saving from $136 to $26 per part, before packaging costs are even counted. Intel's Emerald Rapids server chip actually re-aggregated four chiplets back into two large dies. Whether to split depends on yield, reticle geometry and interface overhead — and the answer can flip either way.</p>
+<h2>2.5D and CoWoS: a silicon table for GPU and HBM</h2>
+<p>AI made one wiring problem urgent: a GPU must talk to its memory over an extremely wide, extremely short bus. High Bandwidth Memory (HBM) gets its bandwidth from width, not clock speed — each stack connects through over a thousand data wires (HBM4 doubles that again). No ordinary package substrate or circuit board can route a thousand traces per stack; the wires would be too coarse and too long.</p><p>The 2.5D answer: lay the compute die and the HBM stacks side by side on top of another piece of silicon. Because that base slab is patterned with chip lithography, its wires can be ~100× finer than a substrate's. The slab — the 'interposer' — does no computing; it is pure wiring, plus TSVs (through-silicon vias): vertical copper shafts that pass power and signals up from the package below. TSMC's brand for this sandwich is CoWoS — Chip-on-Wafer-on-Substrate. Essentially every Nvidia and AMD AI accelerator is compute dies plus HBM sitting on some flavor of it.</p><p>Interposers are expensive: TSV formation is slow, tool-hungry and, per SemiAnalysis, a genuine bottleneck for both CoWoS and HBM output. Hence the variants. CoWoS-R swaps silicon for cheaper organic RDL wiring; bridge approaches — Intel's EMIB, TSMC's CoWoS-L — embed only a small sliver of silicon where two die edges actually meet. And as AI packages outgrow the reticle itself, interposers are 'stitched' together from multiple exposures: the interposer under a 2016 Tesla P100 was already ~1,166mm², larger than any chip that can be printed in one shot.</p>
+<h2>3D: micro-bumps vs bumpless hybrid bonding</h2>
+<p>2.5D still spreads dies sideways; the tightest connection is to stack them vertically, dropping interconnect distances from millimeters to microns and collapsing the energy each bit costs to move.</p><p>Generation one is micro-bump 3D: the same solder-ball idea, miniaturized to ~36µm pitch — 31× the connection density of standard flip chip. But solder has a floor: much below ~20µm pitch the bumps short into each other, and every joint adds resistance.</p><p>Hybrid bonding removes solder entirely. Both surfaces are polished to sub-nanometer flatness; the dielectric faces bond on contact, and copper pads recessed ~5 nanometers below the surface expand during a bake until they fuse — copper to copper, 'bumpless'. Pitches drop below 10µm with a roadmap into the hundreds of nanometers. AMD's 3D V-Cache, the first mass-market product, runs a 17µm pitch — ~138× flip-chip density. SemiAnalysis calls hybrid bonding the most transformative manufacturing innovation since EUV.</p><p>It comes with brutal physics. A particle just 1µm tall creates a bond void ~10mm across — one speck of dust kills a fingernail-sized patch of connections. That demands ISO 1-3 cleanrooms and front-end fab tools (deposition, electroplating, precision CMP polishing) that traditional packaging houses — OSATs like ASE and Amkor — simply don't own. This is the structural punchline: hybrid bonding moved leading-edge packaging inside the fab (TSMC's SoIC, Intel's Foveros Direct), turning 'assembly' from cheap outsourced labor into foundry business. One trade-off to remember: wafer-on-wafer bonding aligns whole wafers to under 50nm but cannot screen out bad dies, while die-to-wafer places only Known Good Die but is slower and dirtier.</p>
+<h2>The family album: InFO, EMIB, Foveros</h2>
+<p>Three names you will meet constantly — one paragraph each.</p><p>InFO (TSMC, 'Integrated Fan-Out') solves a different problem: a die that needs more connections than its own footprint can hold. The die is embedded in molding compound and its IO is 'fanned out' across that larger artificial surface through fine RDL wiring — no substrate needed, thinner and cheaper than 2.5D. Every iPhone processor since 2016's A10 ships in InFO, and the wafer-scale variant, InFO_SoW, packaged the 25-die training tile of Tesla's Dojo supercomputer.</p><p>EMIB (Intel, 'Embedded Multi-die Interconnect Bridge') is the anti-interposer: instead of a full slab of silicon under everything, embed a fingernail-sized silicon bridge into the organic substrate exactly under the seam where two dies meet. You get interposer-class wiring density where the traffic actually flows, and cheap substrate everywhere else. Intel's Sapphire Rapids Xeons mix 55µm-pitch EMIB regions with 100µm standard bumps on a single package.</p><p>Foveros (Intel) is the 3D entry: true die-on-die stacking on ~36µm micro-bumps — Meteor Lake stacks its compute tile on a base tile — with Foveros Direct as the bumpless, hybrid-bonded successor. A mental map for everything above: CoWoS and EMIB place dies side-by-side (2.5D); Foveros and SoIC stack them vertically (3D); InFO spreads one die's connections outward (fan-out).</p>
+<h2>The new bottleneck — and the new profit pool</h2>
+<p>Since 2023, whenever Nvidia GPUs were scarce, the binding constraint was usually not wafers — TSMC could print the compute dies — but CoWoS capacity and HBM supply. 'Advanced packaging' became, in effect, the production schedule of AI compute.</p><p>The money followed. TSMC's CoWoS revenue grew from about $0.6B in 2018 to $9.6B in 2025 — 2.5× what Apple's InFO brings in — and advanced packaging passed 10% of TSMC's total revenue. A step once priced in cents per chip now prices in hundreds of dollars per AI accelerator.</p><p>Inside the flow, the chokepoints are specific and investable. TSV formation — the etch-and-plate sequence that drills the vertical vias — bottlenecks both HBM and CoWoS. HBM's stacking arithmetic compounds the problem: 12-high stacks force each DRAM die to be thinned to 30µm, too fragile for fast conventional bonders, mandating slow thermocompression bonding (TCB) tools. And hybrid-bonding die placers trade throughput against accuracy so brutally that rated speeds roughly halve in practice.</p><p>Because hybrid bonding is a front-end process, each new generation shifts value away from OSATs toward foundries and fab-tool vendors — deposition, CMP, dicing, bonders. So when a headline says 'TSMC doubles CoWoS capacity', read it as: that is the ceiling on next year's AI accelerator shipments — and the toll for that ceiling accrues to a shrinking list of companies.</p>
+<div style="margin:20px 0"><img src="/images/primer/pm06_en.png" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Own illustration &middot; Yicheng Yang</div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_06_d7bf8c6395.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">The bare silicon interposer of an Nvidia Tesla P100 (GP100) with the dies removed: the large central field of micro-bump pads carried the GPU, the four side fields its HBM2 stacks. At ~1,166mm² it is larger than the reticle limit — a piece of silicon that is pure wiring, stitched together from multiple exposures. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:Nvidia@16nm@Pascal@GP100@Tesla_P100@T_Taiwan_1912A1_PN9G70.S6W_GP100-897-A1_DSCx10_topmetal@Interposer_5x.jpg">Wikimedia Commons — Fritzchens Fritz (CC0)</a></div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_06_040614e226.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Simplified cross-section of HBM integration: thinned DRAM dies stacked on a base logic die and laced with TSVs, connected by micro-bumps to the interposer, which fans the signals down into the package substrate — 2.5D packaging in one picture. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:Simplyfied_diagram_of_HBM_section_view.png">Wikimedia Commons — 思考的苇丛 (CC BY-SA 4.0)</a></div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_06_edad394701.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Chiplets in the flesh: a delidded AMD EPYC 7702 — eight small 7nm compute chiplets surrounding one 12nm IO die. Small dies win the defect lottery, and the IO die doesn't need the expensive node. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:AMD_Epyc_7702_delidded.jpg">Wikimedia Commons — Fritzchens Fritz (CC0)</a></div></div>
+<h2>Key Numbers</h2><table class="ktab"><thead><tr><th>Metric</th><th>Value</th><th>Source</th></tr></thead><tbody>
+<tr><td>Reticle limit (largest printable die)</td><td style="color:#F8A848;font-weight:500">26mm × 33mm ≈ 858mm² per exposure field</td><td><a href="https://semianalysis.com/2022/06/19/die-size-and-reticle-conundrum-cost/">SemiAnalysis — Die Size And Reticle Conundrum – Cost Model With Lithography Scanner Throughput</a></td></tr>
+<tr><td>Transistor vs IO scaling</td><td style="color:#F8A848;font-weight:500">Transistor density 2× every ~2 years; chip IO data rates 2× every ~4 years</td><td><a href="https://semianalysis.com/2021/12/15/advanced-packaging-part-1-pad-limited/">SemiAnalysis — Advanced Packaging Part 1 – Pad Limited Designs</a></td></tr>
+<tr><td>Interconnect density ladder (vs standard 150-200µm flip chip)</td><td style="color:#F8A848;font-weight:500">Fanout ~8× → 2.5D interposer ~16× → 36µm micro-bump 3D 31× → 17µm hybrid bonding (V-Cache) 138× → Sony 6.3µm CIS 567×</td><td><a href="https://semianalysis.com/2021/12/15/advanced-packaging-part-1-pad-limited/">SemiAnalysis — Advanced Packaging Part 1 – Pad Limited Designs</a></td></tr>
+<tr><td>Wafer price, N7 vs N5</td><td style="color:#F8A848;font-weight:500">~$9,500 (N7) vs ~$16,000 (N5) — cost-per-transistor stopped falling</td><td><a href="https://semianalysis.com/2021/12/15/advanced-packaging-part-1-pad-limited/">SemiAnalysis — Advanced Packaging Part 1 – Pad Limited Designs</a></td></tr>
+<tr><td>TSMC CoWoS revenue, 2025</td><td style="color:#F8A848;font-weight:500">$9.6B — 2.5× InFO, up from ~$0.6B in 2018</td><td><a href="https://newsletter.semianalysis.com/p/apple-tsmc-the-partnership-that-built">SemiAnalysis — Apple-TSMC: The Partnership That Built Modern Semiconductors</a></td></tr>
+<tr><td>Hybrid bonding particle sensitivity</td><td style="color:#F8A848;font-weight:500">A particle just 1µm tall → a bond void ~10mm in diameter</td><td><a href="https://semianalysis.com/2024/02/09/hybrid-bonding-process-flow-advanced/">SemiAnalysis — Hybrid Bonding Process Flow - Advanced Packaging Part 5</a></td></tr>
+<tr><td>HBM die thinning (SK Hynix 12-hi HBM3)</td><td style="color:#F8A848;font-weight:500">Each DRAM die thinned to 30µm — mandating TCB bonders</td><td><a href="https://semianalysis.com/2022/01/19/advanced-packaging-part-3-intels/">SemiAnalysis — Advanced Packaging Part 3 – Intel's Curious Bet on Thermocompression Bonding</a></td></tr>
+</tbody></table>
+<div class="card"><div class="card-label">Why this matters for the investor</div><div class="card-desc">Packaging is where AI scarcity gets set and where semiconductor value is migrating. Since 2023, accelerator shipments have been capped less by wafer starts than by CoWoS and HBM capacity — so packaging announcements are, in effect, Nvidia's production schedule. The technology transition matters as much as the volume: hybrid bonding's fab-grade cleanliness pulls the highest-value packaging out of OSATs and into TSMC and Intel, and converts packaging capex into front-end tool orders (deposition, CMP, bonders, dicing). Reading a packaging roadmap tells you who collects the toll — foundries and tool vendors — and who gets commoditized.</div></div>
+<h2>Go deeper</h2><div>
+<a class="pill" href="/ai-supply-chain-04-packaging">Sector 04 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-02-foundry">Sector 02 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-03-memory">Sector 03 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-01-accelerators">Sector 01 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-05-equipment">Sector 05 deep-dive</a>
+</div>
+</article>
+<div class="disclaimer">
+<strong>Independence &amp; sourcing.</strong> This is independent analysis by Yicheng Yang, distilled from publicly accessible SemiAnalysis articles (free posts and free previews; no paywall circumvention) and verified against the underlying text. It is not affiliated with, endorsed by, or a substitute for <a href="https://semianalysis.com">SemiAnalysis</a> &mdash; subscribe there for the full research. All referenced claims are sourced and linked per SemiAnalysis's attribution terms. No SemiAnalysis images are reproduced. Nothing here is investment advice.
+</div>
+<footer style="padding:24px 0 40px;font-family:'Inter',sans-serif;font-size:13px;">&copy; 2026 Yicheng Yang</footer>
+</div>
+</body>
+</html>

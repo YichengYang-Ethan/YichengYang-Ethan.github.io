@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>The AI Hardware Primer &mdash; Yicheng Yang</title>
+<meta name="description" content="Eleven accessible, sourced modules covering the complete technical and industry foundations of the AI compute build-out.">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+
+<style>
+/* scoped SemiAnalysis-inspired dark theme for this section only */
+body{background:#14101B;color:#EDEBF0;font-family:'Spectral',Georgia,serif;}
+nav{border-bottom:1px solid #34303A;}
+nav .nav-name,nav .nav-links a{color:#B5B4B7!important;}
+nav .nav-links a:hover,nav .nav-name:hover{color:#F8A848!important;opacity:1;}
+header .label{color:#F8A848;font-family:'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:13px;font-weight:600;}
+h1{color:#EDEBF0;} h2{color:#F8A848;margin:36px 0 12px;font-size:24px;}
+h3{color:#EDEBF0;margin:22px 0 8px;font-size:19px;}
+p.meta,.muted{color:#B5B4B7;}
+p.meta a,header a,.card-desc a{color:#F8A848!important;}
+a{color:#F8A848;} a:hover{color:#FFC069;opacity:1;}
+.card{background:#1B1722;border:1px solid #34303A;border-radius:8px;padding:20px 22px;margin:14px 0;}
+.card-label{color:#F8A848;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.card-title{font-weight:600;font-size:19px;margin-bottom:6px;color:#EDEBF0;}
+.card-desc{color:#C9C7CE;font-size:16.5px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;} @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+table{width:100%;border-collapse:collapse;font-size:15px;font-family:'Inter',sans-serif;}
+table.wtab{table-layout:fixed;} table.wtab td:first-child{width:150px;font-weight:600;color:#EDEBF0;vertical-align:top;padding-top:10px;}
+table.ktab{table-layout:fixed;} table.ktab th:nth-child(1),table.ktab td:nth-child(1){width:26%;} table.ktab th:nth-child(2),table.ktab td:nth-child(2){width:22%;} 
+td{vertical-align:top;line-height:1.55;}
+th{color:#F8A848;text-align:left;border-bottom:1px solid #56535B;padding:8px 10px;font-weight:600;cursor:pointer;user-select:none;}
+td{border-bottom:1px solid #2B2832;padding:7px 10px;color:#D8D6DD;}
+tr:hover td{background:#1B1722;}
+.pos{color:#57C08A;} .neg{color:#E8756A;}
+blockquote{border-left:3px solid #F8A848;background:#1B1722;margin:12px 0;padding:10px 16px;font-style:italic;color:#C9C7CE;font-size:16px;}
+blockquote .attr{display:block;font-style:normal;font-size:13.5px;color:#8B8992;margin-top:6px;font-family:'Inter',sans-serif;}
+.vc{display:flex;flex-direction:column;gap:0;margin:18px 0;}
+.vc .stage{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center;background:#1B1722;border:1px solid #F8A848;border-radius:8px;padding:10px 16px;}
+.vc .stage b{color:#F8A848;font-family:'Inter',sans-serif;font-size:15px;}
+.vc .stage span{color:#B5B4B7;font-size:14.5px;font-family:'Inter',sans-serif;}
+.vc .arrow{color:#F79C2F;text-align:center;line-height:1.1;font-size:15px;margin:1px 0;}
+.klist p{margin:0 0 12px;} .klist b{color:#F8A848;}
+.thesis{margin:0 0 18px;} .thesis .tclaim{font-weight:600;color:#EDEBF0;font-size:17.5px;}
+.thesis .trat{color:#C9C7CE;font-size:16px;margin-top:4px;}
+.pill{display:inline-block;background:#221E29;border:1px solid #34303A;border-radius:20px;padding:2px 12px;margin:2px 4px 2px 0;font-family:'Inter',sans-serif;font-size:13.5px;color:#C9C7CE;}
+.bars{font-family:'Inter',sans-serif;font-size:14px;margin:14px 0;}
+.bars .row{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;margin:6px 0;}
+.bars .track{background:#221E29;border-radius:4px;height:16px;position:relative;}
+.bars .fill{height:16px;border-radius:4px;position:absolute;top:0;}
+.disclaimer{border-top:1px solid #34303A;margin-top:44px;padding-top:16px;font-size:13.5px;color:#8B8992;font-family:'Inter',sans-serif;}
+.srcs{font-size:14.5px;color:#B5B4B7;} .srcs li{margin:3px 0;}
+footer{border-top:none!important;color:#8B8992!important;}
+.section-label{color:#F8A848!important;}
+</style>
+</head>
+<body>
+<div class="container">
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain" class="active" style="color:#F8A848!important">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+<header>
+  <div class="label">Foundations Primer &middot; Start Here</div>
+  <h1>The AI Hardware Primer</h1>
+  <p class="meta">Eleven textbook-style modules that give you the complete technical and industry background before the sector deep-dives. No semiconductor background assumed. &nbsp;<a href="/ai-supply-chain">&larr; series hub</a></p>
+</header>
+<article>
+<p>The sector reports assume you know what a process node is, why HBM sits next to the GPU, and how a datacenter is powered. If you don't &mdash; start here. Read modules 01&ndash;08 for the technology stack (an afternoon), 09&ndash;10 for the industry structure and the metrics that matter. Every number is sourced; every figure states whether it is an original illustration or an institutional image.</p>
+<h2>Modules</h2><div class="grid2">
+<a class="card" style="display:block" href="/ai-supply-chain-primer-00"><div class="card-label">Module 00</div><div class="card-title" style="font-size:17px">How to Read This Series</div><div class="card-desc" style="font-size:14.5px">The ten sectors as one machine: what it looks like, which primer module unlocks which door, and the shortest reading path for your job.</div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-primer-01"><div class="card-label">Module 01</div><div class="card-title" style="font-size:17px">From Sand to Silicon</div><div class="card-desc" style="font-size:14.5px">How purified sand becomes the most precisely manufactured object humans make — and why yield math and $20B fabs explain half of the AI supply chain.</div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-primer-02"><div class="card-label">Module 02</div><div class="card-title" style="font-size:17px">Transistors and the End of Cheap Scaling</div><div class="card-desc" style="font-size:14.5px">After this module you'll know what a transistor actually does, why fifty years of shrinking made computing exponentially cheaper, and why what ended was not the shrinking — but the cheapness.</div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-primer-03"><div class="card-label">Module 03</div><div class="card-title" style="font-size:17px">Anatomy of an AI Accelerator</div><div class="card-desc" style="font-size:14.5px">Read a GPU spec sheet like an architect: what SIMT, Tensor Cores, HBM bandwidth, FP4 and 'NVL72' actually mean — and which of them is the real bottleneck.</div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-primer-04"><div class="card-label">Module 04</div><div class="card-title" style="font-size:17px">Training vs Inference</div><div class="card-desc" style="font-size:14.5px">After this module you can look at any AI chip announcement and know which of the two workloads it is really built for — and read a $/Mtok chart the way the buyers do.</div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-primer-05"><div class="card-label">Module 05</div><div class="card-title" style="font-size:17px">The Memory Hierarchy and HBM</div><div class="card-desc" style="font-size:14.5px">Understand the register-to-SSD speed pyramid, why DRAM stopped shrinking, and how stacked HBM became 50-60%+ of an AI GPU's manufacturing cost.</div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-primer-06"><div class="card-label">Module 06</div><div class="card-title" style="font-size:17px">Advanced Packaging 101</div><div class="card-desc" style="font-size:14.5px">Why the last step of chipmaking became the chokepoint of AI compute — and what chiplets, CoWoS, HBM integration and hybrid bonding actually are.</div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-primer-07"><div class="card-label">Module 07</div><div class="card-title" style="font-size:17px">Interconnect: Scale-Up vs Scale-Out</div><div class="card-desc" style="font-size:14.5px">After this module, any interconnect headline — '900 GB/s NVLink', 'CPO kills pluggables' — instantly tells you which of the datacenter's two networks is in play, and whose revenue moves.</div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-primer-08"><div class="card-label">Module 08</div><div class="card-title" style="font-size:17px">The Datacenter as a Machine</div><div class="card-desc" style="font-size:14.5px">After this module, 'a 100MW campus', 'PUE 1.1', '800VDC' and 'behind-the-meter gas' stop being buzzwords — you can trace every watt from the grid substation to the sub-1V pin of a GPU, and explain why electrons, not chips, became AI's scarcest input.</div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-primer-09"><div class="card-label">Module 09</div><div class="card-title" style="font-size:17px">The Industry Map: Who Does What and Where the Money Pools</div><div class="card-desc" style="font-size:14.5px">After this module you can place any company in the AI supply chain on one map — and predict its gross margin, its capex burden, and its pricing power before you ever open its 10-K.</div></a>
+<a class="card" style="display:block" href="/ai-supply-chain-primer-10"><div class="card-label">Module 10</div><div class="card-title" style="font-size:17px">The Investor's Toolkit and Glossary</div><div class="card-desc" style="font-size:14.5px">Every number that moves an AI supply-chain stock — what it actually measures, where it gets published, which traps eat analysts, and the 40 terms that unlock all ten sector briefs.</div></a>
+</div></article>
+<div class="disclaimer">
+<strong>Independence &amp; sourcing.</strong> This is independent analysis by Yicheng Yang, distilled from publicly accessible SemiAnalysis articles (free posts and free previews; no paywall circumvention) and verified against the underlying text. It is not affiliated with, endorsed by, or a substitute for <a href="https://semianalysis.com">SemiAnalysis</a> &mdash; subscribe there for the full research. All referenced claims are sourced and linked per SemiAnalysis's attribution terms. No SemiAnalysis images are reproduced. Nothing here is investment advice.
+</div>
+<footer style="padding:24px 0 40px;font-family:'Inter',sans-serif;font-size:13px;">&copy; 2026 Yicheng Yang</footer>
+</div>
+</body>
+</html>

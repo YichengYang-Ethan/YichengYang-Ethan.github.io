@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Primer 04: Training vs Inference &mdash; Yicheng Yang</title>
+<meta name="description" content="After this module you can look at any AI chip announcement and know which of the two workloads it is really built for — and read a $/Mtok chart the way the buyers do.">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+
+<style>
+/* scoped SemiAnalysis-inspired dark theme for this section only */
+body{background:#14101B;color:#EDEBF0;font-family:'Spectral',Georgia,serif;}
+nav{border-bottom:1px solid #34303A;}
+nav .nav-name,nav .nav-links a{color:#B5B4B7!important;}
+nav .nav-links a:hover,nav .nav-name:hover{color:#F8A848!important;opacity:1;}
+header .label{color:#F8A848;font-family:'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:13px;font-weight:600;}
+h1{color:#EDEBF0;} h2{color:#F8A848;margin:36px 0 12px;font-size:24px;}
+h3{color:#EDEBF0;margin:22px 0 8px;font-size:19px;}
+p.meta,.muted{color:#B5B4B7;}
+p.meta a,header a,.card-desc a{color:#F8A848!important;}
+a{color:#F8A848;} a:hover{color:#FFC069;opacity:1;}
+.card{background:#1B1722;border:1px solid #34303A;border-radius:8px;padding:20px 22px;margin:14px 0;}
+.card-label{color:#F8A848;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.card-title{font-weight:600;font-size:19px;margin-bottom:6px;color:#EDEBF0;}
+.card-desc{color:#C9C7CE;font-size:16.5px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;} @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+table{width:100%;border-collapse:collapse;font-size:15px;font-family:'Inter',sans-serif;}
+table.wtab{table-layout:fixed;} table.wtab td:first-child{width:150px;font-weight:600;color:#EDEBF0;vertical-align:top;padding-top:10px;}
+table.ktab{table-layout:fixed;} table.ktab th:nth-child(1),table.ktab td:nth-child(1){width:26%;} table.ktab th:nth-child(2),table.ktab td:nth-child(2){width:22%;} 
+td{vertical-align:top;line-height:1.55;}
+th{color:#F8A848;text-align:left;border-bottom:1px solid #56535B;padding:8px 10px;font-weight:600;cursor:pointer;user-select:none;}
+td{border-bottom:1px solid #2B2832;padding:7px 10px;color:#D8D6DD;}
+tr:hover td{background:#1B1722;}
+.pos{color:#57C08A;} .neg{color:#E8756A;}
+blockquote{border-left:3px solid #F8A848;background:#1B1722;margin:12px 0;padding:10px 16px;font-style:italic;color:#C9C7CE;font-size:16px;}
+blockquote .attr{display:block;font-style:normal;font-size:13.5px;color:#8B8992;margin-top:6px;font-family:'Inter',sans-serif;}
+.vc{display:flex;flex-direction:column;gap:0;margin:18px 0;}
+.vc .stage{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center;background:#1B1722;border:1px solid #F8A848;border-radius:8px;padding:10px 16px;}
+.vc .stage b{color:#F8A848;font-family:'Inter',sans-serif;font-size:15px;}
+.vc .stage span{color:#B5B4B7;font-size:14.5px;font-family:'Inter',sans-serif;}
+.vc .arrow{color:#F79C2F;text-align:center;line-height:1.1;font-size:15px;margin:1px 0;}
+.klist p{margin:0 0 12px;} .klist b{color:#F8A848;}
+.thesis{margin:0 0 18px;} .thesis .tclaim{font-weight:600;color:#EDEBF0;font-size:17.5px;}
+.thesis .trat{color:#C9C7CE;font-size:16px;margin-top:4px;}
+.pill{display:inline-block;background:#221E29;border:1px solid #34303A;border-radius:20px;padding:2px 12px;margin:2px 4px 2px 0;font-family:'Inter',sans-serif;font-size:13.5px;color:#C9C7CE;}
+.bars{font-family:'Inter',sans-serif;font-size:14px;margin:14px 0;}
+.bars .row{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;margin:6px 0;}
+.bars .track{background:#221E29;border-radius:4px;height:16px;position:relative;}
+.bars .fill{height:16px;border-radius:4px;position:absolute;top:0;}
+.disclaimer{border-top:1px solid #34303A;margin-top:44px;padding-top:16px;font-size:13.5px;color:#8B8992;font-family:'Inter',sans-serif;}
+.srcs{font-size:14.5px;color:#B5B4B7;} .srcs li{margin:3px 0;}
+footer{border-top:none!important;color:#8B8992!important;}
+.section-label{color:#F8A848!important;}
+</style>
+</head>
+<body>
+<div class="container">
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain" class="active" style="color:#F8A848!important">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+<header>
+  <div class="label">Foundations Primer &middot; Module 04 of 10</div>
+  <h1>Training vs Inference</h1>
+  <p class="meta">After this module you can look at any AI chip announcement and know which of the two workloads it is really built for — and read a $/Mtok chart the way the buyers do.<br><a href="/ai-supply-chain-primer-03">&larr; §03</a> &middot; <a href="/ai-supply-chain-primer">Primer index</a> &middot; <a href="/ai-supply-chain-primer-05">§05 &rarr;</a> &middot; <a href="/ai-supply-chain">series hub</a></p>
+</header>
+<article>
+<h2>One Factory, Two Businesses</h2>
+<p>Every AI chip in the world is doing one of exactly two jobs. Training is how a model is made: show it trillions of examples and adjust its internal numbers (weights) until it predicts well. Inference is how a model is used: freeze those weights and answer queries. The industry's favorite analogy is a refinery versus gas stations. Training a frontier model is a one-off capital project — months of time on tens of thousands of chips, a cost paid once and amortized forever after. Inference is retail: billions of small transactions whose profitability lives or dies on unit cost. The unit is the token — roughly three-quarters of an English word — and the two businesses even quote prices in different currencies: training capacity trades in dollars per GPU-hour, inference in dollars per million tokens ($/Mtok). The reason this module exists: the two workloads stress opposite parts of a chip. Training wants raw arithmetic (FLOPS) and a network that can keep tens of thousands of chips in lockstep. Inference — specifically its decode phase — wants memory bandwidth and cheap capacity. A chip, rack, or datacenter optimized for one can be mediocre at the other, and as we will see, the industry's center of gravity has swung decisively toward inference.</p>
+<h2>Pretraining: the Largest Synchronized Machine Ever Built</h2>
+<p>Pretraining is the famous part: next-token prediction. Feed the model a slice of the internet, ask it to guess the next token, measure the error, and nudge every weight to reduce it — repeated quadrillions of times. Computationally, each step is dominated by enormous matrix multiplications, which perform a huge amount of arithmetic on every byte fetched from memory. That makes pretraining compute-bound: the limiting resource is floating-point operations, which is why training chips race on FLOPS and why lower-precision number formats (FP8, FP4) that multiply arithmetic throughput matter so much.</p><p>The catch is the word 'every.' Modern runs split identical copies of the model across tens of thousands of GPUs, each chewing a different slice of data. After every step — every few seconds — all copies must average their proposed weight updates in a collective operation called gradient synchronization (all-reduce). The entire cluster marches in lockstep: one slow GPU, one flaky optical link, one crashed node stalls the whole machine. This is why training clusters obsess over networking and reliability, and why 'goodput' (useful work actually completed) diverges so far from paper specs.</p><p>The honest efficiency yardstick is MFU — Model FLOPS Utilization, the share of a chip's theoretical arithmetic actually spent on the model's math. Even elite labs live between 30% and 55%. And it moves: SemiAnalysis's benchmarks across 2,000+ H100s show BF16 MFU climbing from 34% to 54% in twelve months purely from software — Nvidia's kernel engineers, no new silicon — a 57% free throughput gain. In cost terms, training GPT-3 175B fell from 72¢ to 54.2¢ per million tokens over 2024, or $218k to $162k for the full original 300B-token run.</p>
+<h2>Post-Training and RL: the Wall Comes Down</h2>
+<p>Around 2024 pretraining hit the data wall — the internet had been read. Capability gains shifted to post-training: supervised fine-tuning on curated examples, RLHF, and above all reinforcement learning on verifiable rewards. The mechanism is simple to state: give the model a task where success is machine-checkable — does the code pass the tests? is the math answer right? — let it generate many attempts ('rollouts'), score each one, and shift the weights toward what worked.</p><p>Notice what those rollouts are: inference. RL training spends most of its compute generating hundreds of candidate answers per question, which means production-grade inference now runs inside the training loop. The clean wall between the two workloads has fallen — and hardware demand followed, tilting toward memory-heavy, inference-friendly chips even within 'training' budgets.</p><p>The proof this vector works: OpenAI rode the same GPT-4o base model for 18 months through o1, o3 and GPT-5 — nearly all the headline capability gains of the reasoning era came from post-training, not a bigger pretrain. And the vector is young: Qwen, China's leading open-weights family, still spends only ~5% of its pretraining compute on post-training. As that ratio rises industry-wide — SemiAnalysis expects it will — the compute mix of making models will look ever more like the compute mix of serving them.</p>
+<h2>Inside One Request: Prefill, Decode, and the KV Cache</h2>
+<p>Now the workload that pays for everything. When you send a prompt to a model, inference happens in two radically different phases.</p><p>Prefill: the model reads your entire prompt at once. All input tokens flow through the network in parallel, in big dense matrix multiplications — computationally this looks like training, i.e., compute-bound. Prefill's output is not text; it is the KV cache: the attention mechanism's stored 'reading notes' (keys and values) for every token seen so far. The cache exists so the model doesn't reread the whole conversation from scratch for each new token; the price is memory — it grows with context length, and a long agentic session can pin gigabytes of precious HBM per user.</p><p>Decode: generation, one token at a time. Each new token requires streaming essentially all of the model's active weights plus the entire KV cache out of memory, to do a comparatively tiny amount of arithmetic. Bytes moved dwarf math done: decode is memory-bandwidth-bound, and the chip's expensive FLOPS sit idle waiting on HBM.</p><p>Operators fight this with batching: serve dozens of users in one pass so the weight-streaming cost is shared. Bigger batch = cheaper tokens — but each user waits their turn, so interactivity (tokens/sec/user) drops. Think of a kitchen cooking in ever-bigger batches: cost per plate falls, diners wait longer. Every serving stack picks a point on this cost-vs-speed curve, which is why the same model can cost several times more when served 'fast.'</p><p>Because prefill and decode want opposite chips, frontier labs (OpenAI, Anthropic, xAI, DeepSeek) run disaggregated serving in production — separate GPU pools per phase — and silicon has followed: Nvidia's Rubin CPX is a prefill-only part with 128GB of cheap GDDR7 instead of HBM (&gt;50% lower memory cost per GB), attacking the memory-cost wall directly. On the model side, DeepSeek's Multi-Head Latent Attention (MLA) compresses the KV cache by ~93.3% — the single biggest reason its tokens are so cheap.</p>
+<h2>$/Mtok: the Number That Now Designs Chips</h2>
+<p>Add it up and inference has one economic scoreboard: dollars per million tokens, at a given speed. Every optimization in this module — MFU, batching, KV-cache compression, disaggregation, FP4 — cashes out on this curve, and SemiAnalysis now benchmarks entire racks on it: a GB300 NVL72 rack serves DeepSeek V4 at $0.156 per million output tokens at 50 tokens/sec/user, partly because its 72-GPU NVLink domain keeps mixture-of-experts traffic on one fast fabric where 8-GPU servers must spill onto slower networks.</p><p>Two twists complete the economics. First, sticker prices lie: agentic workloads read far more than they write (Claude Code runs ~300 input tokens per output token) and constantly re-read the same context (90%+ cache-hit rates), so Anthropic's Opus lists at $5/$25 per Mtok but realizes ~$0.99 blended. Caching is not plumbing; it is pricing. Second, the curve falls relentlessly: tokens of GPT-3 quality are ~1200x cheaper than at GPT-3's launch, and the savings are reinvested in bigger models and longer agent sessions — Jevons paradox as a business plan.</p><p>This is why inference economics now design chips. HBM capacity and bandwidth became the largest item in the GB300 package bill-of-materials; 'world size' (how many chips share one fast domain) became the headline spec; and entire product lines — prefill-only GDDR7 parts, SRAM-based speed demons like Groq's LPU, which Nvidia bought for $20B — exist only because what buyers actually purchase is not peak FLOPS but $/Mtok at a target interactivity.</p>
+<div style="margin:20px 0"><img src="/images/primer/pm04_en.png" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Own illustration &middot; Yicheng Yang</div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_04_ce4dee0164.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Nvidia's GB200 NVL72 rack at COMPUTEX 2024 — 72 GPUs cabled into a single NVLink domain. 'World size' (how many chips share one fast fabric) became a headline spec because rack-scale interconnect slashes $/Mtok on mixture-of-experts inference. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:Eindr%C3%BCcke_von_der_COMPUTEX_2024_(_%E6%9E%81%E5%AE%A2%E6%B9%BEGeekerwan)_20.png">Wikimedia Commons — 极客湾 Geekerwan (CC BY 3.0)</a></div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_04_1cd004b7a4.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">A Google TPU v3 board. Google's systolic-array TPU line — scaled today to 9,216-chip Ironwood pods — trained Gemini 3 end-to-end: proof that frontier training no longer runs on GPUs alone. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:Tensor_Processing_Unit_3.0.jpg">Wikimedia Commons (CC BY-SA 4.0)</a></div></div>
+<h2>Key Numbers</h2><table class="ktab"><thead><tr><th>Metric</th><th>Value</th><th>Source</th></tr></thead><tbody>
+<tr><td>H100 BF16 training MFU gain from software alone (12 months)</td><td style="color:#F8A848;font-weight:500">34% → 54% MFU (+57% throughput)</td><td><a href="https://semianalysis.com/2025/08/20/h100-vs-gb200-nvl72-training-benchmarks/">SemiAnalysis — H100 vs GB200 NVL72 Training Benchmarks - Power, TCO, and Reliability Analysis</a></td></tr>
+<tr><td>Cost to train GPT-3 175B (FP8 on H100, over 2024)</td><td style="color:#F8A848;font-weight:500">72¢ → 54.2¢ per 1M training tokens ($218k → $162k full 300B-token run)</td><td><a href="https://semianalysis.com/2025/08/20/h100-vs-gb200-nvl72-training-benchmarks/">SemiAnalysis — H100 vs GB200 NVL72 Training Benchmarks - Power, TCO, and Reliability Analysis</a></td></tr>
+<tr><td>KV-cache reduction from DeepSeek's Multi-Head Latent Attention (MLA)</td><td style="color:#F8A848;font-weight:500">~93.3% vs standard attention</td><td><a href="https://semianalysis.com/2025/01/31/deepseek-debates/">SemiAnalysis — DeepSeek Debates: Chinese Leadership On Cost, True Training Cost, Closed Model Margin Impact</a></td></tr>
+<tr><td>Price decline for GPT-3-quality inference since GPT-3 launch</td><td style="color:#F8A848;font-weight:500">~1200x cheaper</td><td><a href="https://semianalysis.com/2025/01/31/deepseek-debates/">SemiAnalysis — DeepSeek Debates: Chinese Leadership On Cost, True Training Cost, Closed Model Margin Impact</a></td></tr>
+<tr><td>Opus 4.7 realized vs sticker token price on agentic workloads</td><td style="color:#F8A848;font-weight:500">~$0.99/Mtok blended vs $5/$25 sticker (≈300:1 input:output, 90%+ cache hits)</td><td><a href="https://newsletter.semianalysis.com/p/ai-value-capture-the-shift-to-model">SemiAnalysis — AI Value Capture - The Shift To Model Labs</a></td></tr>
+<tr><td>GB300 NVL72 serving cost for DeepSeek V4</td><td style="color:#F8A848;font-weight:500">$0.156 per 1M output tokens at 50 tok/s/user (8k in / 1k out, MTP on)</td><td><a href="https://newsletter.semianalysis.com/p/deepseekv4-16t-day-0-to-day-43-performance">SemiAnalysis — DeepSeekV4 1.6T Day 0 to Day 43 Performance Over Time - Huawei, GB300 NVL72, MI355X, B200</a></td></tr>
+<tr><td>Rubin CPX, Nvidia's prefill-specialized accelerator</td><td style="color:#F8A848;font-weight:500">20 PFLOPS dense FP4, 128GB GDDR7 (no HBM), &gt;50% lower memory cost per GB</td><td><a href="https://semianalysis.com/2025/09/10/another-giant-leap-the-rubin-cpx-specialized-accelerator-rack/">SemiAnalysis — Another Giant Leap: The Rubin CPX Specialized Accelerator &amp; Rack</a></td></tr>
+</tbody></table>
+<div class="card"><div class="card-label">Why this matters for the investor</div><div class="card-desc">'Training vs inference' is the lens behind every other module in this series. Training demand drove the 2023-25 capex supercycle; inference economics decide whether that capex ever earns a return — and the 2025-26 rotation of profits toward the model labs (Anthropic's inference gross margin went from 38% to above 70%) happened precisely because serving costs collapsed while agents multiplied token demand. The actionable habit for an investor is metric hygiene: demand MFU and goodput behind training claims, and '$/Mtok at what tok/s/user?' behind inference claims; read spec sheets through HBM content and world size. Chip winners are now picked on the token P&amp;L.</div></div>
+<h2>Go deeper</h2><div>
+<a class="pill" href="/ai-supply-chain-01-accelerators">Sector 01 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-03-memory">Sector 03 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-06-networking">Sector 06 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-08-hyperscalers-econ">Sector 08 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-09-models-software">Sector 09 deep-dive</a>
+</div>
+</article>
+<div class="disclaimer">
+<strong>Independence &amp; sourcing.</strong> This is independent analysis by Yicheng Yang, distilled from publicly accessible SemiAnalysis articles (free posts and free previews; no paywall circumvention) and verified against the underlying text. It is not affiliated with, endorsed by, or a substitute for <a href="https://semianalysis.com">SemiAnalysis</a> &mdash; subscribe there for the full research. All referenced claims are sourced and linked per SemiAnalysis's attribution terms. No SemiAnalysis images are reproduced. Nothing here is investment advice.
+</div>
+<footer style="padding:24px 0 40px;font-family:'Inter',sans-serif;font-size:13px;">&copy; 2026 Yicheng Yang</footer>
+</div>
+</body>
+</html>

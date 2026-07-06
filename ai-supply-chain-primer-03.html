@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Primer 03: Anatomy of an AI Accelerator &mdash; Yicheng Yang</title>
+<meta name="description" content="Read a GPU spec sheet like an architect: what SIMT, Tensor Cores, HBM bandwidth, FP4 and 'NVL72' actually mean — and which of them is the real bottleneck.">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+
+<style>
+/* scoped SemiAnalysis-inspired dark theme for this section only */
+body{background:#14101B;color:#EDEBF0;font-family:'Spectral',Georgia,serif;}
+nav{border-bottom:1px solid #34303A;}
+nav .nav-name,nav .nav-links a{color:#B5B4B7!important;}
+nav .nav-links a:hover,nav .nav-name:hover{color:#F8A848!important;opacity:1;}
+header .label{color:#F8A848;font-family:'Inter',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:13px;font-weight:600;}
+h1{color:#EDEBF0;} h2{color:#F8A848;margin:36px 0 12px;font-size:24px;}
+h3{color:#EDEBF0;margin:22px 0 8px;font-size:19px;}
+p.meta,.muted{color:#B5B4B7;}
+p.meta a,header a,.card-desc a{color:#F8A848!important;}
+a{color:#F8A848;} a:hover{color:#FFC069;opacity:1;}
+.card{background:#1B1722;border:1px solid #34303A;border-radius:8px;padding:20px 22px;margin:14px 0;}
+.card-label{color:#F8A848;font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;margin-bottom:6px;}
+.card-title{font-weight:600;font-size:19px;margin-bottom:6px;color:#EDEBF0;}
+.card-desc{color:#C9C7CE;font-size:16.5px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;} @media(max-width:640px){.grid2{grid-template-columns:1fr;}}
+table{width:100%;border-collapse:collapse;font-size:15px;font-family:'Inter',sans-serif;}
+table.wtab{table-layout:fixed;} table.wtab td:first-child{width:150px;font-weight:600;color:#EDEBF0;vertical-align:top;padding-top:10px;}
+table.ktab{table-layout:fixed;} table.ktab th:nth-child(1),table.ktab td:nth-child(1){width:26%;} table.ktab th:nth-child(2),table.ktab td:nth-child(2){width:22%;} 
+td{vertical-align:top;line-height:1.55;}
+th{color:#F8A848;text-align:left;border-bottom:1px solid #56535B;padding:8px 10px;font-weight:600;cursor:pointer;user-select:none;}
+td{border-bottom:1px solid #2B2832;padding:7px 10px;color:#D8D6DD;}
+tr:hover td{background:#1B1722;}
+.pos{color:#57C08A;} .neg{color:#E8756A;}
+blockquote{border-left:3px solid #F8A848;background:#1B1722;margin:12px 0;padding:10px 16px;font-style:italic;color:#C9C7CE;font-size:16px;}
+blockquote .attr{display:block;font-style:normal;font-size:13.5px;color:#8B8992;margin-top:6px;font-family:'Inter',sans-serif;}
+.vc{display:flex;flex-direction:column;gap:0;margin:18px 0;}
+.vc .stage{display:grid;grid-template-columns:210px 1fr;gap:14px;align-items:center;background:#1B1722;border:1px solid #F8A848;border-radius:8px;padding:10px 16px;}
+.vc .stage b{color:#F8A848;font-family:'Inter',sans-serif;font-size:15px;}
+.vc .stage span{color:#B5B4B7;font-size:14.5px;font-family:'Inter',sans-serif;}
+.vc .arrow{color:#F79C2F;text-align:center;line-height:1.1;font-size:15px;margin:1px 0;}
+.klist p{margin:0 0 12px;} .klist b{color:#F8A848;}
+.thesis{margin:0 0 18px;} .thesis .tclaim{font-weight:600;color:#EDEBF0;font-size:17.5px;}
+.thesis .trat{color:#C9C7CE;font-size:16px;margin-top:4px;}
+.pill{display:inline-block;background:#221E29;border:1px solid #34303A;border-radius:20px;padding:2px 12px;margin:2px 4px 2px 0;font-family:'Inter',sans-serif;font-size:13.5px;color:#C9C7CE;}
+.bars{font-family:'Inter',sans-serif;font-size:14px;margin:14px 0;}
+.bars .row{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;margin:6px 0;}
+.bars .track{background:#221E29;border-radius:4px;height:16px;position:relative;}
+.bars .fill{height:16px;border-radius:4px;position:absolute;top:0;}
+.disclaimer{border-top:1px solid #34303A;margin-top:44px;padding-top:16px;font-size:13.5px;color:#8B8992;font-family:'Inter',sans-serif;}
+.srcs{font-size:14.5px;color:#B5B4B7;} .srcs li{margin:3px 0;}
+footer{border-top:none!important;color:#8B8992!important;}
+.section-label{color:#F8A848!important;}
+</style>
+</head>
+<body>
+<div class="container">
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain" class="active" style="color:#F8A848!important">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+<header>
+  <div class="label">Foundations Primer &middot; Module 03 of 10</div>
+  <h1>Anatomy of an AI Accelerator</h1>
+  <p class="meta">Read a GPU spec sheet like an architect: what SIMT, Tensor Cores, HBM bandwidth, FP4 and 'NVL72' actually mean — and which of them is the real bottleneck.<br><a href="/ai-supply-chain-primer-02">&larr; §02</a> &middot; <a href="/ai-supply-chain-primer">Primer index</a> &middot; <a href="/ai-supply-chain-primer-04">§04 &rarr;</a> &middot; <a href="/ai-supply-chain">series hub</a></p>
+</header>
+<article>
+<h2>A GPU is a width machine, not a speed machine</h2>
+<p>Start with the misconception. A CPU is built to finish one task as soon as possible: a handful of sophisticated cores stuffed with machinery — branch predictors, deep caches, out-of-order execution — whose only job is to hide latency. A GPU makes the opposite bet. It strips most of that machinery out and spends the silicon on thousands of simple arithmetic units, accepting that any single task runs slower, as long as the total volume of work per second is enormous. A CPU is a sports car; a GPU is a freight train.</p><p>The organizing unit is the Streaming Multiprocessor (SM) — an H100 carries 132 of them. Inside an SM, threads are not scheduled one by one: they are bundled in groups of 32 called warps, and the hardware issues one instruction that all 32 threads execute simultaneously, each on its own piece of data. Nvidia calls this SIMT — single instruction, multiple threads. The point is amortization: fetching and decoding an instruction is expensive, so you do it once and harvest 32 results.</p><p>This design fits neural networks almost embarrassingly well. Training and inference consist of applying the same multiply-and-add to millions of numbers, with essentially no branching — exactly the shape of work a SIMT machine devours.</p><p>Finally, hold the three-level memory picture: each thread has private registers; threads in a block share a fast scratchpad inside their SM; and everything ultimately loads from the big off-chip memory stack, HBM. The entire economics of AI hardware hangs on how rarely you can afford to touch that outermost level.</p>
+<h2>Tensor Cores and systolic arrays: engines that do nothing but matrix math</h2>
+<p>Why did GPUs sprout dedicated matrix hardware? Energy accounting. In a GPU pipeline, issuing an instruction costs roughly 30 picojoules, while the floating-point multiply-add it triggers costs only about 1.5 pJ — a 20x overhead. The paperwork costs twenty times more than the work. The fix is fatter instructions: with Volta (2017), Nvidia introduced the Tensor Core, hardware that executes one fused instruction performing an entire small matrix-multiply-and-accumulate. One instruction issue now buys hundreds of operations, and the overhead is amortized away. Every generation since — Ampere, Hopper, Blackwell — has enlarged the matrix 'tile' each instruction chews through.</p><p>Google's TPU pushes the same logic to its endpoint. Its Matrix Multiply Unit is a systolic array: a fixed 256x256 grid of multiply-accumulate cells. Weights are pre-loaded and stay put; input data pulses through the grid in rhythmic waves (hence 'systolic', as in heartbeat), and partial results pass directly between neighboring cells — never visiting a register file, never waiting on an instruction. Control overhead approaches zero. Per SemiAnalysis, Nvidia's effective array went from roughly 32x32 in Hopper to 64x64 in Blackwell, still far below the TPU's 256x256: bigger arrays reuse data better and burn less energy per operation, but are harder to program and fit fewer workload shapes.</p><p>That is the whole GPU-versus-ASIC divide in one sentence: the GPU wraps its matrix engines in a flexible SIMT machine that can run anything; the TPU bets nearly the entire die on a single operation, executed with unmatched efficiency.</p>
+<h2>The real speed limit: arithmetic intensity and the roofline</h2>
+<p>Every spec sheet leads with FLOPS — floating-point operations per second. But FLOPS only answer 'how fast could the chip compute if the data were already in place.' The other number, memory bandwidth, answers 'how fast can data arrive.' Picture a restaurant kitchen: FLOPS are chefs, bandwidth is the waiters carrying ingredients. Hire a hundred chefs with three waiters and the chefs mostly stand idle.</p><p>The bridge between the two is arithmetic intensity: how many operations you perform per byte fetched from memory. The roofline model then compresses everything into one line: attainable performance = min(peak FLOPS, intensity x bandwidth). Plotted, it is a slanted roof that climbs with intensity (bandwidth-limited), then flattens at the compute ceiling.</p><p>Plug in an H100 SXM: about 1,979 TFLOPS of dense FP8 compute against 3.35 TB/s of HBM3 bandwidth. You need roughly 590 FP8 operations per byte moved just to keep the arithmetic units busy. Below that threshold you are memory-bound, and buying more FLOPS is money wasted; above it, compute-bound.</p><p>Matrix multiplication is the rare workload that can climb the roof: as matrices grow, compute rises with n cubed while data movement rises with n squared, so intensity grows with scale. That is why large-batch training and prompt processing (prefill) run compute-bound. But generating tokens one at a time (decode) re-reads the entire model's weights plus a growing KV cache for every single token while doing trivial math per byte — intensity of order one, hopelessly memory-bound. This one distinction explains why HBM became the industry's chokepoint, and why inference silicon is splitting in two: Nvidia's Rubin CPX piles cheap GDDR7 and raw FLOPS into a dedicated prefill chip, while decode hardware piles on HBM bandwidth.</p>
+<h2>Shrinking the numbers: FP32 to FP4</h2>
+<p>A floating-point number is binary scientific notation: one sign bit, exponent bits that set the range, mantissa bits that set the precision. FP32 spends 32 bits per number. Cut the bits and everything improves at once: more multipliers fit in the same silicon area, and more numbers fit through every byte of memory and bandwidth — you raise the compute ceiling and effectively fatten the memory pipe in the same stroke. Each halving of precision roughly doubles throughput.</p><p>Neural networks tolerate this surprisingly well because they are statistical systems that absorb noise. So training moved from FP32 to BF16; Hopper introduced FP8; Blackwell introduced FP4. An FP4 number can take only 16 distinct values — used naively, that crushes the data. The trick is microscaling (the MXFP formats, and Nvidia's more accurate NVFP4): numbers are stored in small blocks that share one scaling factor, recovering dynamic range while keeping 4-bit throughput.</p><p>The payoff is measured, not theoretical. SemiAnalysis's InferenceX v2 benchmark, run across roughly 1,000 GPUs, shows a GB300 NVL72 delivering up to 100x an H100's inference throughput when the H100 runs FP8 and Blackwell runs FP4 — and 65x when both run FP8. Read the gap between those two numbers carefully: a large share of each 'hardware' generation's gain is really the number format, which only pays off once software and numerical methods mature. The flip side is triage under a fixed silicon budget: to make room for low precision, Nvidia has been shrinking FP64 (scientific-computing precision) support generation by generation.</p>
+<h2>The accelerator is now a rack</h2>
+<p>No single chip can hold, let alone serve, a frontier model. Its weights are sharded across dozens to thousands of chips that must exchange partial results after every layer of computation — so the wires between chips became part of the computer, and vendors now compete on scale-up world size: how many accelerators are fused into one high-bandwidth domain that software can treat as a single giant chip.</p><p>Nvidia's GB200 NVL72 is the emblem of this shift: one liquid-cooled rack holding 72 Blackwell GPUs and 36 Grace CPUs on a single NVLink domain — Nvidia's own press materials describe it as 'acting as a single GPU' with 1.4 exaFLOPS and 30 TB of fast memory. Google answers with the TPUv7 pod: 9,216 chips arranged in a 3D torus and stitched together by 48 optical circuit switches. AMD's MI355X still tops out at 8 — a single number that, per SemiAnalysis, keeps it out of frontier reasoning inference until the MI450X rack arrives.</p><p>Two consequences follow. First, TCO replaces price: a GB200 NVL72 costs about 1.6x an H100 cluster all-in, so it must prove itself more than 1.6x faster to be worth buying, and the reliability of a 72-GPU rack is the hidden tax. Second, the system includes software: H100 training efficiency (MFU) climbed from 34% to 54% in BF16 within twelve months with zero hardware change, purely from CUDA library updates — a compounding moat no spec sheet shows. Die plus HBM plus packaging plus fabric plus power plus compiler stack: the sector chapters that follow dissect that full system one layer at a time.</p>
+<div style="margin:20px 0"><img src="/images/primer/pm03_en.png" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Own illustration &middot; Yicheng Yang</div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_03_c757a799ad.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">Nvidia's GB200 NVL72: 72 Blackwell GPUs and 36 Grace CPUs fused into one liquid-cooled, rack-scale 'single GPU' — the compute-tray stack and the NVLink interconnect spine that makes it one machine. &mdash; Source: <a href="https://nvidianews.nvidia.com/news/nvidia-blackwell-platform-arrives-to-power-a-new-era-of-computing">NVIDIA Newsroom</a></div></div>
+<div style="margin:20px 0"><img src="/images/primer/inst_03_4c2e024d33.jpg" style="width:100%;border-radius:8px;border:1px solid #34303A"><div class="muted" style="font-size:13px;font-family:Inter;margin-top:4px">A Google TPU v4 board: four liquid-cooled TPU packages. Each chip is built around fixed systolic-array matrix engines — the ASIC alternative to the GPU's flexible SIMT cores. &mdash; Source: <a href="https://commons.wikimedia.org/wiki/File:TPU_v4.png">Wikimedia Commons (CC BY 4.0; Jouppi et al., Google TPUv4 paper)</a></div></div>
+<h2>Key Numbers</h2><table class="ktab"><thead><tr><th>Metric</th><th>Value</th><th>Source</th></tr></thead><tbody>
+<tr><td>Energy to issue one GPU instruction vs the FP16 math op it triggers</td><td style="color:#F8A848;font-weight:500">~30 pJ vs ~1.5 pJ (20x overhead) — the reason Tensor Cores exist</td><td><a href="https://semianalysis.com/2025/06/23/nvidia-tensor-core-evolution-from-volta-to-blackwell/">SemiAnalysis — NVIDIA Tensor Core Evolution: From Volta To Blackwell</a></td></tr>
+<tr><td>H100 SXM: peak FP8 compute vs HBM3 bandwidth</td><td style="color:#F8A848;font-weight:500">3,958 TFLOPS FP8 (with sparsity) vs 3.35 TB/s; 80 GB HBM3</td><td><a href="https://www.nvidia.com/en-us/data-center/h100/">NVIDIA — H100 Tensor Core GPU (official specifications)</a></td></tr>
+<tr><td>Matrix-engine array size: Nvidia vs Google TPU</td><td style="color:#F8A848;font-weight:500">Hopper ~32x32 → Blackwell ~64x64; TPU 256x256</td><td><a href="https://semianalysis.com/2025/03/19/nvidia-gtc-2025-built-for-reasoning-vera-rubin-kyber-cpo-dynamo-inference-jensen-math-feynman/">SemiAnalysis — NVIDIA GTC 2025 - Built For Reasoning, Vera Rubin, Kyber, CPO, Dynamo Inference</a></td></tr>
+<tr><td>GB200 NVL72 rack contents ('acts as a single GPU')</td><td style="color:#F8A848;font-weight:500">72 Blackwell GPUs + 36 Grace CPUs, one NVLink domain; 1.4 exaFLOPS, 30 TB fast memory</td><td><a href="https://nvidianews.nvidia.com/news/nvidia-blackwell-platform-arrives-to-power-a-new-era-of-computing">NVIDIA Newsroom — NVIDIA Blackwell Platform Arrives to Power a New Era of Computing</a></td></tr>
+<tr><td>TPUv7 Ironwood maximum scale-up pod</td><td style="color:#F8A848;font-weight:500">9,216 TPUs in one 3D-torus domain, via 48 optical circuit switches</td><td><a href="https://newsletter.semianalysis.com/p/tpuv7-google-takes-a-swing-at-the">SemiAnalysis — TPUv7: Google Takes a Swing at the King</a></td></tr>
+<tr><td>H100 training-efficiency (MFU) gain from software alone, 12 months</td><td style="color:#F8A848;font-weight:500">BF16 MFU 34% → 54% (+57% throughput), zero hardware change</td><td><a href="https://semianalysis.com/2024/12/22/mi300x-vs-h100-vs-h200-benchmark-part-1-training/">SemiAnalysis — MI300X vs H100 vs H200 Benchmark Part 1: Training - CUDA Moat Still Alive</a></td></tr>
+<tr><td>GB300 NVL72 vs H100 inference throughput (format included)</td><td style="color:#F8A848;font-weight:500">up to 100x (H100 FP8 → GB300 FP4); 65x if both run FP8</td><td><a href="https://newsletter.semianalysis.com/p/inferencex-v2-nvidia-blackwell-vs">SemiAnalysis — InferenceX v2: NVIDIA Blackwell Vs AMD vs Hopper</a></td></tr>
+</tbody></table>
+<div class="card"><div class="card-label">Why this matters for the investor</div><div class="card-desc">Peak FLOPS is the most quoted and least decisive number in AI hardware. The binding constraint rotates — compute, memory bandwidth, number format, interconnect — and each rotation redraws the profit pool. The roofline explains why HBM and advanced packaging captured pricing power; format transitions (FP8 to FP4) produce step-function drops in inference cost that break any static demand model; and the shift to rack-scale systems explains why Nvidia's moat is NVLink plus CUDA rather than the die itself, why a 1.6x-TCO rack must prove a 1.6x speedup, and why every challenger is now judged on scale-up world size, not TFLOPS. Each sector brief that follows hangs off one of these four constraints.</div></div>
+<h2>Go deeper</h2><div>
+<a class="pill" href="/ai-supply-chain-01-accelerators">Sector 01 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-03-memory">Sector 03 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-04-packaging">Sector 04 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-06-networking">Sector 06 deep-dive</a>
+<a class="pill" href="/ai-supply-chain-07-datacenter-power">Sector 07 deep-dive</a>
+</div>
+</article>
+<div class="disclaimer">
+<strong>Independence &amp; sourcing.</strong> This is independent analysis by Yicheng Yang, distilled from publicly accessible SemiAnalysis articles (free posts and free previews; no paywall circumvention) and verified against the underlying text. It is not affiliated with, endorsed by, or a substitute for <a href="https://semianalysis.com">SemiAnalysis</a> &mdash; subscribe there for the full research. All referenced claims are sourced and linked per SemiAnalysis's attribution terms. No SemiAnalysis images are reproduced. Nothing here is investment advice.
+</div>
+<footer style="padding:24px 0 40px;font-family:'Inter',sans-serif;font-size:13px;">&copy; 2026 Yicheng Yang</footer>
+</div>
+</body>
+</html>
