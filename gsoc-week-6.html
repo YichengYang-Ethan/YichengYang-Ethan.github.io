@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Week 6 &mdash; Knowing when to stop, and a streaming Pathfinder &mdash; Yicheng Yang</title>
+<meta name="description" content="GSoC 2026 Week 6: an online convergence monitor that treats early stopping as sequential change detection on a noisy ELBO, and a Pathfinder that runs on minibatches by pairing curvature on a single batch.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 24px 0; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.55; }
+  pre code { font-family: inherit; font-size: inherit; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+  pre code { background: transparent; padding: 0; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Week 6</div>
+  <h1>Knowing when to stop, and a streaming Pathfinder</h1>
+  <p class="meta">Yicheng Yang &middot; July 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<p>
+  Week 5 ended on a promise: the next piece was an online convergence monitor, so a
+  streaming fit could decide when to stop from noisy ELBO estimates rather than a fixed
+  step count. This week I built it &mdash; and then carried on into the Phase&nbsp;2
+  headline, a Pathfinder that runs on minibatches. Both live in a small lab of their own
+  for now, each with a test suite and a calibration study, so that when I lift them
+  upstream they arrive as clean, self-contained diffs.
+</p>
+
+<h2>Stopping is a change-detection problem, not a plateau</h2>
+
+<p>
+  The obvious way to stop a fit is to watch the loss and quit when it stops improving.
+  That does not work here. Each step's loss is a <em>single</em> Monte-Carlo sample of a
+  negative ELBO: its step-to-step noise dwarfs the improvement it is trying to measure,
+  and it is autocorrelated through the parameters. &ldquo;No new best in the last
+  <code>W</code> steps&rdquo; just fires on the first unlucky run of noisy samples, long
+  before the fit has actually settled.
+</p>
+
+<p>
+  The right frame is sequential change detection. Standardize each step's improvement
+  <code>delta_t = loss_{t-1} &minus; loss_t</code> by a robust running scale to get
+  <code>z_t</code>, and accumulate a one-sided CUSUM:
+</p>
+
+<pre><code>S_t = max(0, S_{t-1} + (kappa &minus; z_t)),   stop when  S_t &gt; h</code></pre>
+
+<p>
+  While the fit keeps improving by more than <code>kappa</code> robust standard
+  deviations per step, <code>S</code> stays pinned at zero; only a sustained run of
+  sub-<code>kappa</code> improvement makes it climb past the threshold <code>h</code>.
+  It is the difference between asking &ldquo;has it been flat lately?&rdquo; and asking
+  &ldquo;has the <em>rate</em> of improvement collapsed and stayed collapsed?&rdquo;
+</p>
+
+<pre><code>import pymc as pm
+from pymc_streaming_lab import StreamingConvergenceMonitor
+
+with model:
+    approx = pm.fit(100_000, callbacks=[StreamingConvergenceMonitor()])
+# stops on its own once the ELBO stops improving, and returns the partial fit</code></pre>
+
+<p>
+  The part I did not expect was how easy it is to get the scale wrong. My first cut,
+  tuned only on a clean linearly-decaying curve, called convergence early on 86% of the
+  heavy-tailed traces &mdash; it was declaring victory on fits that were still moving.
+  Two changes, both forced by the calibration study rather than guessed, fixed it:
+  estimate the scale from the <em>successive differences</em> of the increments (von
+  Neumann) so a fast-decaying trend can no longer inflate it, and winsorize each
+  standardized increment so a single loss spike contributes only bounded evidence.
+  Together they take the worst-family false-positive rate from that 86% down to 0.6%.
+</p>
+
+<figure class="figure">
+  <img src="images/gsoc-week6-cusum-oc.png" alt="Two-panel operating-characteristic figure. Left: worst-family false-positive rate on a log scale versus median detection delay, for a grid of kappa and h values; points trade delay for fewer false stops, and the default kappa=0.25, h=20 sits at about 70 steps of delay and 0.6% false-positive rate, well below a dashed 5% line. Right: at that default, per-family false-positive bars are 0.6% for linear decay and 0.0% for power-law, heteroscedastic, and heavy-tailed traces, all under the 5% threshold.">
+  <figcaption>
+    Calibrated on 1,000 simulated non-converged ELBO traces per family (linear decay,
+    power-law decay, heteroscedastic and Student-t noise), each over a 20,000-step
+    horizon. The left panel is the cost of the guarantee: buying a lower false-stop rate
+    means waiting a few dozen more steps to be sure. The frozen default (<code>kappa=0.25,
+    h=20</code>) stops a genuinely-converged fit within ~70 steps while false-stopping a
+    still-improving one at 0.6% &mdash; and 0.0% on the three harder families.
+  </figcaption>
+</figure>
+
+<h2>Streaming Pathfinder: pair the curvature on one batch</h2>
+
+<p>
+  Pathfinder builds a Gaussian posterior approximation from an L-BFGS optimization
+  trajectory, scoring the Gaussian at each iterate by its ELBO and keeping the best one.
+  Upstream, it hands the optimization to SciPy's <code>L-BFGS-B</code>, which assumes a
+  <em>deterministic</em> objective &mdash; its Wolfe line search and convergence tests
+  quietly break once the gradients come from minibatches. So the streaming version needs
+  its own quasi-Newton loop. Everything after the optimizer &mdash; the diagonal-plus-low-rank
+  Gaussian, the sampler, the Pareto-smoothed importance resampling &mdash; is reused from
+  the existing Pathfinder unchanged.
+</p>
+
+<p>
+  The one subtlety that actually matters is how you form each curvature pair
+  <code>(s, y)</code>. The tempting version differences the gradient across two
+  <em>different</em> batches; but then the minibatch noise does not cancel, and
+  <code>s&middot;y</code> goes negative all the time &mdash; which L-BFGS cannot use. The
+  fix is to pair on a single batch (Schraudolph et&nbsp;al., 2007):
+  <code>y = &nabla;f_B(x_new) &minus; &nabla;f_B(x)</code> with the same <code>B</code> on
+  both sides, so the noise cancels in the difference. Concretely, a fresh batch is written
+  into the model's <code>pm.Data</code> placeholder before each optimization step, so every
+  gradient inside a step is taken on the same batch. Iterate selection is done afterward on
+  one fixed evaluation batch with common random numbers, so the winner is not just whichever
+  step happened to see the luckiest data.
+</p>
+
+<p>
+  Two checks. On an exactly-Gaussian posterior &mdash; linear regression, where Pathfinder
+  should be near-exact &mdash; the streaming fit matches the closed-form posterior to
+  Monte-Carlo error:
+</p>
+
+<figure class="figure">
+  <img src="images/gsoc-week6-pathfinder-equivalence.png" alt="Dumbbell chart of six regression coefficients beta[0] through beta[5]. For each coefficient, the analytic posterior (gray dot with plus-or-minus two standard-deviation bar) and the streaming Pathfinder posterior (blue diamond with matching bar) sit almost exactly on top of each other, with a maximum mean gap of 0.001.">
+  <figcaption>
+    Streaming Pathfinder (blue) against the analytic Gaussian posterior (gray) for a
+    six-coefficient linear regression, full batch. Means agree to within 0.001 and the
+    &plusmn;2&nbsp;sd bars line up; the Pareto-<em>k</em> of the importance-sampling step is
+    0.27, comfortably in the reliable range.
+  </figcaption>
+</figure>
+
+<p>
+  And as the minibatch shrinks from the full 6,000 rows down to 128, the fit degrades
+  gracefully rather than falling apart &mdash; because same-batch pairing keeps the
+  curvature clean, the fraction of rejected curvature pairs stays at 0% the whole way down,
+  where naive cross-batch pairing sits at 40&ndash;50%.
+</p>
+
+<figure class="figure">
+  <img src="images/gsoc-week6-pathfinder-batchsweep.png" alt="Two line charts against minibatch size on a log-2 axis from 128 to full batch. Left: the maximum absolute gap between the streaming posterior mean and the full-batch mean falls from about 0.15 at batch 128 to zero at full batch. Right: the same for the posterior standard deviation, from about 0.004 to zero. Both curves decline smoothly with no blow-up at small batches.">
+  <figcaption>
+    Posterior mean (left) and spread (right) error versus the full-batch reference, as the
+    batch shrinks. The error grows smoothly and modestly as batches get smaller &mdash; the
+    expected price of noisier gradients &mdash; with no instability, and the
+    curvature-violation rate holds at 0% at every batch size.
+  </figcaption>
+</figure>
+
+<h2>Why a separate lab</h2>
+
+<p>
+  Neither piece is a one-liner, and both reach into parts of PyMC that the earlier PRs are
+  still moving through review. So rather than pile them onto an open PR, I built each in a
+  small repo of its own &mdash; numpy-only where it can be, with its own tests, continuous
+  integration, and the calibration figures above. The point is that each one has a known
+  upstream home and can be lifted there as a self-contained change: the convergence monitor
+  is a <code>Callback</code> subclass for core PyMC, and the streaming Pathfinder slots into
+  <code>pymc-extras</code> right next to the Pathfinder it reuses.
+</p>
+
+<h2>What's next</h2>
+
+<p>
+  From here the work goes upstream: the convergence monitor as a callback in core, and the
+  streaming Pathfinder as a <code>dataloader=</code> path alongside the existing
+  <code>fit_pathfinder</code> in extras &mdash; the latter aligning with Jesse's new ADVI
+  API, the rewrite I ran into last week. It is also midterm-evaluation week, which is a good
+  moment to have the two remaining proposal pieces working with evidence behind them rather
+  than as plans. More soon.
+</p>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://github.com/pymc-devs/pymc/pull/8325">DataLoader PR #8325</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/698">DataLoader in extras #698</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc/pull/8333">Trainer PR #8333</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/635">Jesse's new ADVI API #635</a> &middot;
+  <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot;
+  Mentors <a href="https://github.com/zaxtax">@zaxtax</a> &middot; <a href="https://github.com/fonnesbeck">@fonnesbeck</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
