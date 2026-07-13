@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Knowing when to stop &mdash; a CUSUM convergence monitor &mdash; Yicheng Yang</title>
+<meta name="description" content="A deep dive into the streaming-VI convergence monitor: why a fixed step count fails on a noisy ELBO, why convergence is a sequential change-detection problem, and how a one-sided CUSUM (with a von-Neumann robust scale) solves it.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 22px 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.55; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+  pre code { background: transparent; padding: 0; }
+  figure.fig { margin: 26px 0; }
+  figure.fig img { width: 100%; height: auto; display: block; }
+  figure.fig figcaption { font-family: Inter, sans-serif; font-size: 13px; color: var(--text-secondary); margin-top: 10px; line-height: 1.5; }
+  .refs { font-family: Inter, sans-serif; font-size: 13.5px; color: var(--text-secondary); line-height: 1.7; }
+  .refs li { margin: 5px 0; }
+  .eqn { font-family: 'Source Serif 4', Georgia, serif; font-size: 1.05em; margin: 4px 0 2px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Deep dive</div>
+  <h1>Knowing when to stop, precisely: a CUSUM convergence monitor</h1>
+  <p class="meta">Yicheng Yang &middot; July 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<p>
+  Week&nbsp;6 mentioned an online convergence monitor almost in passing. It is the one
+  piece of the streaming-VI work with the most actual <em>statistics</em> in it, so it
+  deserves its own note: what problem it solves, why the obvious fixes don't work,
+  and why the thing that does work is a tool from 1954.
+</p>
+
+<h2>The problem: a step count you can't guess</h2>
+
+<p>
+  Streaming ADVI needs one number I can't give it: how many optimization steps to run.
+  Stop too early and the approximation hasn't converged; stop too late and, on a dataset
+  that lives on disk, every wasted step is a wasted batch read. In memory you'd just run
+  &ldquo;plenty&rdquo; and not care. Out of core, over-running by 10&times; is real money.
+</p>
+
+<p>
+  The natural fix is to watch the loss and stop when it flattens. That runs straight
+  into the nature of a streaming ELBO. Each step's loss is a <em>single</em> Monte-Carlo
+  sample of a negative ELBO, evaluated on a <em>random minibatch</em>. Those two sources of
+  randomness make the per-step loss bounce around by far more than the real per-step
+  improvement, routinely 30 to 100 times larger. The signal is buried.
+</p>
+
+<figure class="fig">
+  <img src="images/cusum-problem.svg" alt="A loss curve over optimization steps. A pale gray jagged line (the measured per-step loss) bounces within a band of about plus/minus 3, while a bold teal line underneath (the true trend) descends smoothly and slowly, flattening out. An annotation points at the trend: the real signal is buried under noise 30 to 100 times larger.">
+  <figcaption>
+    The measured streaming loss (gray) against the true trend it is estimating (teal). A
+    &ldquo;no new best in the last <code>W</code> steps&rdquo; rule fires on the first
+    unlucky run of upward jumps, long before the fit has actually settled,
+    because it has no way to tell an unlucky patch of noise from a genuine plateau.
+  </figcaption>
+</figure>
+
+<h2>The reframe: convergence is a change-detection problem</h2>
+
+<p>
+  The trick is to stop asking &ldquo;has the loss flattened?&rdquo; and start asking
+  &ldquo;has the <em>rate of improvement</em> collapsed, and stayed collapsed?&rdquo; That
+  second question is exactly <strong>sequential change-point detection</strong>: watch a
+  stream and flag, as fast as possible, the moment its behaviour changes (here, from
+  &ldquo;still improving&rdquo; to &ldquo;only noise left&rdquo;) while almost never
+  false-alarming before that moment. The classic instrument is the one-sided
+  <strong>CUSUM</strong> (cumulative sum), introduced by Page in 1954 for exactly this kind
+  of &ldquo;is the production line still in control?&rdquo; monitoring&nbsp;[1].
+</p>
+
+<p>
+  Take the per-step improvement <code>&delta;<sub>t</sub> = loss<sub>t-1</sub> &minus; loss<sub>t</sub></code>,
+  standardize it by a robust noise scale into <code>z<sub>t</sub></code>, and accumulate:
+</p>
+
+<p class="eqn"><code>S<sub>t</sub> = max(0,&nbsp; S<sub>t-1</sub> + (&kappa; &minus; z<sub>t</sub>)),&nbsp;&nbsp;&nbsp; stop when S<sub>t</sub> &gt; h</code></p>
+
+<p>
+  Here is how to read it. <code>&kappa;</code> is an allowance: the smallest improvement rate
+  (in robust standard deviations) still worth waiting for. While the fit improves by more
+  than <code>&kappa;</code> per step, <code>z</code> is large, <code>&kappa; &minus; z</code>
+  is negative, and the <code>max(0,&middot;)</code> pins <code>S</code> at zero. Once
+  improvement collapses, <code>z &asymp; 0</code>, <code>S</code> climbs by about
+  <code>&kappa;</code> per step, and it takes roughly <code>h/&kappa;</code> steps of
+  <em>sustained</em> evidence to cross <code>h</code>. A single unlucky step nudges
+  <code>S</code> a little and is immediately pushed back to zero by the next good step.
+</p>
+
+<figure class="fig">
+  <img src="images/cusum-mechanism.svg" alt="Two stacked panels sharing an x-axis of optimization steps. Top panel: the standardized improvement z, a teal line that sits well above a dashed amber kappa line early (labelled improving fast, z much greater than kappa) then drops to hover around zero after the change point (labelled improvement collapsed, z near zero). Bottom panel: the CUSUM statistic S, flat at zero while the fit improves, then climbing steadily after the change point until it crosses a dashed threshold line h, where an amber dot marks S crosses h colon STOP. A dotted vertical line marks true convergence, and a double arrow shows the detection delay of a few dozen steps between true convergence and the stop.">
+  <figcaption>
+    How it works. <strong>Top:</strong> the standardized improvement <code>z</code> starts
+    far above the allowance <code>&kappa;</code> and collapses to noise after the fit
+    converges. <strong>Bottom:</strong> the CUSUM statistic <code>S</code> stays pinned at
+    zero while there is real progress, then accumulates the shortfall and crosses the
+    threshold <code>h</code> a controlled number of steps later. It fires on
+    <em>sustained</em> lack of progress, never on a single noisy step.
+  </figcaption>
+</figure>
+
+<p>
+  Why this tool and not, say, a moving-average slope test or a Keras-style patience rule?
+  This is not a heuristic. CUSUM is provably <em>optimal</em> for the job. Lorden showed it
+  asymptotically minimizes the worst-case expected detection delay for a given false-alarm
+  rate&nbsp;[2]; Moustakides proved the exact optimality of the CUSUM stopping rule under
+  that criterion&nbsp;[3]. It also carries O(1) state (one running sum), which is the only
+  kind of memory a streaming monitor can afford, and its two knobs <code>(&kappa;, h)</code>
+  map directly onto the delay-versus-false-alarm trade-off. A windowed slope test has none
+  of these guarantees and drags a lag equal to its window; patience has no controllable
+  false-alarm rate at all.
+</p>
+
+<h2>Making it work on a noisy ELBO</h2>
+
+<p>
+  Two details, both forced by the calibration study rather than guessed, are what let the
+  textbook recursion survive a real streaming ELBO.
+</p>
+
+<p>
+  <strong>A trend-robust scale.</strong> Standardizing needs the noise scale
+  <code>&sigma;</code>, but early in training the loss falls fast, so measuring the spread
+  of <code>&delta;</code> directly mistakes the <em>trend</em> for noise and inflates
+  <code>&sigma;</code>. The fix is von Neumann's mean successive difference&nbsp;[4]:
+  estimate <code>&sigma;</code> from <code>|&delta;<sub>t</sub> &minus; &delta;<sub>t-1</sub>|</code>,
+  because differencing annihilates any slowly-varying trend and leaves only noise. For
+  i.i.d. Gaussian increments <code>E|&delta;<sub>t</sub> &minus; &delta;<sub>t-1</sub>| = 2&sigma;/&radic;&pi;</code>,
+  so <code>&sigma; = (&radic;&pi;/2)&middot;E|&middot;|</code>, tracked online with an
+  exponentially-weighted mean. <strong>Winsorization.</strong> A single-sample MC ELBO has
+  heavy tails, so <code>z</code> is clipped to <code>&plusmn;4</code> before it enters the
+  sum, so one loss spike contributes only bounded evidence.
+</p>
+
+<h2>Calibration, honestly</h2>
+
+<p>
+  The defaults aren't tuned by eye. I generated 1,000 <em>non-converged</em> loss traces in
+  each of four families (linear and power-law decay, crossed with heteroscedastic and
+  Student-t noise) and measured the operating characteristic: the false-stop rate against
+  the detection delay, over a grid of <code>(&kappa;, h)</code>. My first cut, tuned only on
+  a clean linearly-decaying curve, false-stopped 86% of the heavy-tailed traces. The two
+  fixes above took the worst-family false-positive rate to <strong>0.6%</strong> at the
+  frozen defaults <code>&kappa;=0.25, h=20</code>, with a median detection delay around 70
+  steps.
+</p>
+
+<figure class="fig">
+  <img src="images/cusum-oc.svg" alt="Operating-characteristic scatter: worst-family false-stop rate on a logarithmic y-axis versus median detection delay on the x-axis, for a series of threshold values. The points trace a downward curve: buying a lower false-stop rate costs a longer delay. A dashed line marks a 5 percent budget; all plotted points except the smallest thresholds sit below it. A circled point marks the frozen default kappa 0.25, h 20 at about 0.6 percent false-stop rate and roughly 70 steps of delay.">
+  <figcaption>
+    The cost of the guarantee: a lower false-stop rate buys itself with a few dozen more
+    steps of delay. The frozen default (circled) sits at 0.6% worst-family false stops with
+    a ~70-step delay, comfortably under a 5% budget.
+  </figcaption>
+</figure>
+
+<h2>One honest wrinkle</h2>
+
+<p>
+  Reviewing my own code, I found the monitor treats a <em>sustained upward</em> move in the
+  loss as evidence to stop: <code>z</code> goes negative, so <code>&kappa; &minus; z</code>
+  grows and <code>S</code> climbs faster. For a fixed objective that's defensible (the fit
+  is diverging, stop it). But in a streaming setting the loss can rise <em>legitimately</em>
+  when the data distribution shifts at an epoch boundary, and there you'd rather keep
+  training and re-converge than declare victory. Whether an upward shift should drain
+  <code>S</code> instead is a design question I'm taking to my mentors; the calibration
+  families are all still-improving, so it doesn't touch the numbers above. I would rather
+  write that down than hide it.
+</p>
+
+<h2>Where it plugs in</h2>
+
+<p>
+  None of this reaches into the optimizer. PyMC's <code>pm.fit</code> already exposes a
+  callback protocol (called once per step with the running losses), and the
+  monitor is just an implementation of it that raises <code>StopIteration</code> when
+  <code>S</code> crosses <code>h</code>. The whole thing is numpy-only and O(1) in state, so
+  it lifts into <code>pymc/variational/callbacks.py</code> as a <code>Callback</code>
+  subclass, and it completes the streaming ADVI loop by answering the one question a fixed
+  step count couldn't:
+</p>
+
+<pre><code>with model:
+    approx = pm.fit(100_000, callbacks=[StreamingConvergenceMonitor()])
+# a large upper bound for safety; it stops on its own once the ELBO has settled</code></pre>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<h2 style="font-size:16px;">References</h2>
+<ol class="refs">
+  <li>[1] Page, E.&nbsp;S. (1954). Continuous inspection schemes. <em>Biometrika</em>, 41(1/2), 100&ndash;115.</li>
+  <li>[2] Lorden, G. (1971). Procedures for reacting to a change in distribution. <em>Annals of Mathematical Statistics</em>, 42(6), 1897&ndash;1908.</li>
+  <li>[3] Moustakides, G.&nbsp;V. (1986). Optimal stopping times for detecting changes in distributions. <em>Annals of Statistics</em>, 14(4), 1379&ndash;1387.</li>
+  <li>[4] von Neumann, J. (1941). Distribution of the ratio of the mean square successive difference to the variance. <em>Annals of Mathematical Statistics</em>, 12(4), 367&ndash;395.</li>
+  <li>[5] Kucukelbir, A., Tran, D., Ranganath, R., Gelman, A., &amp; Blei, D.&nbsp;M. (2017). Automatic Differentiation Variational Inference. <em>Journal of Machine Learning Research</em>, 18(14), 1&ndash;45.</li>
+</ol>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/698">DataLoader in extras #698</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/710">Trainer #710</a> &middot;
+  <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot;
+  Mentors <a href="https://github.com/zaxtax">@zaxtax</a> &middot; <a href="https://github.com/fonnesbeck">@fonnesbeck</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
