@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
-<title>Knowing when to stop &mdash; a CUSUM convergence monitor &mdash; Yicheng Yang</title>
+<title>Calibrating the stop rule &mdash; a CUSUM convergence monitor &mdash; Yicheng Yang</title>
 <meta name="description" content="A deep dive into the streaming-VI convergence monitor: why a fixed step count fails on a noisy ELBO, why convergence is a sequential change-detection problem, and how a one-sided CUSUM (with a von-Neumann robust scale) solves it.">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
@@ -38,8 +38,8 @@
 </nav>
 
 <header>
-  <div class="label">GSoC 2026 &middot; Deep dive</div>
-  <h1>Knowing when to stop, precisely: a CUSUM convergence monitor</h1>
+  <div class="label">GSoC 2026 &middot; Week 7</div>
+  <h1>Calibrating the stop rule: from a noisy ELBO to a 0.6% false-stop CUSUM</h1>
   <p class="meta">Yicheng Yang &middot; July 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
 </header>
 
@@ -124,14 +124,17 @@
 
 <p>
   Why this tool and not, say, a moving-average slope test or a Keras-style patience rule?
-  This is not a heuristic. CUSUM is provably <em>optimal</em> for the job. Lorden showed it
-  asymptotically minimizes the worst-case expected detection delay for a given false-alarm
-  rate&nbsp;[2]; Moustakides proved the exact optimality of the CUSUM stopping rule under
-  that criterion&nbsp;[3]. It also carries O(1) state (one running sum), which is the only
-  kind of memory a streaming monitor can afford, and its two knobs <code>(&kappa;, h)</code>
-  map directly onto the delay-versus-false-alarm trade-off. A windowed slope test has none
-  of these guarantees and drags a lag equal to its window; patience has no controllable
-  false-alarm rate at all.
+  Because CUSUM is the provably optimal detector for the classic version of this problem,
+  which is what makes it the right starting point. Lorden showed it asymptotically minimizes
+  the worst-case expected detection delay for a given false-alarm rate&nbsp;[2]; Moustakides
+  proved the exact optimality of the CUSUM stopping rule under that criterion&nbsp;[3]. Those
+  proofs assume an i.i.d. change in a known distribution, which a streaming ELBO increment is
+  not, so I don't claim the guarantee transfers verbatim; it is what motivates the choice, and
+  the calibration study below is what earns the defaults. CUSUM also carries O(1) state (one
+  running sum), which is the only kind of memory a streaming monitor can afford, and its two
+  knobs <code>(&kappa;, h)</code> map directly onto the delay-versus-false-alarm trade-off. A
+  windowed slope test has none of these guarantees and drags a lag equal to its window;
+  patience has no controllable false-alarm rate at all.
 </p>
 
 <h2>Making it work on a noisy ELBO</h2>
