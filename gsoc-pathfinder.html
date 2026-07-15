@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Curvature on a minibatch &mdash; a streaming Pathfinder &mdash; Yicheng Yang</title>
+<meta name="description" content="A deep dive into the streaming Pathfinder: why L-BFGS curvature collapses on minibatches, how same-batch pairing fixes it, and how the whole thing reuses the streaming data contract already built for ADVI.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 22px 0; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.55; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+  pre code { background: transparent; padding: 0; }
+  figure.fig { margin: 26px 0; }
+  figure.fig img { width: 100%; height: auto; display: block; }
+  figure.fig figcaption { font-family: Inter, sans-serif; font-size: 13px; color: var(--text-secondary); margin-top: 10px; line-height: 1.5; }
+  .refs { font-family: Inter, sans-serif; font-size: 13.5px; color: var(--text-secondary); line-height: 1.7; }
+  .refs li { margin: 5px 0; }
+  .eqn { font-family: 'Source Serif 4', Georgia, serif; font-size: 1.05em; margin: 4px 0 2px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Week 8</div>
+  <h1>Curvature on a minibatch: a streaming Pathfinder</h1>
+  <p class="meta">Yicheng Yang &middot; July 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<p>
+  Week&nbsp;6 mentioned a streaming Pathfinder in a single line, right next to the
+  convergence monitor. This is the other half of that sentence. Streaming ADVI, the
+  subject of the last few weeks, is the grind-it-out method: thousands of small gradient
+  steps. Pathfinder is the fast one. Getting it to run on data that never lands in memory
+  came down to one subtle fact about how L-BFGS learns curvature, so that is most of what
+  this note is about.
+</p>
+
+<h2>What Pathfinder buys you</h2>
+
+<p>
+  Pathfinder&nbsp;[1] does not optimize a variational family for thousands of steps. It
+  runs a single L-BFGS trajectory from a starting point toward the posterior mode. At each
+  iterate along that path, L-BFGS is already carrying an estimate of the inverse Hessian,
+  and Pathfinder reads a local Gaussian straight off it. It scores each of those Gaussians
+  by ELBO, keeps the best one, and corrects it with Pareto-smoothed importance sampling.
+  Tens of iterations instead of thousands of steps, no learning rate to tune, no step count
+  to guess, and a covariance that carries correlations already, because it is built from
+  curvature rather than a diagonal mean-field assumption.
+</p>
+
+<figure class="fig">
+  <img src="images/pathfinder-path.svg" alt="Contour plot of a banana-shaped posterior with an L-BFGS optimization path descending from the upper left toward the mode at the bottom. Three Gaussian ellipses are drawn along the path: a small dashed gray one at an early iterate labelled shape not captured yet, an amber one at the mode that is wide but very short and misses the upturned flanks, and a large teal one starred as selected max ELBO that covers the bulk of the posterior.">
+  <figcaption>
+    Why Pathfinder keeps the best iterate rather than the last one. Push all the way to the
+    mode and, for anything that is not exactly Gaussian, the local Gaussian there is too
+    tight and misses the flanks. An early iterate has not found the shape yet. The ELBO
+    picks the one in between, which is also what lets Pathfinder stop on its own without a
+    separate convergence check.
+  </figcaption>
+</figure>
+
+<h2>Why it does not survive a minibatch</h2>
+
+<p>
+  L-BFGS never forms a Hessian. It keeps the last few curvature pairs,
+  <code>s = x' &minus; x</code> and <code>y = &nabla;f(x') &minus; &nabla;f(x)</code>, and
+  the secant relation <code>y &asymp; H&middot;s</code> is what lets those pairs stand in
+  for the curvature. The catch is that <code>y</code> has to be a difference of two
+  gradients of the <em>same</em> function. On a stream, every step sees a different random
+  minibatch. Pair a gradient measured on batch A with one measured on batch B and the
+  difference is dominated by the switch of batch, not by the change in curvature. The pair
+  is noise wearing a curvature costume. The usual health check, <code>s&middot;y &gt; 0</code>,
+  then fails almost half the time, and an inverse-Hessian estimate built from those pairs is
+  meaningless.
+</p>
+
+<figure class="fig">
+  <img src="images/pathfinder-curvature.svg" alt="Two histograms of the secant test s dot y. On the left, when each gradient of a pair is measured on a different batch, the distribution is very wide and straddles zero, with about 45 percent of the mass below zero shaded as rejected. On the right, when both gradients of a pair are measured on the same batch, the distribution is narrow and entirely positive, with about 0.1 percent rejected.">
+  <figcaption>
+    The same curvature pairs, measured two ways. <strong>Left:</strong> a fresh batch for
+    each gradient. The batch swap swamps the signal and about 45% of pairs fail the
+    <code>s&middot;y &gt; 0</code> test. <strong>Right:</strong> both gradients of a pair on
+    the same batch. The batch noise cancels in the subtraction and rejections fall to about
+    0.1%.
+  </figcaption>
+</figure>
+
+<h2>The fix is one line of discipline</h2>
+
+<p>
+  Measure both gradients of a pair on the same batch&nbsp;[2]. Hold the minibatch fixed for
+  the whole step: compute the gradient, take the L-BFGS step, compute the gradient again on
+  that same batch, and only then form the pair and advance to the next batch. The
+  batch-specific noise is present in both gradients, so it cancels in the subtraction, and
+  what is left is real curvature. In my runs the rejection rate drops from the 45% on the
+  left of the figure to about 0.1% on the right. Holding the batch fixed inside a step has a
+  second benefit: the line search now sees a deterministic objective, so a plain
+  backtracking Armijo search does the job, with none of the Wolfe machinery that a
+  stochastic objective would break.
+</p>
+
+<h2>Being honest about the whole dataset</h2>
+
+<p>
+  Choosing which iterate is best only needs a relative comparison, so a fixed evaluation
+  subset is fine there. The final density and its importance weights are a different matter.
+  They have to be the true full-data log density, not a subset scaled up. The scaled subset
+  is unbiased on average, but at any single point it is an estimate with variance, not the
+  density at that point. On one model I measured <code>&minus;797</code> for the full data
+  against <code>&minus;888</code> for the scaled subset at the same parameter value, and a
+  gap that size aims PSIS at the wrong target. Computing the full density does not need the
+  data in memory, only a single pass: the prior once, then each batch's likelihood added
+  back at its true weight. That matches <code>model.logp</code> to <code>1e-6</code>.
+</p>
+
+<h2>One honest wrinkle</h2>
+
+<p>
+  While reading my own code I found something that looked wrong. The curvature pairs live in
+  a ring buffer, and once it wraps, the physical column order stops matching the order the
+  pairs were added, while the compact inverse-Hessian form reads those columns by position.
+  That should scramble the covariance. Then I opened the Pathfinder code in
+  <code>pymc-extras</code> and it does exactly the same thing. So this is not something my
+  streaming version introduced. It may be a latent issue upstream instead, and I have
+  written it up with a deterministic reproduction to raise with my mentors rather than
+  quietly working around it. The lesson from last week holds: when something looks alarming,
+  check it against upstream before you panic.
+</p>
+
+<h2>Where it plugs in</h2>
+
+<p>
+  None of this is a new inference stack. The streaming Pathfinder feeds on the same
+  <code>DataLoader</code>, the same <code>pm.Data</code> placeholder, and the same
+  <code>total_size</code> scaling that streaming ADVI uses. Only the optimizer changes.
+  Everything after it, the Gaussian sampling and the PSIS correction, is upstream's code
+  reused unchanged. Swapping ADVI for Pathfinder is a different call on the same data
+  contract:
+</p>
+
+<pre><code>from pymc_streaming_lab import fit_streaming_pathfinder
+
+# same loader, same model, same pm.Data("batch") + total_size=len(loader)
+res = fit_streaming_pathfinder(model, loader, num_iters=300, num_draws=2000)
+res.samples          # posterior draws, correlations included
+res.violation_rate   # fraction of rejected curvature pairs; ~0 with same-batch pairing
+res.pareto_k         # PSIS diagnostic; small means the Gaussian was trustworthy</code></pre>
+
+<p>
+  That covers both of PyMC's variational entry points on data that does not fit in memory:
+  the iterative one from the last few weeks, and now the fast one.
+</p>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<h2 style="font-size:16px;">References</h2>
+<ol class="refs">
+  <li>[1] Zhang, L., Carpenter, B., Gelman, A., &amp; Vehtari, A. (2022). Pathfinder: parallel quasi-Newton variational inference. <em>Journal of Machine Learning Research</em>, 23(306), 1&ndash;49.</li>
+  <li>[2] Schraudolph, N.&nbsp;N., Yu, J., &amp; G&uuml;nter, S. (2007). A stochastic quasi-Newton method for online convex optimization. <em>AISTATS</em>, 436&ndash;443.</li>
+  <li>[3] Byrd, R.&nbsp;H., Nocedal, J., &amp; Schnabel, R.&nbsp;B. (1994). Representations of quasi-Newton matrices and their use in limited memory methods. <em>Mathematical Programming</em>, 63, 129&ndash;156.</li>
+  <li>[4] Vehtari, A., Simpson, D., Gelman, A., Yao, Y., &amp; Gabry, J. (2024). Pareto smoothed importance sampling. <em>Journal of Machine Learning Research</em>, 25(72), 1&ndash;58.</li>
+</ol>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/698">DataLoader in extras #698</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/710">Trainer #710</a> &middot;
+  <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot;
+  Mentors <a href="https://github.com/zaxtax">@zaxtax</a> &middot; <a href="https://github.com/fonnesbeck">@fonnesbeck</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
