@@ -105,7 +105,7 @@
 </p>
 
 <figure class="fig">
-  <img src="images/gsoc-week10-block-shuffle.svg" alt="Two scatter plots of original row index against position in the output stream, for 8000 time-ordered rows pushed through the actual shuffle buffer. Left, with buffer size 800, the points form a tight diagonal band: rows are scrambled locally but their global time order survives, annotated with the words January still comes out before November. Right, with buffer size equal to the dataset, the points fill the square uniformly: a full shuffle.">
+  <img src="images/gsoc-week10-block-shuffle.png" alt="Two scatter plots of original row index against position in the output stream, for 8000 time-ordered rows pushed through the actual shuffle buffer. Left, with buffer size 800, the points form a tight diagonal band: rows are scrambled locally but their global time order survives, annotated with the words January still comes out before November. Right, with buffer size equal to the dataset, the points fill the square uniformly: a full shuffle.">
   <figcaption>
     Time-ordered rows through the real <code>shuffle_buffer</code>. <strong>Left:</strong>
     a bounded buffer (800 rows) only block-shuffles &mdash; no row moves further than the
