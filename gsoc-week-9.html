@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Week 9 &mdash; Deleting 300 lines, and proving nothing broke &mdash; Yicheng Yang</title>
+<meta name="description" content="GSoC 2026 Week 9: a review-tool pass cuts the DataLoader PR by 23%, three independent proofs that the deletions were safe, and then the same treatment for my own unshipped drafts.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 24px 0; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.55; }
+  pre code { font-family: inherit; font-size: inherit; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+  pre code { background: transparent; padding: 0; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Week 9</div>
+  <h1>Deleting 300 lines, and proving nothing broke</h1>
+  <p class="meta">Yicheng Yang &middot; July 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<p>
+  The DataLoader PR was functionally done &mdash; every review comment addressed, tests
+  green &mdash; and my mentor's verdict was that it still read as boilerplate-y. He pointed
+  me at <a href="https://ponytail.dev/">ponytail</a>, a review skill whose only job is to
+  hunt over-engineering, and asked whether we'd end up with something leaner. The result:
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/698">#698</a> went from 1361
+  added lines to 1045 &mdash; 23% gone &mdash; with the source file down from 608 lines to
+  494. Deleting was the easy half. The half worth writing down is how you convince
+  yourself, and a reviewer, that a deletion this size broke nothing.
+</p>
+
+<h2>What got cut, what got refused</h2>
+
+<p>
+  What survived verification was mostly repetition: the Parquet schema validation written
+  out twice, verbatim; a normalizer returning a 3-tuple whose second and third elements
+  were one-line derivations of the first; 53 tests without a single
+  <code>parametrize</code> in a repo whose sibling suites lean on it; six tests hand-rolling
+  a warnings filter the repo already applies globally. My favorite cut answered a review
+  question by deletion: Rob had asked whether <code>torch.DataLoader</code> has anything
+  like the loader's two progress counters. It does not, and nothing here read them either
+  &mdash; and with the counters gone, the loader's second iteration path had no reason to
+  exist, so the whole accounting layer folded into <code>__iter__</code>. Coverage went
+  <em>up</em>, because the sanity check it carried now runs on every pass.
+</p>
+
+<p>
+  The other half of the job is saying no. Error handling stayed: this is out-of-core data
+  loading, and the boundary checks are the feature, not ceremony. The license headers
+  stayed, because the maintainer had asked for them two days earlier. And one test that
+  looked perfectly redundant &mdash; zero unique line coverage &mdash; stayed because
+  mutation testing showed it was the only test that catches a real regression class in the
+  scalar-sample path. Coverage can tell you a test is redundant on lines; only breaking
+  the code on purpose tells you whether it is redundant on behavior.
+</p>
+
+<h2>Three proofs, none of them "trust me"</h2>
+
+<p>
+  First, a differential test: load the old and new modules side by side and feed them
+  identical sources &mdash; ten configurations, three shuffle seeds, the error paths too.
+  Every batch came out byte-identical. Second, replay: run the <em>old</em> 53-test suite
+  against the new code &mdash; 46 passed, and the 7 failures were precisely the tests of
+  the deliberately deleted counter API, nothing else. Third, mutation testing: break each
+  surviving guard by hand &mdash; disable the size check, accept a negative
+  <code>total_size</code>, skip the per-shard schema validation &mdash; and confirm the
+  slimmed suite still fails loudly. Six mutants, six kills.
+</p>
+
+<p>
+  One end-to-end check did scare me: streamed ADVI in a hand-rolled stepping harness
+  wandered off the posterior. A control experiment cleared the deletions &mdash; the
+  pre-trim code and even a no-loader arm wandered identically, and through the supported
+  <code>pm.fit</code> path the trimmed loader recovers the true posterior, landing within
+  Monte-Carlo noise of <code>pm.Minibatch</code>. The artifact lives in my harness, not
+  the PR. When an end-to-end test fails after a refactor, the first question is not
+  "what did I break" but "which component actually differs between the passing and the
+  failing arms."
+</p>
+
+<h2>Then I pointed the tool at my own drafts</h2>
+
+<p>
+  The monitor and streaming Pathfinder from weeks 6&ndash;8 are about to go out as draft
+  PRs, and Rob asked to see them early, with a warning attached: maybe some of that
+  complexity doesn't make sense. So they got the same review before he sees them &mdash;
+  and reviewing unshipped code turns out to hunt a different animal: not repetition,
+  but speculation. A diagnostics recorder only its own tests read; a <code>reset()</code>
+  whose docstring imagined a caller that exists nowhere; an arming flag a 12-case probe
+  showed was provably dead. The monitor went from 268 lines to 149 with its calibration
+  untouched.
+</p>
+
+<p>
+  It also repeated week 3's naming lesson back to me. <code>StreamingConvergenceMonitor</code>
+  is now <code>CheckLossConvergence</code>, a proper sibling of PyMC's
+  <code>CheckParametersConvergence</code>; my <code>PatienceStopping</code> is deleted
+  outright, because the entire ecosystem calls that idea <code>EarlyStopping</code> and
+  inventing a third name helps nobody. Two deletions I vetoed: the line-search failure
+  counter stays paired with the curvature-violation rate, so a stuck optimizer cannot
+  report a clean 0%; and a steepest-descent fallback keeps its guard even though it lost
+  its counter. Both draft descriptions now end with questions rather than claims &mdash;
+  the complexity decisions are cheaper made together than defended after the fact.
+</p>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/698">DataLoader PR #698</a> &middot;
+  <a href="https://ponytail.dev/">ponytail</a> &middot;
+  <a href="/gsoc-cusum">The CUSUM monitor (week 7)</a> &middot;
+  <a href="/gsoc-pathfinder">The streaming Pathfinder (week 8)</a> &middot;
+  <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot;
+  Mentors <a href="https://github.com/fonnesbeck">@fonnesbeck</a> &middot; <a href="https://github.com/zaxtax">@zaxtax</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>

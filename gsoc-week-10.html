@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Week 10 &mdash; Exact batches from messy streams: inside the DataLoader &mdash; Yicheng Yang</title>
+<meta name="description" content="GSoC 2026 Week 10: the mechanics under the streaming DataLoader — re-batching arbitrary chunks, what a bounded shuffle buffer can and cannot fix, defensive auto-sizing, and the epoch-boundary check that guards your posterior width.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 24px 0; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.55; }
+  pre code { font-family: inherit; font-size: inherit; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+  pre code { background: transparent; padding: 0; }
+  figure.fig { margin: 26px 0; }
+  figure.fig img { width: 100%; height: auto; display: block; }
+  figure.fig figcaption { font-family: Inter, sans-serif; font-size: 13px; color: var(--text-secondary); margin-top: 10px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Week 10</div>
+  <h1>Exact batches from messy streams: inside the DataLoader</h1>
+  <p class="meta">Yicheng Yang &middot; July 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<p>
+  The CUSUM monitor and the streaming Pathfinder each got a deep-dive note
+  (<a href="/gsoc-cusum">week 7</a>, <a href="/gsoc-pathfinder">week 8</a>), but the
+  component everything else stands on never did. With
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/698">#698</a> in final review,
+  here is what the DataLoader actually promises, and the machinery that keeps those
+  promises &mdash; because almost every line that survived two review rounds exists to
+  defend one of them.
+</p>
+
+<h2>The contract</h2>
+
+<p>
+  A model doing minibatch VI observes a fixed-shape <code>pm.Data</code> placeholder, so
+  the loader's first promise is that <em>every</em> batch has exactly
+  <code>batch_size</code> rows &mdash; no ragged tail batch, ever. The rows that cannot
+  fill a final batch are dropped for that pass (torch's <code>drop_last</code>). The second
+  promise is <code>len(loader) == N</code>, the dataset row count &mdash; deliberately not
+  the batch count torch returns &mdash; because <code>N</code> is what the likelihood needs
+  for its <code>total_size</code> rescaling. Everything else is downstream of these two.
+</p>
+
+<h2>Re-batching: any chunks in, exact batches out</h2>
+
+<p>
+  A real out-of-core source does not yield tidy batches; it yields whatever the storage
+  gives it &mdash; one Parquet row group at a time, a list of arrays, single rows from a
+  generator. The re-batcher accepts blocks of any size, slices full batches out as soon as
+  enough rows accumulate, and carries the remainder into the next block, so no row is lost
+  <em>mid-stream</em>. The property tests are conservation laws: chunks of 7 through a
+  batch size of 10 must reproduce every row exactly once, in order, whatever the chunk
+  geometry.
+</p>
+
+<figure class="fig">
+  <img src="images/gsoc-week10-rebatch.svg" alt="Two horizontal bars. The top bar shows ten source chunks of irregular sizes, 7, 19, 4, 31, 9, 14, 3, 22, 11 and 16 rows, each in a different color. The bottom bar shows the same rows re-assembled into eleven exact batches of 12 rows; the colors show that batches freely span chunk boundaries, and the four trailing rows that cannot fill a final batch are absent.">
+  <figcaption>
+    Real output of the re-batcher: ten chunks of whatever size the storage produced
+    (top) become exact batches of 12 (bottom), with rows carried across chunk boundaries
+    in order. Only the 4-row tail that cannot fill a final batch is dropped
+    (<code>drop_last</code>).
+  </figcaption>
+</figure>
+
+<h2>What a bounded shuffle buffer can and cannot do</h2>
+
+<p>
+  <code>pm.Minibatch</code> draws a uniformly random index over all <code>N</code> rows
+  every step, so its batches are i.i.d. by construction. A stream cannot afford that. The
+  compromise is a bounded buffer: fill at least <code>buffer_size</code> rows, shuffle,
+  emit batches, carry the remainder into the next fill; each epoch draws a fresh
+  permutation, reproducibly from a seed. That is an honest approximation with a sharp
+  limit: on time-ordered data a bounded buffer only <em>block</em>-shuffles &mdash; rows
+  from January still come out before rows from November, just scrambled locally. If your
+  data is sorted, the fix is a one-time shuffle on disk; the buffer then keeps the batches
+  well mixed cheaply. A buffer as large as the dataset degenerates, correctly, into a full
+  shuffle. This limitation is stated in the docstring rather than papered over, and the
+  distinction matters because a non-representative batch does not just slow convergence
+  &mdash; it biases the variational posterior.
+</p>
+
+<figure class="fig">
+  <img src="images/gsoc-week10-block-shuffle.svg" alt="Two scatter plots of original row index against position in the output stream, for 8000 time-ordered rows pushed through the actual shuffle buffer. Left, with buffer size 800, the points form a tight diagonal band: rows are scrambled locally but their global time order survives, annotated with the words January still comes out before November. Right, with buffer size equal to the dataset, the points fill the square uniformly: a full shuffle.">
+  <figcaption>
+    Time-ordered rows through the real <code>shuffle_buffer</code>. <strong>Left:</strong>
+    a bounded buffer (800 rows) only block-shuffles &mdash; no row moves further than the
+    buffer allows, so global order survives. <strong>Right:</strong> a buffer as large as
+    the dataset degenerates, correctly, into a full shuffle. The measured maximum
+    displacement on the left is 795 rows &mdash; just under the buffer size, exactly as the
+    docstring promises.
+  </figcaption>
+</figure>
+
+<h2>Auto-sizing without trusting the source</h2>
+
+<pre><code>loader = DataLoader(
+    parquet_source("shards/"),   # n_rows from Parquet metadata: "auto" is free
+    batch_size=4096,
+    sample_shape=(14,),
+    total_size="auto",           # otherwise: one counting pass, with a warning
+)
+</code></pre>
+
+<p>
+  Getting <code>N</code> should be free when it can be: <code>parquet_source</code> reads
+  it from file metadata without scanning data. For an arbitrary source, "auto" does one
+  counting pass &mdash; and that is where the defensive machinery lives. A bare generator
+  is refused outright, since counting would consume the only pass the stream has. Subtler:
+  a factory that returns the <em>same exhausted iterator</em> each call would count rows
+  happily and then stream nothing, silently. So after counting, the loader probes the
+  source once more and demands a fresh, non-empty stream &mdash; a one-chunk cost that
+  turns "your fit trains on zero batches" into a construction-time error naming the fix.
+</p>
+
+<h2>The epoch-boundary check, and why it guards your posterior</h2>
+
+<p>
+  <code>total_size</code> is not bookkeeping: the likelihood is scaled by
+  <code>N / batch_size</code>, so an <code>N</code> that is 10&times; too large makes the
+  data speak 10&times; louder than it should, and the posterior comes out too narrow. The
+  loader therefore audits it: a correct <code>N</code> satisfies
+  <code>seen &le; N &lt; seen + batch_size</code> after one full pass (the window accounts
+  for the dropped tail), with 10% slack for sources that are only approximately sized;
+  outside that, it warns once, naming both numbers. The subtle part is <em>when</em> to
+  check. A fit that stops exactly at the epoch boundary would never see the pass end, so
+  iteration runs one batch ahead &mdash; the check fires on the last batch, not after it.
+  That lookahead is also an honest cost: measured with <code>weakref</code> probes and
+  forced garbage collection, iteration holds two batches and the source chunks backing
+  them, not one. The module docstring says exactly that, because a memory claim on an
+  out-of-core tool is the one claim users will take literally.
+</p>
+
+<h2>What's next</h2>
+
+<p>
+  The monitor and Pathfinder draft PRs go out next, and then the final stretch: two
+  tutorials and the final report. If there is a theme to this note, it is that a data
+  loader for inference is mostly not about moving bytes &mdash; it is about defending the
+  three numbers (<code>batch_size</code>, <code>N</code>, and their ratio) that the
+  statistics silently depend on.
+</p>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/698">DataLoader PR #698</a> &middot;
+  <a href="/gsoc-week-3">Week 3: the DataLoader design</a> &middot;
+  <a href="/gsoc-cusum">Week 7: the CUSUM monitor</a> &middot;
+  <a href="/gsoc-pathfinder">Week 8: the streaming Pathfinder</a> &middot;
+  <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot;
+  Mentors <a href="https://github.com/fonnesbeck">@fonnesbeck</a> &middot; <a href="https://github.com/zaxtax">@zaxtax</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
