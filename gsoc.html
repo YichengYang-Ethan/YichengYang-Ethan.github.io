@@ -38,7 +38,7 @@
 <div class="card" style="margin-bottom:28px;">
   <div class="card-label">Project &middot; Active</div>
   <div class="card-title" style="font-size:22px;">Streaming Variational Inference for Large Datasets</div>
-  <div class="card-desc"><strong>Mentors.</strong> Rob Zinkov (<a href="https://github.com/zaxtax">@zaxtax</a>, Berlin) and Chris Fonnesbeck (<a href="https://github.com/fonnesbeck">@fonnesbeck</a>, Nashville).<br><br>
+  <div class="card-desc"><strong>Mentors.</strong> Chris Fonnesbeck (<a href="https://github.com/fonnesbeck">@fonnesbeck</a>, Nashville) and Rob Zinkov (<a href="https://github.com/zaxtax">@zaxtax</a>, Berlin).<br><br>
   <strong>Problem.</strong> PyMC's ADVI and Pathfinder assume the full dataset fits in memory. Financial tick data, sensor streams, and large panel datasets routinely exceed RAM and break this assumption.<br><br>
   <strong>Approach.</strong> A <code>DataLoader</code> that wraps an arbitrary Python iterable and feeds minibatches into PyMC's existing ELBO scaling machinery through a <code>pm.Data</code> placeholder, driven by a callback-free <code>Trainer</code>, plus streaming-compatible ADVI and Pathfinder loops with online convergence monitoring.<br><br>
   <strong>Timeline.</strong> May 5 &ndash; August 25, 2026. Midterm evaluation July 6&ndash;10, final submission August 17&ndash;24.</div>
