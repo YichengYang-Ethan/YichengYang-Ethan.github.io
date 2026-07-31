@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Week 11 &mdash; Three dead designs, and the two gates that killed them &mdash; Yicheng Yang</title>
+<meta name="description" content="GSoC 2026 Week 11: choosing the capstone dataset turned out to be a statistics problem. Two mathematical gates killed three candidate designs, and an adversarial review killed half of the survivor.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 24px 0; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.55; }
+  pre code { font-family: inherit; font-size: inherit; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+  pre code { background: transparent; padding: 0; }
+  figure.fig { margin: 26px 0; }
+  figure.fig img { width: 100%; height: auto; display: block; }
+  figure.fig figcaption { font-family: Inter, sans-serif; font-size: 13px; color: var(--text-secondary); margin-top: 10px; line-height: 1.5; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Week 11</div>
+  <h1>Three dead designs, and the two gates that killed them</h1>
+  <p class="meta">Yicheng Yang &middot; July 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<p>
+  The last big deliverable of the summer is a capstone tutorial: the streaming stack
+  applied to real financial tick data, end to end. I assumed the hard part would be the
+  modeling. It wasn't. The hard part was discovering that <em>choosing the example</em> is
+  itself a statistics problem &mdash; and that most candidate examples are quietly fake.
+</p>
+
+<h2>The two gates</h2>
+
+<p>
+  Minibatch VI rests on one identity: the batch log-likelihood times <code>N/B</code> is an
+  unbiased estimate of the full-data log-likelihood. For a showcase to be honest, two
+  conditions have to hold, and they became my acceptance gates for every candidate design:
+</p>
+
+<p>
+  <strong>Gate 1 &mdash; the likelihood must factor over rows</strong> given the global and
+  hierarchical parameters. No latent time-series path coupling observations, and no label
+  shared across rows. <strong>Gate 2 &mdash; no finite sufficient statistics.</strong> If a
+  one-pass summary of the data determines the posterior exactly, streaming inference is
+  theater: you could just compute the summary.
+</p>
+
+<h2>Three burials</h2>
+
+<p>
+  <strong>Candidate one</strong> was close to home: a calibration study of World Cup
+  prediction markets, on the tick data I spent June recording. Every tick of a match looks
+  like an observation until you notice they all share one outcome label. The effective
+  sample size is the number of <em>matches</em> &mdash; about fifty &mdash; not the number
+  of ticks. Pseudo-replication, Gate 1, dead. (It also failed on reproducibility: the
+  exchange's data terms exclude ML training use, and the archive I'd hoped readers could
+  download stopped collecting hours before the opening match.)
+</p>
+
+<p>
+  <strong>Candidate two</strong> was the classic: stochastic volatility. But a latent
+  volatility path couples every observation to its neighbors &mdash; the likelihood does
+  not factor over rows, minibatch rescaling is invalid, Gate 1 again. This one stung,
+  because the existing PyMC example gallery's most famous finance notebook is exactly this
+  model. The capstone now cites it as the contrast: <em>here is why that model cannot be
+  minibatched, and here is one that can.</em>
+</p>
+
+<p>
+  <strong>Candidate three</strong> was my own first "fixed" design: hierarchical intraday
+  volatility, Normal returns with a per-cell scale. It passes Gate 1 beautifully. Then
+  Gate 2 kills it: a Normal likelihood with cell-level variance has sufficient statistics
+  &mdash; per cell, the sum of squares and the count. Five thousand cells, two numbers
+  each: one linear scan computes them and the "streaming inference" demo collapses into a
+  glorified <code>groupby</code>. What breaks the collapse, provably: Student-t
+  observation noise, and row-level continuous covariates through a nonlinear link.
+</p>
+
+<h2>The survivor, and the cut it still needed</h2>
+
+<p>
+  What passed both gates: next-event price moves on Binance's public tick archive.
+  One row per trade-to-trade transition, each with its own label; Student-t noise for the
+  heavy tails; volatility linked to hour-of-day and trailing activity through a log link;
+  partial pooling across ~200 symbols, where the thin cells &mdash; illiquid alt-coins at
+  4 a.m. &mdash; are exactly where hierarchical shrinkage earns its keep. Public data,
+  MIT-licensed, verified down to the checksum.
+</p>
+
+<p>
+  Then I did to my own design what the review tools have been doing to my PRs all month: I
+  handed it to an adversarial reviewer with instructions to kill it. The best objection
+  survived every defense I had &mdash; and it was empirical, not theoretical. Measure the
+  transitions on a real day of BTCUSDT and <strong>29.6% of them have exactly zero price
+  change</strong>. A continuous likelihood puts zero probability mass on the single most
+  common outcome in the dataset.
+</p>
+
+<figure class="fig">
+  <img src="images/gsoc-week11-zero-spike.svg" alt="Histogram of next-event returns in basis points for one real day of BTCUSDT aggregated trades, on a log-scaled count axis. Teal bars show a heavy-tailed distribution of nonzero moves; a single red bar at exactly zero towers over everything, holding 29.6 percent of all transitions, annotated with the words: a continuous likelihood puts zero probability mass exactly here.">
+  <figcaption>
+    One real day of BTCUSDT (941,481 transitions). The red bar is not a bin around zero
+    &mdash; it is <em>exactly</em> zero: 278,991 transitions where the price did not move.
+    A Student-t density assigns this outcome probability zero.
+  </figcaption>
+</figure>
+
+<p>
+  The fix is a hurdle: model <em>whether</em> the price moves (a Bernoulli, with its own
+  hierarchical structure) separately from <em>how far</em> it moves given that it does
+  (the Student-t). The zero mass stops being a misspecification and becomes the most
+  interesting part of the model &mdash; it is the microstructure. And the mixture is, by
+  itself, a second reason Gate 2 stays satisfied.
+</p>
+
+<p>
+  One more trap closed this week, and it was my own docstring that named it. Week 10
+  showed that a bounded shuffle buffer only block-shuffles strongly ordered data. The
+  tick archive is exactly that &mdash; sorted by symbol and time &mdash; so a convergence
+  check could fire before training had ever seen November. The shuffle therefore happens
+  on disk, at ETL time: every row is scattered by a deterministic hash, and the first ten
+  thousand rows of any shard now span all twenty-four hours of the day. Verified, not
+  assumed.
+</p>
+
+<h2>Also this week: two drafts that end in questions</h2>
+
+<p>
+  The convergence monitor and the streaming Pathfinder finally went out as draft PRs
+  (<a href="https://github.com/pymc-devs/pymc/pull/8384">pymc#8384</a>,
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/722">pymc-extras#722</a>) &mdash;
+  at my mentor's explicit request to see them before they got any more polished. Both
+  descriptions end with open design questions rather than claims: is the robust-scale
+  machinery worth its lines, should a distribution shift drain the stopping statistic or
+  accelerate it, does the API want a standalone function or a parameter. The complexity
+  decisions are cheaper made together than defended after the fact.
+</p>
+
+<p>
+  Next: the full-scale runs. The prototype is recovering ground truth on synthetic data as
+  I write this, and the ETL pipeline is already feeding real shards through the DataLoader.
+  If the numbers hold, next week's note is about fitting half a billion rows on a laptop
+  that cannot hold them.
+</p>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://github.com/pymc-devs/pymc/pull/8384">CheckLossConvergence PR #8384</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/722">Streaming Pathfinder PR #722</a> &middot;
+  <a href="/gsoc-week-10">Week 10: inside the DataLoader</a> &middot;
+  <a href="/gsoc-cusum">Week 7: the CUSUM monitor</a> &middot;
+  <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot;
+  Mentors <a href="https://github.com/fonnesbeck">@fonnesbeck</a> &middot; <a href="https://github.com/zaxtax">@zaxtax</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
