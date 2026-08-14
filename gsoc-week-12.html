@@ -97,20 +97,13 @@
   every guard whose failure announces itself &mdash; pass the wrong type and the next line
   blows up anyway, with a message that's already clear; my check was noise on top of
   noise. The one guard that stayed catches the failure that doesn't announce itself: the
-  fit succeeds and the posterior is quietly wrong. At our sync this week he completed the
-  philosophy out loud:
-</p>
-
-<blockquote>
-  "Guardrails get in the way of users &mdash; maybe the user knows something about what
-  they're doing that we don't. If we don't know how to recover from it, the best we can
-  do is warn, and try to do something reasonable."
-</blockquote>
-
-<p>
-  Even an infinite stream gets the same treatment: if you can't know <code>N</code>,
-  don't scale, like NumPyro, and hope for the best. An honest default beats a clever
-  error.
+  fit succeeds and the posterior is quietly wrong. At our sync this week he
+  completed the philosophy out loud: guardrails get in the way of users, because the
+  user may know something about what they're doing that we don't &mdash; and when a
+  library doesn't know how to recover from something weird, the best it can do is warn
+  and then try something reasonable. Even an infinite stream gets the same treatment:
+  if you can't know <code>N</code>, don't scale, like NumPyro, and hope for the best.
+  An honest default beats a clever error.
 </p>
 
 <p>
@@ -142,29 +135,30 @@
   faster toward the end, because the test became simple: is this line paying rent?
 </p>
 
-<h2>Beyond the code, three sentences from this week</h2>
+<h2>Beyond the code</h2>
 
 <p>
-  All three are things Rob said in passing at our sync. Each one changed what I did next.
+  Three things Rob said in passing at our sync changed what I did next.
 </p>
 
 <p>
-  <em>"Tell me whenever things are ready to review &mdash; it's hard for me to know when
-  things are ready just by scanning."</em> Readiness is announced, not discovered. So when
-  the Trainer PR went ready for review, it went with a line-by-line walkthrough laying
-  out the reading path.
+  He told me to say so whenever something is ready for review, because he can't tell
+  what's ready just by scanning it. Readiness is announced, not discovered &mdash; so
+  when the Trainer PR went ready, it went with a line-by-line walkthrough laying out the
+  reading path.
 </p>
 
 <p>
-  <em>"The more PRs we can get merged, the better."</em> The ordering principle for the
-  final weeks: the bare minimum that can merge beats any nice-to-have. Perfect is
-  something you iterate toward after the merge, not something you hold out for before it.
+  He'd rather see more PRs merged than any one of them polished. That set the ordering
+  principle for the final weeks: the bare minimum that can merge beats any nice-to-have,
+  and perfect is something you iterate toward after the merge, not something you hold
+  out for before it.
 </p>
 
 <p>
-  <em>"Contributing to PyMC is just something I do every day."</em> The lightest sentence,
-  and the heaviest. Open source isn't a summer sprint; it's a daily practice. GSoC ends.
-  This doesn't.
+  And he mentioned, almost as an aside, that contributing to PyMC is just something he
+  does every day. The lightest sentence of the meeting, and the heaviest. Open source
+  isn't a summer sprint; it's a daily practice. GSoC ends. This doesn't.
 </p>
 
 <h2>Where things stand</h2>
