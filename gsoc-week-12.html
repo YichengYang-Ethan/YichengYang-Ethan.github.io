@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>Week 12 &mdash; Merged, and the seven commits I read like a textbook &mdash; Yicheng Yang</title>
+<meta name="description" content="GSoC 2026 Week 12: the DataLoader merged into pymc-extras. My mentor's editing pass deleted rather than rewrote, and reading those seven commits like a textbook changed how I write library code.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+  h1 a { color: var(--accent); text-decoration: none; }
+  h1 a:hover { text-decoration: underline; }
+  blockquote { margin: 22px 0; padding: 2px 0 2px 18px; border-left: 3px solid var(--border); color: var(--text-secondary); font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Week 12</div>
+  <h1><a href="https://github.com/pymc-devs/pymc-extras/pull/698">Merged</a>, and the seven commits I read like a textbook</h1>
+  <p class="meta">Yicheng Yang &middot; August 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<p>
+  The DataLoader merged into pymc-extras this week. The number Week 11 promised &mdash;
+  half a billion rows through the loader in six seconds, with memory never noticing &mdash;
+  held up. But the thing I did most this week wasn't celebrating, and it wasn't racing to
+  the next PR. It was rereading the editing pass my mentor Rob Zinkov
+  (<a href="https://github.com/zaxtax">@zaxtax</a>) made on my code before merging it.
+</p>
+
+<h2>How Rob edits code is itself the content</h2>
+
+<p>
+  Seven commits, one idea per commit, the source file down from just over five hundred
+  lines to 308. I expected to find rewrites. Instead, measured by git blame, 85% of the
+  merged lines are still mine. Rob rewrote almost nothing. <strong>He deleted.</strong>
+  That fact alone is worth sitting with: when an experienced maintainer reads my code, the
+  question is never whether the lines are correct &mdash; it's which lines shouldn't exist.
+</p>
+
+<p>
+  What's interesting is how he described it himself. When I told him this week that I
+  wanted to bring every PR of mine up to this standard, he pulled back half a step:
+</p>
+
+<blockquote>
+  "My intention wasn't entirely to be like, hey, this is what I wish you had done &mdash;
+  this is just what it looks like when I'm going through and saying, I don't need this,
+  I don't need this, I don't need this."
+</blockquote>
+
+<p>
+  He didn't frame the editing pass as a lesson. But precisely because it wasn't offered as
+  one, treating it as one was my choice to make &mdash; seven commits, each message a
+  reason, more concrete than any review comment could be.
+</p>
+
+<h2>Cut by cut: what each deletion means</h2>
+
+<p>
+  I opened each commit separately and forced myself to guess what he'd cut, and why,
+  before looking at the diff. Wherever I guessed wrong, that was a gap in my
+  understanding. Over the weeks since, these operations have turned from "his
+  preferences" into principles that mean something:
+</p>
+
+<p>
+  <strong>Decide the contract instead of supporting everything.</strong> My version tried
+  to accept input in every shape, and every extra accommodation was another branch. His
+  way: decide what the class promises and what it doesn't, then write code only for the
+  promise. Deciding is harder than accommodating, because a decision takes responsibility.
+</p>
+
+<p>
+  <strong>Guards: delete the loud ones, keep the silent ones.</strong> I had written
+  <code>isinstance</code> checks and name checks and thought of them as rigor. He deleted
+  every guard whose failure announces itself &mdash; pass the wrong type and the next line
+  blows up anyway, with a message that's already clear; my check was noise on top of
+  noise. The one guard that stayed catches the failure that doesn't announce itself: the
+  fit succeeds and the posterior is quietly wrong. At our sync this week he completed the
+  philosophy out loud:
+</p>
+
+<blockquote>
+  "Guardrails get in the way of users &mdash; maybe the user knows something about what
+  they're doing that we don't. If we don't know how to recover from it, the best we can
+  do is warn, and try to do something reasonable."
+</blockquote>
+
+<p>
+  Even an infinite stream gets the same treatment: if you can't know <code>N</code>,
+  don't scale, like NumPyro, and hope for the best. An honest default beats a clever
+  error.
+</p>
+
+<p>
+  <strong>An abstraction has to earn its existence.</strong> Private helpers called once,
+  base classes with one implementation &mdash; taxes paid today for an imagined future.
+  He inlined them all.
+</p>
+
+<p>
+  <strong>Prose is not free.</strong> A comment explaining what a line does is written for
+  the reviewer; after the merge it becomes a burden on the next reader. The comments that
+  stayed do exactly one job: record a constraint the code itself cannot show.
+</p>
+
+<p>
+  <strong>Precedent beats my own reasoning.</strong> What should <code>len(loader)</code>
+  return? I had derived my own answer. His: do what torch does &mdash; the intuitions
+  users already carry are the most expensive asset a library has. That one change rippled
+  through everything I had built downstream, and fixing it all is exactly why this is the
+  principle I now remember best.
+</p>
+
+<h2>Then I turned the knife on my own work</h2>
+
+<p>
+  I distilled the seven commits into a checklist and went back through every PR of mine
+  still open. The hard part wasn't deleting code &mdash; it was admitting that the
+  reasons I'd had for writing those lines don't hold up under this standard. It got
+  faster toward the end, because the test became simple: is this line paying rent?
+</p>
+
+<h2>Beyond the code, three sentences from this week</h2>
+
+<p>
+  All three are things Rob said in passing at our sync. Each one changed what I did next.
+</p>
+
+<p>
+  <em>"Tell me whenever things are ready to review &mdash; it's hard for me to know when
+  things are ready just by scanning."</em> Readiness is announced, not discovered. So when
+  the Trainer PR went ready for review, it went with a line-by-line walkthrough laying
+  out the reading path.
+</p>
+
+<p>
+  <em>"The more PRs we can get merged, the better."</em> The ordering principle for the
+  final weeks: the bare minimum that can merge beats any nice-to-have. Perfect is
+  something you iterate toward after the merge, not something you hold out for before it.
+</p>
+
+<p>
+  <em>"Contributing to PyMC is just something I do every day."</em> The lightest sentence,
+  and the heaviest. Open source isn't a summer sprint; it's a daily practice. GSoC ends.
+  This doesn't.
+</p>
+
+<h2>Where things stand</h2>
+
+<p>
+  The Trainer (<a href="https://github.com/pymc-devs/pymc-extras/pull/710">#710</a>) is
+  marked ready with its walkthrough. The convergence monitor reopened as
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/733">pymc-extras#733</a> &mdash;
+  that redesign is next week's story. After that: cutting the tutorial down to the bare
+  minimum that can merge. We sync again Friday.
+</p>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/698">The merged DataLoader PR #698</a> &middot;
+  <a href="/gsoc-week-9">Week 9: deleting 300 lines</a> &middot;
+  <a href="/gsoc-week-11">Week 11: three dead designs</a> &middot;
+  <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot;
+  Mentors <a href="https://github.com/fonnesbeck">@fonnesbeck</a> &middot; <a href="https://github.com/zaxtax">@zaxtax</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
