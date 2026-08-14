@@ -45,6 +45,16 @@
 
 <article>
 
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary); border-left:3px solid var(--border); padding-left:14px;">
+  <em>Update, August 11: the calibration below did not survive contact with real traces.
+  Replaying four real ADVI runs through this monitor, the per-step statistic stopped at
+  <code>min_steps</code> + &asymp;50 with 40&ndash;90% of the loss reduction still ahead &mdash;
+  every synthetic family it was calibrated on sits far above the improvement rates real fits
+  actually have. The redesign (adaptive block horizons, two yardsticks) is
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/733">pymc-extras#733</a>;
+  a full post-mortem is coming as a weekly note. The note below stands as written.</em>
+</p>
+
 <p>
   Week&nbsp;6 mentioned an online convergence monitor almost in passing. This week I built it
   out and calibrated it, and it turned out to be the piece of the streaming-VI work with the

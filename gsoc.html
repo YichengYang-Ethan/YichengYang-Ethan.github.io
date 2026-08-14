@@ -41,15 +41,28 @@
   <div class="card-desc"><strong>Mentors.</strong> Chris Fonnesbeck (<a href="https://github.com/fonnesbeck">@fonnesbeck</a>, Nashville) and Rob Zinkov (<a href="https://github.com/zaxtax">@zaxtax</a>, Berlin).<br><br>
   <strong>Problem.</strong> PyMC's ADVI and Pathfinder assume the full dataset fits in memory. Financial tick data, sensor streams, and large panel datasets routinely exceed RAM and break this assumption.<br><br>
   <strong>Approach.</strong> A <code>DataLoader</code> that wraps an arbitrary Python iterable and feeds minibatches into PyMC's existing ELBO scaling machinery through a <code>pm.Data</code> placeholder, driven by a callback-free <code>Trainer</code>, plus streaming-compatible ADVI and Pathfinder loops with online convergence monitoring.<br><br>
-  <strong>Timeline.</strong> May 5 &ndash; August 25, 2026. Midterm evaluation July 6&ndash;10, final submission August 17&ndash;24.</div>
-  <div class="card-meta">NumFOCUS / PyMC &middot; <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot; <a href="https://github.com/pymc-devs/pymc">PyMC repo</a></div>
+  <strong>Timeline.</strong> May 5 &ndash; August 25, 2026. Midterm evaluation July 6&ndash;10, final submission August 17&ndash;24.<br><br>
+  <strong>Status.</strong> The DataLoader merged into pymc-extras on August 7 (<a href="https://github.com/pymc-devs/pymc-extras/pull/698">#698</a>). The Trainer, the streaming Pathfinder, and the convergence callback are open in review; the capstone tutorial is in progress.</div>
+  <div class="card-meta">NumFOCUS / PyMC &middot; <a href="https://summerofcode.withgoogle.com/myprojects/details/DQ5CA7dx">GSoC project page</a> &middot; <a href="https://github.com/pymc-devs/pymc-extras">pymc-extras repo</a></div>
 </div>
 
 <!-- Why it matters -->
 <div class="card" style="margin-bottom:28px;">
   <div class="card-label">Why it matters</div>
   <div class="card-desc"><strong>The result.</strong> ADVI and Pathfinder currently need every row resident, so once a dataset outgrows RAM, Bayesian inference is simply off the table. This removes that limit. On the public Criteo 1&nbsp;TB benchmark the streaming posterior matches an ordinary in-memory fit coefficient for coefficient, while peak memory stays around 1.5&nbsp;GB &mdash; materializing all 4.4&nbsp;billion rows in memory would take roughly 490&nbsp;GB, so the in-memory baseline cannot even start. The gain isn't speed; it's inference on data you otherwise couldn't touch.<br><br>
-  <strong>The design.</strong> The abstraction this needed turned out to be one people already know &mdash; PyTorch's <code>Dataset</code>, <code>DataLoader</code>, and <code>Trainer</code> &mdash; so that is what it is called. <code>total_size</code> is just <code>len(loader)</code>, and there is nothing new to learn.</div>
+  <strong>The design.</strong> The abstraction this needed turned out to be one people already know &mdash; PyTorch's <code>Dataset</code>, <code>DataLoader</code>, and <code>Trainer</code> &mdash; so that is what it is called. <code>loader.total_size</code> carries <code>N</code> for the ELBO rescaling, <code>len(loader)</code> counts batches per epoch exactly as it does in torch, and there is nothing new to learn.</div>
+</div>
+
+<!-- Deliverables -->
+<div class="card" style="margin-bottom:28px;">
+  <div class="card-label">Deliverables</div>
+  <div class="card-desc">
+  <strong><a href="https://github.com/pymc-devs/pymc-extras/pull/698">DataLoader &mdash; pymc-extras#698</a></strong> &middot; merged August 7. Out-of-core minibatches from any re-iterable source: Parquet-native, bounded shuffle buffer, <code>total_size</code> resolved from metadata or one counting pass.<br><br>
+  <strong><a href="https://github.com/pymc-devs/pymc-extras/pull/710">Trainer &mdash; #710</a></strong> &middot; ready for review. Drives ADVI over the stream; validated end to end on 30.7M rows of tick data against a closed-form posterior.<br><br>
+  <strong><a href="https://github.com/pymc-devs/pymc-extras/pull/722">Streaming Pathfinder &mdash; #722</a></strong> &middot; in review. Same-batch curvature pairs and Polyak&ndash;Ruppert tail averaging; the PR states where it degrades as plainly as where it works.<br><br>
+  <strong><a href="https://github.com/pymc-devs/pymc-extras/pull/733">CheckLossConvergence &mdash; #733</a></strong> &middot; opened August 11. Loss-based stopping on adaptive block horizons; zero premature stops across held-out still-improving families.<br><br>
+  <strong>Streaming tick-data tutorial</strong> &middot; in progress, targeting pymc-examples.
+  </div>
 </div>
 
 <!-- Weekly notes -->

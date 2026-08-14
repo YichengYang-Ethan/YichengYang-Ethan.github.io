@@ -45,6 +45,15 @@
 
 <article>
 
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary); border-left:3px solid var(--border); padding-left:14px;">
+  <em>Update, August 11: the ELBO iterate selection described below was later replaced by
+  Polyak&ndash;Ruppert tail averaging &mdash; each accepted iterate turns out to sit near its own
+  minibatch's MAP, a location error that no selection rule can remove. Pareto-k went from &asymp;6
+  to 0.3&ndash;0.6. Details in
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/722">pymc-extras#722</a>.
+  The note below stands as written.</em>
+</p>
+
 <p>
   Week&nbsp;6 mentioned a streaming Pathfinder in a single line, right next to the
   convergence monitor. This is the other half of that sentence. Streaming ADVI, the
