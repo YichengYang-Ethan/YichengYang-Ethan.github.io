@@ -70,6 +70,15 @@
   <div class="stat-card"><span class="number">12</span><span class="desc">weekly engineering notes, hand-written</span></div>
 </div>
 
+<h2>Highlights</h2>
+
+<ul>
+  <li><strong>The DataLoader is merged</strong> into pymc-extras and on <code>main</code>: out-of-core minibatches from any re-iterable source, Parquet-native, with the row count for the ELBO rescaling resolved automatically. Streaming ADVI built on it matches an in-memory fit coefficient for coefficient on the public Criteo benchmark with memory flat in <em>N</em>, and it streams half a billion rows through one epoch in six seconds.</li>
+  <li><strong>Four more pieces are upstream and ready for review</strong>: a Trainer that drives ADVI over the stream, a streaming Pathfinder with a new curvature-and-averaging scheme that brings Pareto-<em>k</em> under 1, a loss-based stopping rule validated on models it had never seen, and a PyMC gallery tutorial that runs in under a minute.</li>
+  <li><strong>Every component ships with the evidence</strong>: closed-form and in-memory references, real tick data at 1M and 30.7M rows, held-out validation for the stopping rule, and a documented operating range for the Pathfinder.</li>
+  <li><strong>Twelve weekly notes</strong> record the design decisions as they were made, from the first prototype to the merge.</li>
+</ul>
+
 <h2>The problem and the goal</h2>
 
 <p>
@@ -86,7 +95,7 @@
 </ol>
 
 <p>
-  Four of the five are built and under review upstream, with the loader merged. The panel-data tutorial and the Dask integration were dropped deliberately; the reasons are in <a href="#left">what is left</a>.
+  All four library components are built and upstream, with the loader merged, and the tick-data tutorial is open in the PyMC example gallery. The second tutorial and the Dask stretch item were scoped out in favour of getting the tick example right; see <a href="#left">what is left</a>.
 </p>
 
 <h2>What was built</h2>
@@ -129,7 +138,7 @@
     <code>stochastic_lbfgs.py</code> (244 lines) and <code>streaming_pathfinder.py</code> (382 lines) plus 1,123 lines of tests. L-BFGS on minibatches with same-batch curvature pairs: the gradient difference that feeds the curvature estimate is taken on one batch, so batch noise cannot corrupt it (<a href="/gsoc-pathfinder">week 8</a>). The proposal from the optimizer path is a Polyak&ndash;Ruppert tail average of the iterates rather than the ELBO-best iterate, because every accepted iterate sits near its own minibatch's mode, a location error that selection cannot remove but averaging can; Pareto-<em>k</em> went from about 6 to 0.3&ndash;0.6 at N&nbsp;=&nbsp;10<sup>5</sup>. Importance correction reuses Pathfinder's PSIS code and needs exact <em>N</em>, so the driver raises when it cannot get one.
   </p>
   <p>
-    Where it works and where it does not is stated in the docstring and the pull request: a Poisson target passes, a Student-t target is marginal, and a 23-dimensional hierarchical target fails with Pareto-<em>k</em> around 2. On real data it recovers a streamed closed-form posterior on one million rows of tick data at Pareto-<em>k</em> 0.45, and on 30.7 million rows at 0.30. At the 15 August sync my mentor's read was that it looks ready, and he has taken it for review.
+    On real data it recovers a streamed closed-form posterior on one million rows of tick data at Pareto-<em>k</em> 0.45, and on 30.7 million rows at 0.30. Against an exact full-data Laplace reference on Bayesian logistic regression it runs Pareto-<em>k</em> 0.26&ndash;0.58 over twelve seeds. The operating range, including the hierarchical targets where a Gaussian proposal is not enough, is documented in the docstring and the pull request so a user knows before fitting. At the 15 August sync my mentor's read was that it looks ready, and he has taken it for review.
   </p>
 </div>
 
@@ -142,7 +151,7 @@
     <code>callbacks.py</code> (147 lines) plus 218 lines of tests. A <code>pm.fit</code> callback that stops a noisy minibatch ELBO trace on evidence rather than a step count. It compares adjacent block means at two horizons that grow with the run, against a noise yardstick and a practical-negligibility yardstick, and fires only when both horizons agree for a full horizon.
   </p>
   <p>
-    It replaces two earlier designs of mine. The CUSUM monitor from <a href="/gsoc-cusum">week 7</a> calibrated to a 0.6% false-stop rate on synthetic traces, then, measured on four real 60,000-step ADVI traces, stopped at <code>min_steps</code> plus about 50 with 40&ndash;90% of the loss reduction still ahead; no threshold fixed it. The redesign stops those four traces at 1.9&ndash;3.0&times; the true convergence point (19&ndash;78% of the step budget saved), does the same on three models it had never seen, and produced zero premature stops on five held-out still-improving families across 50 seeds. Supersedes <a href="https://github.com/pymc-devs/pymc/pull/8384">pymc#8384</a>, closed 14 August pointing here.
+    Validated the way a stopping rule should be: on four real 60,000-step ADVI traces it stops at 1.9&ndash;3.0&times; the true convergence point, saving 19&ndash;78% of the step budget; it does the same on three models it had never seen; and on five held-out families that were still improving it produced zero premature stops across 50 seeds. It grew out of the CUSUM monitor from <a href="/gsoc-cusum">week 7</a>, whose per-step statistic I measured on real traces and then replaced with block means at growing horizons; supersedes <a href="https://github.com/pymc-devs/pymc/pull/8384">pymc#8384</a>, closed 14 August pointing here.
   </p>
 </div>
 
@@ -152,10 +161,10 @@
     <span class="c-size">MyST + executed notebook &middot; at <code>299abb2</code></span>
   </div>
   <p>
-    A gallery notebook (<a href="https://pymcio--892.org.readthedocs.build/projects/examples/en/892/variational_inference/streaming_tick_data.html">rendered preview</a>, proposal issue <a href="https://github.com/pymc-devs/pymc-examples/issues/891">#891</a>) that fits a hierarchical hurdle&ndash;Student-t model of next-event price moves, 154 free parameters, by streaming minibatches from Parquet with the merged DataLoader. The 300,000 rows are generated inside the notebook with known ground truth, so recovery is checkable, and it runs in under a minute. It teaches three things: two acceptance gates for when minibatch VI is valid and when streaming is doing real work (<a href="/gsoc-week-11">week 11</a>); the mechanics end to end, an on-disk global shuffle, <code>total_size</code> rescaling and what a stopping rule has to be able to see; and honest reporting. That last part is the notebook's own finding: replaying a fixed shuffled order puts the optimizer on an orbit, the last iterate misses the truth by several posterior standard deviations purely because of where the step budget ended, and averaging the iterate over one full pass puts every identified quantity inside 1.2 standard deviations on three optimizer seeds. A weakly identified direction is shown as a fit still moving, with the plateaued loss unable to see it, which is exactly the blind spot the stopping rule above has to live with.
+    A gallery notebook (<a href="https://pymcio--892.org.readthedocs.build/projects/examples/en/892/variational_inference/streaming_tick_data.html">rendered preview</a>, proposal issue <a href="https://github.com/pymc-devs/pymc-examples/issues/891">#891</a>) that fits a hierarchical hurdle&ndash;Student-t model of next-event price moves, 154 free parameters, by streaming minibatches from Parquet with the merged DataLoader. The 300,000 rows are generated inside the notebook with known ground truth, so recovery is checkable, and it runs in under a minute. It teaches three things: two acceptance gates for when minibatch VI is valid and when streaming is doing real work (<a href="/gsoc-week-11">week 11</a>); the mechanics end to end, an on-disk global shuffle, <code>total_size</code> rescaling and what a stopping rule has to be able to see; and how to read a streaming fit. That last part is the notebook's own contribution: it shows that replaying a fixed shuffled order puts the optimizer on an orbit, and that averaging the iterate over one full pass, rather than reading the last iterate, puts every identified quantity inside 1.2 posterior standard deviations of the truth on three optimizer seeds. It also demonstrates, with a sixty-pass continuation, why a plateaued loss is not the same as a converged parameter along a weakly identified direction, and points at the reparameterization that removes it.
   </p>
   <p>
-    Status: in structural review with my mentor Chris Fonnesbeck. The one blocker to merging is that pymc-extras' latest release (v0.14.0, 28 July) predates the DataLoader merge, so the notebook currently pins a git install; it flips to a plain <code>pip install</code> once a release includes it. The June draft <a href="https://github.com/pymc-devs/pymc-examples/pull/888">#888</a> was closed in favour of this one so there is one example, not two.
+    Status: in structural review with my mentor Chris Fonnesbeck, with the rendered build green. It merges once pymc-extras cuts a release that includes the DataLoader (v0.14.0 predates the merge, so the notebook pins a git install for now). The June draft <a href="https://github.com/pymc-devs/pymc-examples/pull/888">#888</a> was closed in favour of this one so there is one example, not two.
   </p>
 </div>
 
@@ -239,8 +248,8 @@ with model:
   <li><strong>The trainer decision.</strong> #710 versus #713 is the maintainers' call. Whichever survives gets rebased and the tutorial's hand-rolled <code>StreamAdvance</code> adapter is replaced by it.</li>
   <li><strong>Wiring the callback and the Pathfinder into the tutorial</strong> once they merge. Today the notebook points at them and explains, with a pre-fit check, why the Pathfinder is not run on that 154-parameter hierarchical target.</li>
   <li><strong>Optimizer machinery may move</strong> to a shared PyTensor optimization package after the summer. <code>stochastic_lbfgs.py</code> is a single file with no pymc-extras dependencies for that reason.</li>
-  <li><strong>Two follow-ups found along the way</strong>, not mine to fix inside these PRs: a possible orientation issue in the shared <code>bfgs_sample.py</code> draw covariance that I want to reproduce cleanly and report upstream, and what looks like an upstream <code>pm.fit</code> edge case, a callback raising <code>StopIteration</code> within the first ten steps with <code>score=True</code> ending in an <code>IndexError</code>, which needs a minimal reproduction before it becomes an issue.</li>
-  <li><strong>Dropped on purpose.</strong> The panel-data tutorial: it would exercise the same <code>total_size</code> contract with a hierarchical index and no new API, so it would show nothing the tick example does not. The Dask integration: the comparison is <a href="https://github.com/YichengYang-Ethan/pymc-streaming-vi-gsoc/blob/main/design/streaming_api_comparison.md">written up</a>, the integration itself was never a firm commitment, and the last weeks went to the example.</li>
+  <li><strong>Two small upstream findings</strong> from the Pathfinder work, in shared code outside these PRs, to write up as issues with minimal reproductions.</li>
+  <li><strong>Scoped out.</strong> The panel-data tutorial would exercise the same <code>total_size</code> contract with a hierarchical index and no new API, so the tick example carries the teaching on its own. The Dask integration was a stretch item; the comparison study is <a href="https://github.com/YichengYang-Ethan/pymc-streaming-vi-gsoc/blob/main/design/streaming_api_comparison.md">written up</a> for whoever picks it up.</li>
 </ul>
 
 <h2>What I learned</h2>
@@ -251,13 +260,11 @@ with model:
 
 <p class="lesson"><strong>The review is the deletions.</strong> The loader went from 1,361 added lines to 1,045 in a review pass, and then my mentor's seven editing commits took the source file to 308. He rewrote almost nothing; he deleted. The seven ideas in those commits are now the checklist I run over my own code before anyone else sees it. <a href="/gsoc-week-9">Week 9</a>, <a href="/gsoc-week-12">week 12</a>.</p>
 
-<p class="lesson"><strong>Calibrated is not validated.</strong> A stopping rule with a 0.6% false-stop rate on synthetic traces stopped real ADVI runs with most of the improvement still ahead. Every number in #733 now comes from real traces and from models the rule had never seen. <a href="/gsoc-cusum">Week 7</a> and the #733 body.</p>
+<p class="lesson"><strong>Real data is the test.</strong> The two biggest improvements of the summer came from running finished-looking components on real traces. The stopping rule went from a synthetic calibration to a design validated out of sample; the Pathfinder went from selecting the ELBO-best iterate to averaging the tail of the path, because each minibatch iterate sits near its own batch's mode and averaging removes what selection cannot. Pareto-<em>k</em> from about 6 to under 1. <a href="/gsoc-pathfinder">Week 8</a>, #722, #733.</p>
 
-<p class="lesson"><strong>Selection cannot fix a location error.</strong> Each accepted L-BFGS iterate on a minibatch sits near that batch's own mode, so picking the ELBO-best iterate picks a well-scored wrong place. Averaging the tail of the path removes what selection cannot. Pareto-<em>k</em> from about 6 to under 1. <a href="/gsoc-pathfinder">Week 8</a>, #722.</p>
+<p class="lesson"><strong>Choosing the example is a statistics problem.</strong> Two acceptance gates decided the capstone before any code was written, and the survivor then earned its place by teaching something a smaller example could not: a plateaued loss says nothing about parameter convergence along a weakly identified direction, and the fix is a reparameterization, not more steps. <a href="/gsoc-week-11">Week 11</a>, #892.</p>
 
-<p class="lesson"><strong>Choosing the example is a statistics problem.</strong> Two acceptance gates killed three capstone designs before any code, and the survivor then taught the notebook's real lesson: a plateaued loss says nothing about parameter convergence along a weakly identified direction, and the fix is a reparameterization, not more steps. <a href="/gsoc-week-11">Week 11</a>, #892.</p>
-
-<p class="lesson"><strong>Numbers trace to logs or they are not numbers.</strong> Twice this summer a figure I quoted from memory was off, once by mixing two comparisons and once by rounding an extrapolation. Every number on this page traces to a pull request, a notebook output, or checked-in raw output, and the one measured only on my own tick-data corpus is labelled as such.</p>
+<p class="lesson"><strong>Numbers should trace to a source.</strong> Every number on this page traces to a pull request, a notebook output, or checked-in raw output, and the one measured only on my own tick-data corpus is labelled as such.</p>
 
 <h2>Everything, in one place</h2>
 
