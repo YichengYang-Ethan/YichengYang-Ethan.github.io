@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
+<title>GSoC 2026 Final Report &mdash; Streaming Variational Inference for PyMC &mdash; Yicheng Yang</title>
+<meta name="description" content="Final work product for Google Summer of Code 2026 with NumFOCUS / PyMC: an out-of-core DataLoader (merged), a Trainer, a streaming Pathfinder, a loss-based stopping rule, and a tick-data tutorial. What was built, what merged, what is left, with links to every pull request.">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+<style>
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 16px 20px; overflow-x: auto; margin: 24px 0; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; line-height: 1.55; }
+  pre code { font-family: inherit; font-size: inherit; background: transparent; padding: 0; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 0.92em; background: var(--code-bg); padding: 1px 6px; border-radius: 3px; }
+  article ul, article ol { margin: 0 0 24px 26px; }
+  article li { margin-bottom: 8px; }
+  .status-table { width: 100%; border-collapse: collapse; font-family: Inter, sans-serif; font-size: 14px; margin: 8px 0 32px; }
+  .status-table th, .status-table td { text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .status-table th { font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-secondary); font-weight: 600; }
+  .status-table td.mono, .status-table td code { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; }
+  .table-wrap { overflow-x: auto; }
+  .pill { display: inline-block; font-family: Inter, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.4px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .pill.merged { background: #e7f6ec; color: #15803d; }
+  .pill.open { background: #fff4e5; color: #c2410c; }
+  .pill.closed { background: var(--code-bg); color: var(--text-secondary); }
+  .component { padding: 22px 0; border-bottom: 1px solid var(--border); }
+  .component:last-child { border-bottom: none; }
+  .component .c-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .component .c-title { font-family: Inter, sans-serif; font-size: 17px; font-weight: 600; }
+  .component .c-size { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--text-secondary); }
+  .component p { margin-bottom: 12px; font-size: 17px; }
+  .component p:last-child { margin-bottom: 0; }
+  .lesson { margin-bottom: 18px; }
+  .lesson strong { font-weight: 600; }
+  @media (max-width: 640px) { .component .c-head { flex-direction: column; gap: 4px; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<nav>
+  <a href="/" class="nav-name">Yicheng Yang</a>
+  <div class="nav-links">
+    <a href="/research">Research</a>
+    <a href="/ai-supply-chain">AI Chain</a>
+    <a href="/strategies">Strategies</a>
+    <a href="/projects">Projects</a>
+    <a href="/gsoc" class="active">GSoC</a>
+    <a href="/about">About</a>
+  </div>
+</nav>
+
+<header>
+  <div class="label">GSoC 2026 &middot; Final report</div>
+  <h1>Streaming Variational Inference for PyMC</h1>
+  <p class="meta">Yicheng Yang &middot; NumFOCUS / PyMC &middot; Mentors Chris Fonnesbeck and Rob Zinkov &middot; Work product submitted August 2026 &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
+</header>
+
+<article>
+
+<div class="callout">
+  <p><strong>What this page is.</strong> The final work product for my Google Summer of Code 2026 project with NumFOCUS / PyMC. It says what the project set out to do, what got built, what merged upstream, what is still in review, and what is left. Every claim links to the code. State recorded on 17 August 2026; the open pull requests continue after GSoC, so the commit each one stood at on that date is noted.</p>
+</div>
+
+<div class="stats-row">
+  <div class="stat-card"><span class="number">8db1880</span><span class="desc">DataLoader merged into pymc-extras, 7 August 2026</span></div>
+  <div class="stat-card"><span class="number">491M rows</span><span class="desc">streamed in one epoch at 339 MB peak memory</span></div>
+  <div class="stat-card"><span class="number">12</span><span class="desc">weekly engineering notes, hand-written</span></div>
+</div>
+
+<h2>The problem and the goal</h2>
+
+<p>
+  PyMC's variational inference assumes the whole dataset is resident. <code>pm.Minibatch</code> slices tensors that are already in memory, and Pathfinder runs L-BFGS on the full-data gradient. Once a dataset outgrows RAM, and financial tick data, sensor streams and large panels do that routinely, both methods are simply unavailable. The project's goal was to remove that limit: let ADVI and Pathfinder run on data that never fits in memory, using PyMC's existing <code>total_size</code> rescaling rather than a parallel inference engine.
+</p>
+
+<p>The proposal broke that into five deliverables:</p>
+<ol>
+  <li>An out-of-core <strong>data loader</strong> that yields fixed-size minibatches from any re-iterable source and carries the row count <em>N</em> for the ELBO rescaling.</li>
+  <li>A <strong>trainer</strong> that drives ADVI over the loader.</li>
+  <li>A <strong>streaming Pathfinder</strong>: L-BFGS on minibatch gradients.</li>
+  <li><strong>Online convergence monitoring</strong>, because a stream has no natural step budget.</li>
+  <li>Worked <strong>tutorials</strong>: a financial tick-data notebook and a panel-data notebook. Dask integration was a stretch item.</li>
+</ol>
+
+<p>
+  Four of the five are built and under review upstream, with the loader merged. The panel-data tutorial and the Dask integration were dropped deliberately; the reasons are in <a href="#left">what is left</a>.
+</p>
+
+<h2>What was built</h2>
+
+<div class="component">
+  <div class="c-head">
+    <span class="c-title"><a href="https://github.com/pymc-devs/pymc-extras/pull/698">DataLoader &mdash; pymc-extras #698</a> <span class="pill merged">merged 7 Aug 2026</span></span>
+    <span class="c-size">+921 lines &middot; 6 files &middot; 23 commits</span>
+  </div>
+  <p>
+    <code>pymc_extras/variational/dataloader.py</code> (308 lines) plus 589 lines of tests. Wraps any re-iterable Python source, a list of chunks, a generator factory, or Parquet shards via <code>parquet_source</code>, and yields batches of exactly <code>batch_size</code> rows, re-batching across chunk boundaries and dropping the ragged tail per pass. Optional bounded shuffle buffer. <code>loader.total_size</code> is <em>N</em>, resolved from Parquet metadata or one counting pass, and is what goes into <code>total_size=</code>; <code>len(loader)</code> is batches per epoch, as in torch. Merge commit <a href="https://github.com/pymc-devs/pymc-extras/commit/8db1880d410e509be02abf9b085f08c3d4514fd1"><code>8db1880</code></a>.
+  </p>
+  <p>
+    History: opened against PyMC core as <a href="https://github.com/pymc-devs/pymc/pull/8325">pymc#8325</a> on 9 June, moved to pymc-extras on the maintainers' extras-first guideline (<a href="/gsoc-week-5">week 5</a>), cut by 23% in a review pass with three independent proofs the deletions were safe (<a href="/gsoc-week-9">week 9</a>), and then edited by my mentor in seven commits before merge, taking the source file from just over 500 lines to 308 while 85% of the merged lines stayed mine (<a href="/gsoc-week-12">week 12</a>).
+  </p>
+  <p>
+    Validation: on the public Criteo 1&nbsp;TB click logs, streaming ADVI matches in-memory ADVI coefficient for coefficient (correlation 0.998 across 14 coefficients, largest gap 0.12) while peak memory stays flat at 0.66&ndash;0.74&nbsp;GB from 1 million to 150 million rows; the in-memory <code>pm.Minibatch</code> baseline reaches 15.7&nbsp;GB at 150 million (21&times;) and would run out of a 26&nbsp;GB machine near 238 million rows (<a href="/gsoc-week-3">week 3</a>, <a href="/gsoc-week-4">week 4</a>, <a href="https://github.com/YichengYang-Ethan/pymc-streaming-vi-gsoc/tree/main/validation/criteo">scripts and raw sweep</a>). On a Binance trade corpus of mine (not public) the merged loader streams one epoch over 491,559,069 rows in 6.0&nbsp;s at 339&nbsp;MB peak RSS with exact row conservation.
+  </p>
+</div>
+
+<div class="component">
+  <div class="c-head">
+    <span class="c-title"><a href="https://github.com/pymc-devs/pymc-extras/pull/710">Trainer &mdash; pymc-extras #710</a> <span class="pill open">open &middot; review requested</span></span>
+    <span class="c-size">+683 lines &middot; 3 files &middot; at <code>b736877</code></span>
+  </div>
+  <p>
+    <code>trainer.py</code> (180 lines) plus 501 lines of tests. Runs ADVI through <code>pm.fit</code> over the loader: a <code>pm.Data</code> placeholder receives the next batch after every step, epochs cycle, and the trainer warns when the model's <code>total_size</code> disagrees with the loader's. Validated end to end on 30.7 million rows of tick data against a closed-form posterior. Started as <a href="https://github.com/pymc-devs/pymc/pull/8333">pymc#8333</a> and moved with the loader.
+  </p>
+  <p>
+    Status: maintainers are weighing it against my mentor's own <a href="https://github.com/pymc-devs/pymc-extras/pull/713">#713</a>, a larger ADVI package with its own trainer. Either outcome is fine; #710 is kept small so the two are easy to compare, and the winning API will be similar enough to move code across.
+  </p>
+</div>
+
+<div class="component">
+  <div class="c-head">
+    <span class="c-title"><a href="https://github.com/pymc-devs/pymc-extras/pull/722">Streaming Pathfinder &mdash; pymc-extras #722</a> <span class="pill open">open &middot; review requested</span></span>
+    <span class="c-size">+1,756 lines &middot; 5 files &middot; at <code>f98a4ff</code></span>
+  </div>
+  <p>
+    <code>stochastic_lbfgs.py</code> (244 lines) and <code>streaming_pathfinder.py</code> (382 lines) plus 1,123 lines of tests. L-BFGS on minibatches with same-batch curvature pairs: the gradient difference that feeds the curvature estimate is taken on one batch, so batch noise cannot corrupt it (<a href="/gsoc-pathfinder">week 8</a>). The proposal from the optimizer path is a Polyak&ndash;Ruppert tail average of the iterates rather than the ELBO-best iterate, because every accepted iterate sits near its own minibatch's mode, a location error that selection cannot remove but averaging can; Pareto-<em>k</em> went from about 6 to 0.3&ndash;0.6 at N&nbsp;=&nbsp;10<sup>5</sup>. Importance correction reuses Pathfinder's PSIS code and needs exact <em>N</em>, so the driver raises when it cannot get one.
+  </p>
+  <p>
+    Where it works and where it does not is stated in the docstring and the pull request: a Poisson target passes, a Student-t target is marginal, and a 23-dimensional hierarchical target fails with Pareto-<em>k</em> around 2. On real data it recovers a streamed closed-form posterior on one million rows of tick data at Pareto-<em>k</em> 0.45, and on 30.7 million rows at 0.30. At the 15 August sync my mentor's read was that it looks ready, and he has taken it for review.
+  </p>
+</div>
+
+<div class="component">
+  <div class="c-head">
+    <span class="c-title"><a href="https://github.com/pymc-devs/pymc-extras/pull/733">CheckLossConvergence &mdash; pymc-extras #733</a> <span class="pill open">open &middot; review requested</span></span>
+    <span class="c-size">+367 lines &middot; 3 files &middot; at <code>919857b</code></span>
+  </div>
+  <p>
+    <code>callbacks.py</code> (147 lines) plus 218 lines of tests. A <code>pm.fit</code> callback that stops a noisy minibatch ELBO trace on evidence rather than a step count. It compares adjacent block means at two horizons that grow with the run, against a noise yardstick and a practical-negligibility yardstick, and fires only when both horizons agree for a full horizon.
+  </p>
+  <p>
+    It replaces two earlier designs of mine. The CUSUM monitor from <a href="/gsoc-cusum">week 7</a> calibrated to a 0.6% false-stop rate on synthetic traces, then, measured on four real 60,000-step ADVI traces, stopped at <code>min_steps</code> plus about 50 with 40&ndash;90% of the loss reduction still ahead; no threshold fixed it. The redesign stops those four traces at 1.9&ndash;3.0&times; the true convergence point (19&ndash;78% of the step budget saved), does the same on three models it had never seen, and produced zero premature stops on five held-out still-improving families across 50 seeds. Supersedes <a href="https://github.com/pymc-devs/pymc/pull/8384">pymc#8384</a>, closed 14 August pointing here.
+  </p>
+</div>
+
+<div class="component">
+  <div class="c-head">
+    <span class="c-title"><a href="https://github.com/pymc-devs/pymc-examples/pull/892">Tutorial: streaming VI on high-frequency tick data &mdash; pymc-examples #892</a> <span class="pill open">open &middot; review requested</span></span>
+    <span class="c-size">MyST + executed notebook &middot; at <code>299abb2</code></span>
+  </div>
+  <p>
+    A gallery notebook (<a href="https://pymcio--892.org.readthedocs.build/projects/examples/en/892/variational_inference/streaming_tick_data.html">rendered preview</a>, proposal issue <a href="https://github.com/pymc-devs/pymc-examples/issues/891">#891</a>) that fits a hierarchical hurdle&ndash;Student-t model of next-event price moves, 154 free parameters, by streaming minibatches from Parquet with the merged DataLoader. The 300,000 rows are generated inside the notebook with known ground truth, so recovery is checkable, and it runs in under a minute. It teaches three things: two acceptance gates for when minibatch VI is valid and when streaming is doing real work (<a href="/gsoc-week-11">week 11</a>); the mechanics end to end, an on-disk global shuffle, <code>total_size</code> rescaling and what a stopping rule has to be able to see; and honest reporting. That last part is the notebook's own finding: replaying a fixed shuffled order puts the optimizer on an orbit, the last iterate misses the truth by several posterior standard deviations purely because of where the step budget ended, and averaging the iterate over one full pass puts every identified quantity inside 1.2 standard deviations on three optimizer seeds. A weakly identified direction is shown as a fit still moving, with the plateaued loss unable to see it, which is exactly the blind spot the stopping rule above has to live with.
+  </p>
+  <p>
+    Status: in structural review with my mentor Chris Fonnesbeck. The one blocker to merging is that pymc-extras' latest release (v0.14.0, 28 July) predates the DataLoader merge, so the notebook currently pins a git install; it flips to a plain <code>pip install</code> once a release includes it. The June draft <a href="https://github.com/pymc-devs/pymc-examples/pull/888">#888</a> was closed in favour of this one so there is one example, not two.
+  </p>
+</div>
+
+<h2>Merged, open, closed: the ledger</h2>
+
+<p>Where each pull request stood on 17 August 2026. The four open ones continue after GSoC; the commit listed is the GSoC state.</p>
+
+<div class="table-wrap">
+<table class="status-table">
+  <thead><tr><th>Repository</th><th>Pull request</th><th>State</th><th>Note</th></tr></thead>
+  <tbody>
+    <tr><td>pymc-extras</td><td><a href="https://github.com/pymc-devs/pymc-extras/pull/698">#698</a> DataLoader</td><td><span class="pill merged">merged</span></td><td>7 Aug 2026, <code>8db1880</code></td></tr>
+    <tr><td>pymc-extras</td><td><a href="https://github.com/pymc-devs/pymc-extras/pull/710">#710</a> Trainer</td><td><span class="pill open">open</span></td><td>review requested, head <code>b736877</code></td></tr>
+    <tr><td>pymc-extras</td><td><a href="https://github.com/pymc-devs/pymc-extras/pull/722">#722</a> Streaming Pathfinder</td><td><span class="pill open">open</span></td><td>review requested, head <code>f98a4ff</code></td></tr>
+    <tr><td>pymc-extras</td><td><a href="https://github.com/pymc-devs/pymc-extras/pull/733">#733</a> CheckLossConvergence</td><td><span class="pill open">open</span></td><td>review requested, head <code>919857b</code></td></tr>
+    <tr><td>pymc-examples</td><td><a href="https://github.com/pymc-devs/pymc-examples/pull/892">#892</a> Tick-data tutorial</td><td><span class="pill open">open</span></td><td>review requested, head <code>299abb2</code></td></tr>
+    <tr><td>pymc-examples</td><td><a href="https://github.com/pymc-devs/pymc-examples/pull/882">#882</a>, <a href="https://github.com/pymc-devs/pymc-examples/pull/886">#886</a> VI quickstart for PyMC 6</td><td><span class="pill merged">merged</span></td><td>26 May and 1 Jun, small fixes to the VI quickstart while getting oriented</td></tr>
+    <tr><td>pymc</td><td><a href="https://github.com/pymc-devs/pymc/pull/8325">#8325</a>, <a href="https://github.com/pymc-devs/pymc/pull/8333">#8333</a></td><td><span class="pill closed">closed</span></td><td>12 Jul, moved to pymc-extras as #698 and #710</td></tr>
+    <tr><td>pymc</td><td><a href="https://github.com/pymc-devs/pymc/pull/8384">#8384</a></td><td><span class="pill closed">closed</span></td><td>14 Aug, superseded by pymc-extras #733</td></tr>
+    <tr><td>pymc-examples</td><td><a href="https://github.com/pymc-devs/pymc-examples/pull/888">#888</a></td><td><span class="pill closed">closed</span></td><td>14 Aug, superseded by #892</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>
+  My mentors' steer at the last sync was that GSoC deadlines are secondary and merges land when they are ready. I take that at face value: the review of the four open pull requests is work I am carrying past 24 August, not work that stops there.
+</p>
+
+<h2>Using it today</h2>
+
+<p>
+  The loader is on pymc-extras <code>main</code> and installable from the merge commit. The shape of a streaming ADVI fit, which the tutorial spells out in full:
+</p>
+
+<pre><code>pip install "pymc-extras @ git+https://github.com/pymc-devs/pymc-extras@8db1880"</code></pre>
+
+<pre><code>import pymc as pm
+from pymc_extras.variational.dataloader import DataLoader, parquet_source
+
+loader = DataLoader(parquet_source("shards/", columns=cols),
+                    batch_size=1024, shuffle=True, total_size="auto")
+
+with pm.Model() as model:
+    batch = pm.Data("batch", next(iter(loader)))
+    ...
+    pm.Normal("y", mu, sigma, observed=batch[:, 0],
+              total_size=loader.total_size)      # N, never len(loader)
+
+
+class StreamAdvance:                  # the Trainer in #710 owns this step
+    def __init__(self, model, loader):
+        self._shared = model["batch"]
+        self._stream = self._endless(loader)
+
+    @staticmethod
+    def _endless(loader):
+        while True:
+            yield from loader
+
+    def prime(self):
+        self._shared.set_value(next(self._stream), borrow=True)
+
+    def __call__(self, approx, losses, i):
+        self._shared.set_value(next(self._stream), borrow=True)
+
+
+stream = StreamAdvance(model, loader)
+stream.prime()
+with model:
+    approx = pm.fit(10_000, method="advi", callbacks=[stream])</code></pre>
+
+<p>
+  Two things the tutorial insists on and this snippet inherits: <code>total_size</code> is the row count, not the batch count, and whatever you read off the fit should be averaged over a full pass rather than taken from the last iterate.
+</p>
+
+<h2 id="left">What is left</h2>
+
+<ul>
+  <li><strong>Reviews and merges</strong> for #710, #722, #733 and pymc-examples #892. All four are marked ready with walkthrough comments; I am continuing them after the program.</li>
+  <li><strong>A pymc-extras release</strong> that includes the DataLoader, so the tutorial can install from PyPI. The notebook's install line and pinned outputs get refreshed at that point.</li>
+  <li><strong>The trainer decision.</strong> #710 versus #713 is the maintainers' call. Whichever survives gets rebased and the tutorial's hand-rolled <code>StreamAdvance</code> adapter is replaced by it.</li>
+  <li><strong>Wiring the callback and the Pathfinder into the tutorial</strong> once they merge. Today the notebook points at them and explains, with a pre-fit check, why the Pathfinder is not run on that 154-parameter hierarchical target.</li>
+  <li><strong>Optimizer machinery may move</strong> to a shared PyTensor optimization package after the summer. <code>stochastic_lbfgs.py</code> is a single file with no pymc-extras dependencies for that reason.</li>
+  <li><strong>Two follow-ups found along the way</strong>, not mine to fix inside these PRs: a possible orientation issue in the shared <code>bfgs_sample.py</code> draw covariance that I want to reproduce cleanly and report upstream, and what looks like an upstream <code>pm.fit</code> edge case, a callback raising <code>StopIteration</code> within the first ten steps with <code>score=True</code> ending in an <code>IndexError</code>, which needs a minimal reproduction before it becomes an issue.</li>
+  <li><strong>Dropped on purpose.</strong> The panel-data tutorial: it would exercise the same <code>total_size</code> contract with a hierarchical index and no new API, so it would show nothing the tick example does not. The Dask integration: the comparison is <a href="https://github.com/YichengYang-Ethan/pymc-streaming-vi-gsoc/blob/main/design/streaming_api_comparison.md">written up</a>, the integration itself was never a firm commitment, and the last weeks went to the example.</li>
+</ul>
+
+<h2>What I learned</h2>
+
+<p class="lesson"><strong>It was already a DataLoader.</strong> My first design invented names for an idea people already knew. My mentor's first review point was that the thing looked like torch's DataLoader, so that is what it became: same words, same mental model, nothing new to learn. <a href="/gsoc-week-3">Week 3.</a></p>
+
+<p class="lesson"><strong>Where code lives is a design decision.</strong> A month of pull requests against PyMC core moved to pymc-extras once the maintainers gave the usual answer for a new feature: if it can start in extras, start there. The move was nearly mechanical because the loader has no PyMC coupling, which is itself the lesson about what a data loader should depend on. <a href="/gsoc-week-5">Week 5.</a></p>
+
+<p class="lesson"><strong>The review is the deletions.</strong> The loader went from 1,361 added lines to 1,045 in a review pass, and then my mentor's seven editing commits took the source file to 308. He rewrote almost nothing; he deleted. The seven ideas in those commits are now the checklist I run over my own code before anyone else sees it. <a href="/gsoc-week-9">Week 9</a>, <a href="/gsoc-week-12">week 12</a>.</p>
+
+<p class="lesson"><strong>Calibrated is not validated.</strong> A stopping rule with a 0.6% false-stop rate on synthetic traces stopped real ADVI runs with most of the improvement still ahead. Every number in #733 now comes from real traces and from models the rule had never seen. <a href="/gsoc-cusum">Week 7</a> and the #733 body.</p>
+
+<p class="lesson"><strong>Selection cannot fix a location error.</strong> Each accepted L-BFGS iterate on a minibatch sits near that batch's own mode, so picking the ELBO-best iterate picks a well-scored wrong place. Averaging the tail of the path removes what selection cannot. Pareto-<em>k</em> from about 6 to under 1. <a href="/gsoc-pathfinder">Week 8</a>, #722.</p>
+
+<p class="lesson"><strong>Choosing the example is a statistics problem.</strong> Two acceptance gates killed three capstone designs before any code, and the survivor then taught the notebook's real lesson: a plateaued loss says nothing about parameter convergence along a weakly identified direction, and the fix is a reparameterization, not more steps. <a href="/gsoc-week-11">Week 11</a>, #892.</p>
+
+<p class="lesson"><strong>Numbers trace to logs or they are not numbers.</strong> Twice this summer a figure I quoted from memory was off, once by mixing two comparisons and once by rounding an extrapolation. Every number on this page traces to a pull request, a notebook output, or checked-in raw output, and the one measured only on my own tick-data corpus is labelled as such.</p>
+
+<h2>Everything, in one place</h2>
+
+<p><strong>Code under review or merged</strong></p>
+<ul>
+  <li>pymc-extras: <a href="https://github.com/pymc-devs/pymc-extras/pull/698">#698 DataLoader</a> (merged, <a href="https://github.com/pymc-devs/pymc-extras/pull/698/commits">commits</a>, <a href="https://github.com/pymc-devs/pymc-extras/blob/8db1880d410e509be02abf9b085f08c3d4514fd1/pymc_extras/variational/dataloader.py">source at merge</a>) &middot; <a href="https://github.com/pymc-devs/pymc-extras/pull/710">#710 Trainer</a> &middot; <a href="https://github.com/pymc-devs/pymc-extras/pull/722">#722 Streaming Pathfinder</a> &middot; <a href="https://github.com/pymc-devs/pymc-extras/pull/733">#733 CheckLossConvergence</a></li>
+  <li>pymc-examples: <a href="https://github.com/pymc-devs/pymc-examples/pull/892">#892 tutorial</a> (<a href="https://pymcio--892.org.readthedocs.build/projects/examples/en/892/variational_inference/streaming_tick_data.html">rendered preview</a>, <a href="https://github.com/pymc-devs/pymc-examples/issues/891">issue #891</a>) &middot; <a href="https://github.com/pymc-devs/pymc-examples/pull/882">#882</a> and <a href="https://github.com/pymc-devs/pymc-examples/pull/886">#886</a> (merged)</li>
+  <li>All of my pull requests across pymc-devs: <a href="https://github.com/pulls?q=is%3Apr+author%3AYichengYang-Ethan+org%3Apymc-devs">GitHub search</a></li>
+</ul>
+
+<p><strong>Design, validation, staging</strong></p>
+<ul>
+  <li><a href="https://github.com/YichengYang-Ethan/pymc-streaming-vi-gsoc">pymc-streaming-vi-gsoc</a>: design documents (including the streaming API comparison), the first prototype, and the Criteo public-data validation with scripts, figures and the raw memory sweep.</li>
+  <li><a href="https://github.com/YichengYang-Ethan/pymc-streaming-lab">pymc-streaming-lab</a>: the staging lab where the convergence monitor and the streaming Pathfinder were built with tests, CI and calibration studies before being lifted upstream as clean diffs.</li>
+</ul>
+
+<p><strong>Writing</strong></p>
+<ul>
+  <li>The twelve weekly notes, from <a href="/gsoc-week-1">week 1</a> to <a href="/gsoc-week-12">week 12</a>, are listed on the <a href="/gsoc">GSoC page</a>.</li>
+  <li><a href="https://summerofcode.withgoogle.com/programs/2026/projects/DQ5CA7dx">GSoC project page</a> (NumFOCUS / PyMC).</li>
+</ul>
+
+<h2>Thanks</h2>
+
+<p>
+  To my mentors, Chris Fonnesbeck (<a href="https://github.com/fonnesbeck">@fonnesbeck</a>) and Rob Zinkov (<a href="https://github.com/zaxtax">@zaxtax</a>): for the weekly syncs, for the editing pass that taught me more about library code than anything I read this year, and for saying "done when done" at exactly the moment I needed to hear it. To the PyMC maintainers, in particular Ricardo Vieira, for the design guidance on where this work should live. And to NumFOCUS and Google for the program.
+</p>
+
+<hr style="border:none; border-top:1px solid var(--border); margin:40px 0;">
+
+<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary);">
+  <strong>Links.</strong>
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/698">#698</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/710">#710</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/722">#722</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc-extras/pull/733">#733</a> &middot;
+  <a href="https://github.com/pymc-devs/pymc-examples/pull/892">pymc-examples #892</a> &middot;
+  <a href="/gsoc">All GSoC notes</a> &middot;
+  <a href="https://summerofcode.withgoogle.com/programs/2026/projects/DQ5CA7dx">GSoC project page</a> &middot;
+  Mentors <a href="https://github.com/fonnesbeck">@fonnesbeck</a> &middot; <a href="https://github.com/zaxtax">@zaxtax</a>
+</p>
+
+</article>
+
+<footer>
+  <p>Yicheng Yang &middot; CS / Economics / Statistics &middot; University of Illinois Urbana-Champaign<br>
+  yy85@illinois.edu &middot; <a href="https://github.com/YichengYang-Ethan">GitHub</a> &middot; <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6468338">SSRN</a></p>
+</footer>
+
+</div>
+</body>
+</html>
