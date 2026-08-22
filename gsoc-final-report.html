@@ -33,6 +33,7 @@
   .component p:last-child { margin-bottom: 0; }
   .lesson { margin-bottom: 18px; }
   .lesson strong { font-weight: 600; }
+  .figure img { height: auto; background: #fff; }
   @media (max-width: 640px) { .component .c-head { flex-direction: column; gap: 4px; } }
 </style>
 </head>
@@ -70,7 +71,7 @@
   <div class="stat-card"><span class="number">12</span><span class="desc">weekly engineering notes over the program</span></div>
 </div>
 
-<h2>Highlights</h2>
+<h2 id="highlights">Highlights</h2>
 
 <ul>
   <li><strong>The DataLoader is merged</strong> into pymc-extras and on <code>main</code>: out-of-core minibatches from any re-iterable source, Parquet-native, with the row count for the ELBO rescaling resolved automatically. Streaming ADVI built on it matches an in-memory fit across all 14 posterior means on the public Criteo benchmark, its peak memory sits near 0.7&nbsp;GB at every configured scale up to 150 million rows while the materialize-everything baseline climbs to 15.7&nbsp;GB, and it streams half a billion rows of my own tick corpus through one epoch in six seconds.</li>
@@ -79,7 +80,7 @@
   <li><strong>Twelve weekly notes</strong> record the design decisions as they were made, from the first prototype to the merge.</li>
 </ul>
 
-<h2>The problem and the goal</h2>
+<h2 id="goal">The problem and the goal</h2>
 
 <p>
   PyMC can already minibatch ADVI: <code>pm.Minibatch</code> slices tensors that are in memory, and a shared variable plus a callback can feed batches by hand. What it lacked was everything before that point &mdash; a reusable, tested way to turn data on disk into fixed-size batches that carry the row count the <code>total_size</code> rescaling needs &mdash; and Pathfinder runs L-BFGS on the full-data gradient, so it had no minibatch path at all. Once a dataset outgrows RAM, and financial tick data, sensor streams and large panels do that routinely, streaming it meant hand-rolled plumbing per model. The project's goal was to build that layer and the streaming drivers around it, on top of PyMC's existing <code>total_size</code> rescaling rather than as a parallel inference engine.
@@ -98,7 +99,12 @@
   All four library components are built and upstream, with the loader merged, and the tick-data tutorial is open in the PyMC example gallery. The second tutorial and the Dask stretch item were scoped out in favour of getting the tick example right; see <a href="#left">what is left</a>.
 </p>
 
-<h2>What was built</h2>
+<h2 id="built">What was built</h2>
+
+<figure class="figure">
+  <img src="/images/gsoc-final-component-map.svg" alt="Component map of the streaming stack: data on disk flows through the merged DataLoader into a pm.Data placeholder and PyMC's total_size-rescaled likelihood; below it, streaming ADVI with the Trainer and the CheckLossConvergence callback, and the streaming Pathfinder; the tutorial exercises the merged path end to end." width="940" height="484">
+  <figcaption>The streaming stack at submission. Data flows left to right into PyMC's existing <code>total_size</code> rescaling; the two consumers sit below it. Status pills are the state on 18 August 2026.</figcaption>
+</figure>
 
 <div class="component">
   <div class="c-head">
@@ -114,11 +120,15 @@
   <p>
     Validation, on the public Criteo 1&nbsp;TB click logs. Equivalence: in a seeded 1M-row run, streaming ADVI matched in-memory minibatch ADVI across all 14 posterior means (correlation 0.998, largest gap 0.12). Memory: in separate 150-step subprocess fits configured for 1 million to 150 million rows, streaming peak RSS stayed at 0.65&ndash;0.74&nbsp;GB while the baseline that materializes every row reached 15.7&nbsp;GB at 150 million (21&times;); a linear fit to the baseline's growth crosses this machine's 26&nbsp;GB of RAM near 238 million rows &mdash; an actual out-of-memory run was not performed (<a href="/gsoc-week-3">week 3</a>, <a href="/gsoc-week-4">week 4</a>, <a href="https://github.com/YichengYang-Ethan/pymc-streaming-vi-gsoc/tree/main/validation/criteo">scripts and raw sweep</a> &mdash; those scripts were written against the pre-merge prototype and its API; the stored outputs and the raw sweep JSON are the record, and the runnable walkthrough of the merged API is the tutorial below). On a Binance trade corpus of mine (not public, so not independently verifiable) the merged loader streams one epoch over 491,559,069 rows in 6.0&nbsp;s at 339&nbsp;MB peak RSS with exact row conservation.
   </p>
+  <figure class="figure" style="margin:18px 0 6px;">
+    <img src="/images/gsoc-final-criteo-memory.svg" alt="Line chart of peak resident memory versus configured dataset size on Criteo: the streaming DataLoader stays flat at 0.65 to 0.74 GB from 1 million to 150 million rows, the in-memory baseline rises linearly to 15.7 GB at 150 million, and a dashed extrapolation of the baseline reaches the machine's 25.8 GB of RAM near 238 million rows." width="760" height="410">
+    <figcaption>From the checked-in sweep (<a href="https://github.com/YichengYang-Ethan/pymc-streaming-vi-gsoc/blob/main/validation/criteo/memory_sweep_full.json"><code>memory_sweep_full.json</code></a>). Each point is a separate 150-step ADVI fit configured for that many Criteo rows: the streaming loader stays at 0.65&ndash;0.74&nbsp;GB while the baseline that materializes every row reaches 15.7&nbsp;GB at 150 million; the dashed line is a linear extrapolation of the baseline to the machine's RAM, not a run.</figcaption>
+  </figure>
 </div>
 
 <div class="component">
   <div class="c-head">
-    <span class="c-title"><a href="https://github.com/pymc-devs/pymc-extras/pull/710">Trainer &mdash; pymc-extras #710</a> <span class="pill open">open &middot; review requested</span></span>
+    <span class="c-title"><a href="https://github.com/pymc-devs/pymc-extras/pull/710">Trainer &mdash; pymc-extras #710</a> <span class="pill open">open &middot; ready for review</span></span>
     <span class="c-size">+683 lines &middot; 3 files &middot; at <code>b736877</code></span>
   </div>
   <p>
@@ -131,7 +141,7 @@
 
 <div class="component">
   <div class="c-head">
-    <span class="c-title"><a href="https://github.com/pymc-devs/pymc-extras/pull/722">Streaming Pathfinder &mdash; pymc-extras #722</a> <span class="pill open">open &middot; review requested</span></span>
+    <span class="c-title"><a href="https://github.com/pymc-devs/pymc-extras/pull/722">Streaming Pathfinder &mdash; pymc-extras #722</a> <span class="pill open">open &middot; ready for review</span></span>
     <span class="c-size">+1,756 lines &middot; 5 files &middot; at <code>f98a4ff</code></span>
   </div>
   <p>
@@ -144,7 +154,7 @@
 
 <div class="component">
   <div class="c-head">
-    <span class="c-title"><a href="https://github.com/pymc-devs/pymc-extras/pull/733">CheckLossConvergence &mdash; pymc-extras #733</a> <span class="pill open">open &middot; review requested</span></span>
+    <span class="c-title"><a href="https://github.com/pymc-devs/pymc-extras/pull/733">CheckLossConvergence &mdash; pymc-extras #733</a> <span class="pill open">open &middot; awaiting review</span></span>
     <span class="c-size">+367 lines &middot; 3 files &middot; at <code>919857b</code></span>
   </div>
   <p>
@@ -168,7 +178,7 @@
   </p>
 </div>
 
-<h2>Merged, open, closed: the ledger</h2>
+<h2 id="ledger">Merged, open, closed: the ledger</h2>
 
 <p>Where each pull request stood on 18 August 2026 (America/Chicago). The four open ones continue after GSoC; each linked commit is the GSoC-cutoff state.</p>
 
@@ -193,7 +203,7 @@
   The four open pull requests are work I am carrying past 24 August, not work that stops there. They merge when they are ready, and the GSoC deadline does not change how carefully that happens.
 </p>
 
-<h2>Using it today</h2>
+<h2 id="using">Using it today</h2>
 
 <p>
   The loader is on pymc-extras <code>main</code> and installable from the merge commit. The shape of a streaming ADVI fit, which the tutorial spells out in full:
@@ -255,7 +265,7 @@ with model:
   <li><strong>Scoped out.</strong> The panel-data tutorial would exercise the same <code>total_size</code> contract with a hierarchical index and no new API, so the tick example carries the teaching on its own. The Dask integration was a stretch item; the comparison study is <a href="https://github.com/YichengYang-Ethan/pymc-streaming-vi-gsoc/blob/main/design/streaming_api_comparison.md">written up</a> for whoever picks it up.</li>
 </ul>
 
-<h2>What I learned</h2>
+<h2 id="learned">What I learned</h2>
 
 <p class="lesson"><strong>It was already a DataLoader.</strong> My first design invented names for an idea people already knew. Review pointed out that the thing looked like torch's DataLoader, so that is what it became: same words, same mental model, nothing new to learn. <a href="/gsoc-week-3">Week 3.</a></p>
 
@@ -269,7 +279,7 @@ with model:
 
 <p class="lesson"><strong>Numbers should trace to a source.</strong> Every number on this page traces to a pull request, a notebook output, or checked-in raw output; the one throughput number measured on my own corpus is marked as such wherever it appears.</p>
 
-<h2>Everything, in one place</h2>
+<h2 id="links">Everything, in one place</h2>
 
 <p><strong>Code under review or merged</strong></p>
 <ul>
@@ -290,7 +300,7 @@ with model:
   <li><a href="https://summerofcode.withgoogle.com/programs/2026/projects/DQ5CA7dx">GSoC project page</a> (NumFOCUS / PyMC).</li>
 </ul>
 
-<h2>Thanks</h2>
+<h2 id="thanks">Thanks</h2>
 
 <p>
   To my mentors, Chris Fonnesbeck (<a href="https://github.com/fonnesbeck">@fonnesbeck</a>) and Rob Zinkov (<a href="https://github.com/zaxtax">@zaxtax</a>): for the weekly syncs, for the editing pass that taught me more about library code than anything I read this year, and for the reminder, at exactly the right moment, that good work lands when it is ready. To the PyMC maintainers, for the design guidance on where this work should live. And to NumFOCUS and Google for the program.

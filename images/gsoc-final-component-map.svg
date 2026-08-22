@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 484" width="940" height="484" font-family="Inter, 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#9aa0a0"/>
+    </marker>
+    <style>
+      .box { fill: #ffffff; stroke: #c8cfcf; stroke-width: 1.2; rx: 8; }
+      .boxq { fill: #f7f7f5; stroke: #c8cfcf; stroke-width: 1.2; rx: 8; }
+      .t { font-size: 13px; font-weight: 600; fill: #1b1b1b; }
+      .s { font-size: 11px; fill: #555555; }
+      .m { font-size: 10.5px; fill: #555555; font-family: 'SF Mono', Menlo, Consolas, monospace; }
+      .edge { stroke: #9aa0a0; stroke-width: 1.5; fill: none; marker-end: url(#arr); }
+      .edgeq { stroke: #9aa0a0; stroke-width: 1.5; fill: none; stroke-dasharray: 4 3; marker-end: url(#arr); }
+      .lbl { font-size: 10px; fill: #777777; }
+      .pm { font-size: 9.5px; font-weight: 700; letter-spacing: 0.4px; }
+    </style>
+  </defs>
+  <rect x="0" y="0" width="940" height="484" fill="#ffffff"/>
+
+  <!-- Row 1: the data path -->
+  <rect class="boxq" x="18" y="58" width="150" height="74"/>
+  <text class="t" x="30" y="82">Data on disk</text>
+  <text class="s" x="30" y="100">Parquet shards, or any</text>
+  <text class="s" x="30" y="115">re-iterable source</text>
+
+  <path class="edge" d="M 168 95 L 206 95"/>
+
+  <rect class="box" x="208" y="48" width="236" height="94"/>
+  <text class="t" x="220" y="72">DataLoader</text>
+  <rect x="311" y="60" width="66" height="17" rx="8.5" fill="#0d9488"/>
+  <text class="pm" x="344" y="72" text-anchor="middle" fill="#ffffff">MERGED</text>
+  <text class="m" x="384" y="72" fill="#0d9488">#698</text>
+  <text class="s" x="220" y="93">re-batch to batch_size, bounded</text>
+  <text class="s" x="220" y="108">shuffle buffer, tail dropped per pass</text>
+  <text class="m" x="220" y="128">total_size = N   len = batches / epoch</text>
+
+  <path class="edge" d="M 444 95 L 482 95"/>
+
+  <rect class="box" x="484" y="58" width="160" height="74"/>
+  <text class="t" x="496" y="82">pm.Data placeholder</text>
+  <text class="s" x="496" y="100">holds one batch; set_value</text>
+  <text class="s" x="496" y="115">after every step</text>
+
+  <path class="edge" d="M 644 95 L 682 95"/>
+
+  <rect class="box" x="684" y="58" width="238" height="74"/>
+  <text class="t" x="696" y="82">Model log-likelihood × N / B</text>
+  <text class="s" x="696" y="100">PyMC's existing total_size rescaling;</text>
+  <text class="s" x="696" y="115">nothing new in the inference engine</text>
+
+  <!-- Edges down to the two consumers -->
+  <path class="edge" d="M 760 132 C 760 175, 430 160, 380 206"/>
+  <text class="lbl" x="560" y="176">gradient steps</text>
+  <path class="edge" d="M 840 132 L 840 206"/>
+  <text class="lbl" x="832" y="174" text-anchor="end">short quasi-Newton run</text>
+
+  <!-- Row 2 left: ADVI -->
+  <rect class="box" x="150" y="208" width="420" height="96"/>
+  <text class="t" x="162" y="232">Streaming ADVI, through pm.fit</text>
+  <text class="s" x="162" y="252">the batch advances every step, epochs cycle:</text>
+  <text class="s" x="162" y="267">Trainer owns that loop</text>
+  <rect x="288" y="256" width="44" height="16" rx="8" fill="#fff4ea" stroke="#b45309" stroke-width="1"/>
+  <text class="pm" x="310" y="267.5" text-anchor="middle" fill="#b45309">OPEN</text>
+  <text class="m" x="338" y="268" fill="#b45309">#710</text>
+  <text class="s" x="162" y="285">(the tutorial carries its own StreamAdvance adapter meanwhile)</text>
+  <text class="s" x="470" y="232" fill="#1b1b1b" font-weight="600">→ posterior,</text>
+  <text class="s" x="470" y="247">read as a full-pass</text>
+  <text class="s" x="470" y="262">average</text>
+
+  <!-- callback box under ADVI -->
+  <path class="edgeq" d="M 250 304 L 250 332"/>
+  <text class="lbl" x="256" y="322">loss per step</text>
+  <path class="edgeq" d="M 470 332 L 470 304"/>
+  <text class="lbl" x="476" y="322">stop</text>
+  <rect class="box" x="150" y="334" width="420" height="76"/>
+  <text class="t" x="162" y="357">CheckLossConvergence</text>
+  <rect x="335" y="345" width="44" height="16" rx="8" fill="#fff4ea" stroke="#b45309" stroke-width="1"/>
+  <text class="pm" x="357" y="356.5" text-anchor="middle" fill="#b45309">OPEN</text>
+  <text class="m" x="385" y="357" fill="#b45309">#733</text>
+  <text class="s" x="162" y="378">stops on evidence, not a step count: adjacent block means at two growing</text>
+  <text class="s" x="162" y="393">horizons, against a noise yardstick and a practical-negligibility yardstick</text>
+
+  <!-- Row 2 right: Pathfinder -->
+  <rect class="box" x="608" y="208" width="314" height="188"/>
+  <text class="t" x="620" y="232">Streaming Pathfinder</text>
+  <rect x="778" y="220" width="44" height="16" rx="8" fill="#fff4ea" stroke="#b45309" stroke-width="1"/>
+  <text class="pm" x="800" y="231.5" text-anchor="middle" fill="#b45309">OPEN</text>
+  <text class="m" x="828" y="232" fill="#b45309">#722</text>
+  <text class="s" x="620" y="256">L-BFGS on minibatches, same-batch</text>
+  <text class="s" x="620" y="271">curvature pairs</text>
+  <text class="s" x="620" y="294">tail-averaged Gaussian proposal</text>
+  <text class="s" x="620" y="309">(last 75% of iterates)</text>
+  <text class="s" x="620" y="332">PSIS correction; needs exact N</text>
+  <text class="s" x="620" y="355" fill="#1b1b1b" font-weight="600">→ proposal + Pareto-k</text>
+  <text class="s" x="620" y="372">(read Pareto-k on every fit)</text>
+
+  <!-- Row 3: tutorial -->
+  <rect class="boxq" x="18" y="430" width="904" height="40"/>
+  <text class="t" x="30" y="455">Tutorial, pymc-examples</text>
+  <rect x="196" y="442" width="44" height="16" rx="8" fill="#fff4ea" stroke="#b45309" stroke-width="1"/>
+  <text class="pm" x="218" y="453.5" text-anchor="middle" fill="#b45309">OPEN</text>
+  <text class="m" x="246" y="454" fill="#b45309">#892</text>
+  <text class="s" x="300" y="455">runs the merged path end to end on 300,000 synthetic tick rows, in 42 s; points at the three open components</text>
+</svg>
