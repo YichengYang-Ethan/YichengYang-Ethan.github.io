@@ -47,8 +47,8 @@
   <div class="card-title" style="font-size:22px;">Favorite&ndash;Longshot Bias (FLB)</div>
   <div class="card-desc"><strong>Thesis.</strong> Binary event contracts on Kalshi embed a positive pricing wedge &lambda; that overprices longshots relative to favorites. Selling the longshot leg of well-calibrated contracts harvests this risk premium. Calibrated from 271K+ resolved contracts; pooled &lambda;&#770; = 0.187.<br><br>
   <strong>Universe.</strong> Sports (NBA, NFL, tennis), political events, and macro binaries with sufficient liquidity and a blacklist-driven topic filter.<br><br>
-  <strong>Status.</strong> Paper trading at Square Kettle &mdash; no live capital. Timestamp-fix revealed true win rate ~54% (not 68% as earlier claimed). Go-live pushed 4+ weeks while blacklist widens from 14 &rarr; 18 topics and ultrareview fixes land.</div>
-  <div class="card-meta">Since Mar 2026 &middot; Kalshi &middot; Monte Carlo fill simulation</div>
+  <strong>Status.</strong> Paper trading at Square Kettle. Timestamp-fix revealed true win rate ~54% (not 68% as earlier claimed). Go-live pushed 4+ weeks while blacklist widens from 14 &rarr; 18 topics and ultrareview fixes land.</div>
+  <div class="card-meta">Since Oct 2025 &middot; Kalshi &middot; Monte Carlo fill simulation</div>
 </div>
 
 <!-- Holy Grail -->
@@ -64,11 +64,11 @@
 
 <!-- 0DTE -->
 <div class="card" style="margin-bottom:28px;">
-  <div class="card-label">Research &middot; Falsified &amp; archived</div>
+  <div class="card-label">Research &middot; Infra ready</div>
   <div class="card-title" style="font-size:22px;">0DTE Options</div>
   <div class="card-desc"><strong>Thesis.</strong> Systematic SPY 0DTE strategy trading the intraday vol-risk-premium and skew dynamics. Academic literature shows persistent short-vol edge with risk-defined structures on 0DTE expiries; the question is execution cost and fill realism, not statistical existence.<br><br>
   <strong>Universe.</strong> SPY 0DTE options &mdash; defined-risk verticals and iron flies, gated by realized-vs-implied spread and intraday skew.<br><br>
-  <strong>Status. Archived &mdash; the thesis did not survive its own tests.</strong> Built the infrastructure (IB Gateway paper account, Theta Data chains and OI, BSM Greeks, leak-safe feature primitives) and pre-registered kill gates before looking at results. Every directional and wall-pin hypothesis failed those gates on 952 days of SPXW minute data; only a small Bonferroni-significant short-vol effect and a dealer-sign stability result survived. Archived rather than tuned until it worked.</div>
+  <strong>Status.</strong> Infrastructure ready: IB Gateway (paper) wired, Theta Data for historical chains and OI, Greeks computed via BSM. Next: data-layer migration to new Theta API, then first end-to-end backtest on 3&ndash;5 years of minute bars.</div>
   <div class="card-meta">IBKR paper &middot; Theta Data &middot; Python &middot; <a href="https://github.com/YichengYang-Ethan/0dte-strategy">Code &rarr;</a></div>
 </div>
 
