@@ -1,0 +1,6 @@
+# Oracle3 (moved)
+
+> The Oracle3 documentation moved. The current llms.txt is at https://yichengyang-ethan.github.io/oracle3-prediction-market-agent/llms.txt
+
+- [Current documentation](https://yichengyang-ethan.github.io/oracle3-prediction-market-agent/)
+- [Repository](https://github.com/YichengYang-Ethan/oracle3-prediction-market-agent)
