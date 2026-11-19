@@ -34,6 +34,20 @@
   .lesson { margin-bottom: 18px; }
   .lesson strong { font-weight: 600; }
   .figure img { height: auto; background: #fff; }
+  .cert-strip { display: grid; grid-template-columns: 168px 1fr; gap: 20px; align-items: center; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px 16px 16px; margin: 32px 0; }
+  .cert-strip .thumb, .cert-doc .sheet { display: block; line-height: 0; border-radius: 6px; }
+  .cert-strip .thumb img { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 4px; background: #fff; box-shadow: 0 1px 2px rgba(26,26,26,.06), 0 6px 14px -6px rgba(26,26,26,.22); }
+  .cert-strip .eyebrow { font-family: Inter, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--text-secondary); margin: 0 0 6px; }
+  .cert-strip .title { font-family: Inter, sans-serif; font-size: 17px; font-weight: 600; color: var(--text); line-height: 1.35; margin: 0 0 4px; }
+  .cert-strip .detail { font-family: Inter, sans-serif; font-size: 13.5px; color: var(--text-secondary); line-height: 1.5; margin: 0 0 10px; }
+  .cert-strip .links { font-family: Inter, sans-serif; font-size: 13.5px; font-weight: 500; margin: 0; }
+  .cert-doc { margin: 20px 0 44px; }
+  .cert-doc img { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 6px; background: #fff; box-shadow: 0 1px 2px rgba(26,26,26,.06), 0 16px 36px -12px rgba(26,26,26,.24); }
+  .cert-doc figcaption { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px 16px; margin-top: 16px; font-family: Inter, sans-serif; font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .cert-doc figcaption a { font-weight: 500; }
+  .cert-strip .nowrap, .cert-doc .nowrap { white-space: nowrap; }
+  .cert-strip .thumb:focus-visible, .cert-doc .sheet:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  @media (max-width: 560px) { .cert-strip { grid-template-columns: 108px 1fr; gap: 14px; padding: 12px; } .cert-strip .title { font-size: 15.5px; } .cert-strip .detail { font-size: 13px; } }
   @media (max-width: 640px) { .component .c-head { flex-direction: column; gap: 4px; } }
 </style>
 </head>
@@ -63,6 +77,16 @@
 
 <div class="callout">
   <p><strong>What this page is.</strong> The final work product for my Google Summer of Code 2026 project with NumFOCUS / PyMC. It says what the project set out to do, what got built, what merged upstream, what is still in review, and what is left. Claims link to the pull requests, notebook outputs, or checked-in raw data they come from. State recorded on 18 August 2026 (America/Chicago); the open pull requests continue after GSoC, so each one's GSoC-cutoff commit is linked in the ledger below.</p>
+</div>
+
+<div class="cert-strip">
+  <a class="thumb" href="#certificate" aria-label="View the completion certificate"><img src="/images/gsoc-2026-completion-certificate.png" alt="" width="1760" height="1360" decoding="async"></a>
+  <div>
+    <p class="eyebrow">Completion certificate</p>
+    <p class="title">Completed Google Summer of Code 2026</p>
+    <p class="detail">Issued by Google to Yicheng Yang for work with NumFOCUS / PyMC, <span class="nowrap">25 May &ndash; 24 August 2026</span>.</p>
+    <p class="links"><a href="#certificate">View certificate</a> &middot; <a href="/files/gsoc-2026-completion-certificate.pdf">PDF</a></p>
+  </div>
 </div>
 
 <div class="stats-row">
@@ -300,6 +324,13 @@ with model:
   <li><a href="https://summerofcode.withgoogle.com/programs/2026/projects/DQ5CA7dx">GSoC project page</a> (NumFOCUS / PyMC).</li>
 </ul>
 
+<h2 id="certificate">Completion certificate</h2>
+
+<figure class="cert-doc">
+  <a class="sheet" href="/files/gsoc-2026-completion-certificate.pdf"><img src="/images/gsoc-2026-completion-certificate.png" alt="Google Summer of Code completion certificate: This is to certify that Yicheng Yang has completed Google Summer of Code 2026, contributing to the open source organization NumFOCUS, May 25 to August 24, 2026. Signed by Stephanie Taylor, Program Manager, Google." width="1760" height="1360" loading="lazy" decoding="async"></a>
+  <figcaption><span>Issued by Google &middot; NumFOCUS &middot; <span class="nowrap">25 May &ndash; 24 August 2026</span></span><span><a href="/files/gsoc-2026-completion-certificate.pdf">Open PDF</a> &middot; <a href="https://summerofcode.withgoogle.com/programs/2026/projects/DQ5CA7dx">GSoC project page</a></span></figcaption>
+</figure>
+
 <h2 id="thanks">Thanks</h2>
 
 <p>
@@ -317,6 +348,7 @@ with model:
   <a href="https://github.com/pymc-devs/pymc-examples/pull/892">pymc-examples #892</a> &middot;
   <a href="/gsoc">All GSoC notes</a> &middot;
   <a href="https://summerofcode.withgoogle.com/programs/2026/projects/DQ5CA7dx">GSoC project page</a> &middot;
+  <a href="/files/gsoc-2026-completion-certificate.pdf">Completion certificate (PDF)</a> &middot;
   Mentors <a href="https://github.com/fonnesbeck">@fonnesbeck</a> &middot; <a href="https://github.com/zaxtax">@zaxtax</a>
 </p>
 
