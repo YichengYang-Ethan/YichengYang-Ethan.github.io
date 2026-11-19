@@ -6,7 +6,7 @@
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-2F41NJTYWW"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-2F41NJTYWW');</script>
 <title>GSoC 2026 Final Report &mdash; Streaming Variational Inference for PyMC &mdash; Yicheng Yang</title>
-<meta name="description" content="Final work product for Google Summer of Code 2026 with NumFOCUS / PyMC: an out-of-core DataLoader (merged), a Trainer, a streaming Pathfinder, a loss-based stopping rule, and a tick-data tutorial. What was built, what merged, what is left, with links to every pull request.">
+<meta name="description" content="Final work product for Google Summer of Code 2026 with NumFOCUS / PyMC: an out-of-core DataLoader (merged, shipped in pymc-extras 0.15.0), a Trainer, a streaming Pathfinder, a loss-based stopping rule, and a tick-data tutorial. What was built, what merged, what is left, with links to every pull request.">
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/style.css">
 <style>
@@ -34,6 +34,16 @@
   .lesson { margin-bottom: 18px; }
   .lesson strong { font-weight: 600; }
   .figure img { height: auto; background: #fff; }
+  .results-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 32px 0; }
+  .results-row .stat-card { text-align: left; padding: 18px 20px; }
+  .results-row .stat-card .number { font-size: 30px; line-height: 1.2; }
+  .results-row .stat-card .desc { display: block; font-size: 13px; margin-top: 6px; line-height: 1.5; }
+  code, pre { font-variant-ligatures: none; }
+  .toc { font-family: Inter, sans-serif; font-size: 13.5px; color: var(--text-secondary); line-height: 1.9; margin: 0 0 8px; }
+  .toc a { white-space: nowrap; }
+  @media (max-width: 640px) { .results-row { grid-template-columns: 1fr; } }
+  article p code { overflow-wrap: anywhere; }
+  @media (max-width: 640px) { nav { flex-wrap: wrap; row-gap: 8px; } nav .nav-links { flex-wrap: wrap; gap: 6px 16px; } }
   .cert-strip { display: grid; grid-template-columns: 168px 1fr; gap: 20px; align-items: center; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px 16px 16px; margin: 32px 0; }
   .cert-strip .thumb, .cert-doc .sheet { display: block; line-height: 0; border-radius: 6px; }
   .cert-strip .thumb img { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 4px; background: #fff; box-shadow: 0 1px 2px rgba(26,26,26,.06), 0 6px 14px -6px rgba(26,26,26,.22); }
@@ -70,13 +80,21 @@
 <header>
   <div class="label">GSoC 2026 &middot; Final report</div>
   <h1>Streaming Variational Inference for PyMC</h1>
+  <p class="subtitle">Fitting Bayesian models to datasets larger than memory, with each component validated against a reference.</p>
   <p class="meta">Yicheng Yang &middot; NumFOCUS / PyMC &middot; Mentors Chris Fonnesbeck and Rob Zinkov &middot; GSoC 2026 final work product &middot; <a href="/gsoc">&larr; All GSoC notes</a></p>
 </header>
 
 <article>
 
 <div class="callout">
-  <p><strong>What this page is.</strong> The final work product for my Google Summer of Code 2026 project with NumFOCUS / PyMC. It says what the project set out to do, what got built, what merged upstream, what is still in review, and what is left. Claims link to the pull requests, notebook outputs, or checked-in raw data they come from. State recorded on 18 August 2026 (America/Chicago); the open pull requests continue after GSoC, so each one's GSoC-cutoff commit is linked in the ledger below.</p>
+  <p><strong>What this page is.</strong> The final report for my Google Summer of Code 2026 project with NumFOCUS / PyMC: what I set out to build, what I built, how each piece was validated, what merged, and what is still in review. Every claim links to a pull request, a notebook output, or checked-in raw data. The report records the state on 18 August 2026, with the install instructions updated for the pymc-extras 0.15 release.</p>
+</div>
+
+<div class="stats-row results-row">
+  <div class="stat-card"><span class="number">14/14</span><span class="desc">posterior means match an in-memory fit on the public Criteo click logs (correlation 0.998)</span></div>
+  <div class="stat-card"><span class="number">21&times;</span><span class="desc">less peak memory than in-memory fitting at 150 million rows (about 0.7&nbsp;GB against 15.7&nbsp;GB)</span></div>
+  <div class="stat-card"><span class="number">491M</span><span class="desc">rows streamed through one epoch in 6 seconds at 339&nbsp;MB peak, on my own tick corpus</span></div>
+  <div class="stat-card"><span class="number">0.3&ndash;0.6</span><span class="desc">Pareto <em>k&#770;</em> of the streaming Pathfinder, down from about 6; below 0.7 is the usual bar for a reliable approximation</span></div>
 </div>
 
 <div class="cert-strip">
@@ -89,11 +107,8 @@
   </div>
 </div>
 
-<div class="stats-row">
-  <div class="stat-card"><span class="number">8db1880</span><span class="desc">DataLoader merged into pymc-extras, 7 August 2026</span></div>
-  <div class="stat-card"><span class="number">491M rows</span><span class="desc">of my own tick corpus, one epoch at 339 MB peak</span></div>
-  <div class="stat-card"><span class="number">12</span><span class="desc">weekly engineering notes over the program</span></div>
-</div>
+
+<p class="toc">On this page: <a href="#highlights">Highlights</a> &middot; <a href="#goal">The problem</a> &middot; <a href="#built">What was built</a> &middot; <a href="#ledger">Ledger</a> &middot; <a href="#using">Using it today</a> &middot; <a href="#left">What is left</a> &middot; <a href="#learned">What I learned</a> &middot; <a href="#certificate">Certificate</a></p>
 
 <h2 id="highlights">Highlights</h2>
 
@@ -230,12 +245,10 @@
 <h2 id="using">Using it today</h2>
 
 <p>
-  The loader is on pymc-extras <code>main</code> and installable from the merge commit. The shape of a streaming ADVI fit, which the tutorial spells out in full:
+  The loader ships in pymc-extras from 0.15.0 on. The shape of a streaming ADVI fit, which the tutorial spells out in full:
 </p>
 
-<pre><code>python -m pip install \
-  "pymc-extras @ git+https://github.com/pymc-devs/pymc-extras@8db1880d410e509be02abf9b085f08c3d4514fd1" \
-  pyarrow    # Python >= 3.12; pyarrow is what parquet_source reads with</code></pre>
+<pre><code>python -m pip install "pymc-extras&gt;=0.15" pyarrow   # pyarrow reads the Parquet files</code></pre>
 
 <pre><code>import pymc as pm
 from pymc_extras.variational.dataloader import DataLoader, parquet_source
@@ -250,7 +263,7 @@ with pm.Model() as model:
               total_size=loader.total_size)      # N, never len(loader)
 
 
-class StreamAdvance:                  # the Trainer in #710 owns this step
+class StreamAdvance:                  # feeds the next batch each step
     def __init__(self, model, loader):
         self._shared = model["batch"]
         self._stream = self._endless(loader)
@@ -280,7 +293,7 @@ with model:
 
 <ul>
   <li><strong>Reviews and merges</strong> for #710, #722, #733 and pymc-examples #892. All four are open and non-draft; #710 and #722 carry reading guides on their threads. I am continuing all four after the program.</li>
-  <li><strong>A pymc-extras release</strong> that includes the DataLoader, so the tutorial can install from PyPI. The notebook's install line and pinned outputs get refreshed at that point.</li>
+  <li><strong>A pymc-extras release</strong> that includes the DataLoader, so the tutorial can install from PyPI. The notebook's install line and pinned outputs get refreshed at that point. <span class="pill merged">done</span> 0.15.0 shipped on 13 September; the tutorial was refreshed in October.</li>
   <li><strong>Trainer convergence.</strong> The ADVI API is evolving in #713 and #635 alongside #710; whichever trainer lands, the tutorial's hand-rolled <code>StreamAdvance</code> adapter gets replaced by it.</li>
   <li><strong>An unshuffled-path regression test</strong> in pymc-extras, pinning the block pass-through contract described above for sources whose blocks are not already batch-sized.</li>
   <li><strong>Wiring the callback and the Pathfinder into the tutorial</strong> once they merge. Today the notebook points at them and explains, with a pre-fit check, why the Pathfinder is not run on that 154-parameter hierarchical target.</li>
