@@ -48,68 +48,36 @@
     <div class="card-desc">Wang Transform decomposition across 291,309 contracts on 6 platforms. Pooled &lambda; = 0.183.</div>
     <div class="card-meta">Sole author &middot; Presented at RBFC 2026 and the UIUC ECON Research Symposium &middot; <span style="color:var(--accent)">SSRN &rarr;</span></div>
   </a>
-  <a href="https://github.com/YichengYang-Ethan/oracle3" class="card" style="text-decoration:none; color:inherit;">
-    <div class="card-label">Open Source</div>
-    <div class="card-title">oracle3</div>
-    <div class="card-desc">Autonomous prediction market trading agent. 8 arbitrage + 2 model-driven strategies across Kalshi, Polymarket & Solana.</div>
-    <div class="card-meta">500+ &starf; on GitHub &middot; Python &middot; Apache 2.0</div>
+  <a href="/gsoc-final-report" class="card" style="text-decoration:none; color:inherit;">
+    <div class="card-label">Google Summer of Code 2026</div>
+    <div class="card-title">Streaming Variational Inference in PyMC</div>
+    <div class="card-desc">Out-of-core DataLoader for minibatch variational inference, merged and shipped in pymc-extras 0.15.0. A streaming Pathfinder and a loss-based convergence check are in review.</div>
+    <div class="card-meta">NumFOCUS / PyMC &middot; 350-hour project &middot; <span style="color:var(--accent)">Final report &rarr;</span></div>
   </a>
 </div>
-
-<!-- AI Supply Chain Research -->
-<a href="/ai-supply-chain" class="card" style="display:block; text-decoration:none; color:inherit; margin-top:14px; background:#14101B; border:1px solid #34303A;">
-  <div class="card-label" style="color:#F8A848;">New &middot; Research Series</div>
-  <div class="card-title" style="color:#EDEBF0;">AI Supply Chain Research</div>
-  <div class="card-desc" style="color:#C9C7CE;">A ten-sector, source-verified deep dive on the AI compute build-out &mdash; accelerators to gigawatts &mdash; distilled from 311 SemiAnalysis articles, plus an independent credibility audit of the source itself (664 events, 119 tickers).</div>
-  <div class="card-meta" style="color:#8B8992;">10 sectors &middot; 120+ verified theses &middot; <span style="color:#F8A848">Read the series &rarr;</span></div>
-</a>
-
-<!-- Strategies -->
-<div class="section-label">Strategies</div>
-<div class="project-grid">
-  <a href="/strategies" class="project-card">
-    <div class="project-name">Favorite&ndash;Longshot Bias <span class="tag">Paper</span></div>
-    <div class="project-desc">Risk-premium capture on Kalshi binary event contracts. Calibrated on 271K+ resolved contracts (&lambda;&#770; = 0.187). Paper trading at Square Kettle.</div>
-    <div class="project-meta">Kalshi &middot; binary events</div>
-  </a>
-  <a href="/holy-grail" class="project-card">
-    <div class="project-name">Holy Grail <span class="tag">Backtested</span></div>
-    <div class="project-desc">QQQ/TQQQ moving-average rotation. 1999&ndash;2026 backtest: 15.88% CAGR ($10K&rarr;$543K) vs 10.52% for QQQ B&amp;H. Stress-tested via combinatorial purged CV.</div>
-    <div class="project-meta">EMA(5)/EMA(200) &middot; no discretion</div>
-  </a>
-  <a href="/strategies" class="project-card">
-    <div class="project-name">0DTE Options <span class="tag">Infra ready</span></div>
-    <div class="project-desc">Systematic SPY 0DTE vol-risk-premium strategy. IB Gateway + Theta Data wired; next milestone is 3&ndash;5 year minute-bar backtest with realistic fills.</div>
-    <div class="project-meta">SPY 0DTE &middot; defined-risk verticals</div>
-  </a>
-</div>
-
-<p style="font-family:Inter,sans-serif; font-size:14px; color:var(--text-secondary); margin-top:8px;">
-  <a href="/strategies">All strategies &rarr;</a>
-</p>
 
 <!-- Projects -->
 <div class="section-label" style="margin-top:48px;">Projects</div>
 <div class="project-grid">
+  <a href="https://github.com/YichengYang-Ethan/oracle3" class="project-card">
+    <div class="project-name">oracle3</div>
+    <div class="project-desc">Open-source engine and MCP server for prediction markets. Its LightGBM layer, trained on 349K resolved contracts, cut out-of-sample Brier score by 5.5% versus market prices under purged walk-forward cross-validation.</div>
+    <div class="project-meta">500+ &starf; on GitHub &middot; PyPI &middot; MCP Registry</div>
+  </a>
   <div class="project-card">
     <div class="project-name">Coinjure <span class="tag">U-Lab</span></div>
-    <div class="project-desc">Trading agent harness for prediction markets. Cross-exchange arbitrage, auto-pair discovery, TUI monitor. Co-developed with Haofei Yu.</div>
-    <div class="project-meta"><a href="https://github.com/ulab-uiuc/coinjure">GitHub</a> &middot; pip install coinjure &middot; MIT</div>
+    <div class="project-desc">Trading-agent harness for prediction markets from U Lab at UIUC, with Haofei Yu, Yuxiang Liu, and Prof. Jiaxuan You. I built its Kalshi data and execution adapters.</div>
+    <div class="project-meta"><a href="https://ulab-uiuc.github.io/coinjure/blog/index.html">Project page</a> &middot; <a href="https://github.com/ulab-uiuc/coinjure">GitHub</a> &middot; MIT</div>
   </div>
-  <a href="https://github.com/YichengYang-Ethan/clawdfolio" class="project-card">
-    <div class="project-name">clawdfolio</div>
-    <div class="project-desc">Portfolio analytics on PyPI. Fama&ndash;French, GARCH, covered call optimization (83% win rate).</div>
-    <div class="project-meta">pip install clawdfolio</div>
-  </a>
   <a href="https://github.com/YichengYang-Ethan/Market-Bubble-Index-Dashboard" class="project-card">
     <div class="project-name">Market Bubble Index</div>
     <div class="project-desc">7-indicator composite with Lasso / Bayesian / EVT ensemble. AUC 0.802 for drawdown detection.</div>
     <div class="project-meta"><span style="color:var(--accent)">Live demo</span> &middot; Python</div>
   </a>
-  <a href="/market-predict" class="project-card">
-    <div class="project-name">market-predict <span class="tag">Live</span></div>
-    <div class="project-desc">SPY/QQQ trader dashboard &mdash; spot, options walls, dealer gamma, and Kalshi vs Polymarket vs the Fed path. Free data, 15-min snapshots.</div>
-    <div class="project-meta"><span style="color:var(--accent)">Live dashboard</span> &middot; Streamlit</div>
+  <a href="https://github.com/YichengYang-Ethan/clawdfolio" class="project-card">
+    <div class="project-name">clawdfolio</div>
+    <div class="project-desc">Portfolio analytics on PyPI. Fama&ndash;French, GARCH, covered call optimization (83% win rate).</div>
+    <div class="project-meta">pip install clawdfolio</div>
   </a>
 </div>
 
